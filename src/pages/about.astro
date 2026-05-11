@@ -1,0 +1,58 @@
+---
+import Layout from '../layouts/Layout.astro'
+---
+
+<Layout title="About" description="Meet Jim Sawicki, Twin Cities real estate agent with The Sawicki Group at Coldwell Banker Realty.">
+
+  <section class="max-w-3xl mx-auto px-6 py-20">
+
+    <p class="text-sm font-semibold text-amber-700 uppercase tracking-widest mb-4">About</p>
+    <h1 class="text-4xl font-semibold text-stone-900 mb-6">Jim Sawicki</h1>
+    <p class="text-stone-500 text-lg leading-relaxed mb-6">
+      The Sawicki Group · Coldwell Banker Realty · Twin Cities, Minnesota
+    </p>
+
+    <div class="prose prose-stone max-w-none text-stone-600 leading-relaxed space-y-5">
+      <p>
+        I've spent over 15 years helping buyers and sellers navigate the Twin Cities real estate market — 
+        from first-time buyers finding their footing in a competitive market, to long-time homeowners 
+        making their next move after decades in the same neighborhood.
+      </p>
+      <p>
+        In between, I went back to school and earned a degree in Computer Science. That background shapes 
+        how I work. I use data, technology, and systems thinking to give my clients an edge. That means 
+        sharper pricing analysis, faster response times, and tools that most agents simply don't have access to.
+      </p>
+      <p>
+        My focus is Saint Paul and Minneapolis proper. Crocus Hill, Mac-Groveland, Highland Park, 
+        Linden Hills, Northeast, and the surrounding neighborhoods I know block by block. I don't try 
+        to cover the entire metro. I cover my market well.
+      </p>
+      <p>
+        If you're thinking about buying or selling in the Twin Cities, I'd rather have a real 
+        conversation than send you a brochure. Reach out and let's talk.
+      </p>
+    </div>
+
+    <div class="mt-12 pt-12 border-t border-stone-200 grid grid-cols-3 gap-8 text-sm">
+      {[
+        { label: 'Experience', value: '15+ years' },
+        { label: 'Focus Area', value: 'Minneapolis & Saint Paul' },
+        { label: 'Brokerage', value: 'Coldwell Banker Realty' },
+      ].map(s => (
+        <div>
+          <div class="text-stone-400 mb-1">{s.label}</div>
+          <div class="font-semibold text-stone-900">{s.value}</div>
+        </div>
+      ))}
+    </div>
+
+    <div class="mt-12">
+      <a href="/contact" class="bg-stone-900 text-white px-6 py-3 rounded-lg hover:bg-stone-700 transition-colors font-medium">
+        Get in Touch
+      </a>
+    </div>
+
+  </section>
+
+</Layout>
