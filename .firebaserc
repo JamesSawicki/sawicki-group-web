@@ -1,5 +1,12 @@
 {
   "projects": {
     "default": "sawicki-group-web-1"
+  },
+  "targets": {
+    "sawicki-group-web-1": {
+      "hosting": {
+        "default": ["sawicki-group-web"]
+      }
+    }
   }
 }
