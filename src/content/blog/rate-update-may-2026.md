@@ -9,13 +9,13 @@ draft: true
 
 Mortgage Rates Show Minimal Movement This Week
 
-As of May 14, 2026, the 30-year fixed mortgage rate sits at 6.36%, down just one basis point from last week's 6.37%. The 15-year fixed rate currently stands at 5.71%. While any downward movement is welcome news, this week's change is essentially flat—a continuation of the sideways pattern we've been seeing in our market lately.
+As of May 14, 2026, the 30-year fixed mortgage rate sits at 6.36%, down just one basis point from last week's 6.37%. The 15-year fixed rate currently stands at 5.71%. While any downward movement is welcome news, this week's change is essentially flat - a continuation of the sideways pattern we've been seeing in our market lately.
 
 For those of you watching rates closely and waiting for a dramatic shift, this week reinforces what we've been telling clients: rates have found a relatively stable zone, and trying to time the perfect moment may mean missing out on the right home.
 
 What This Means for Your Monthly Payment
 
-Let's put these numbers into perspective with a real example. On a 400,000 dollar home purchase with 20% down (a 320,000 dollar loan), the difference between last week's 6.37% rate and this week's 6.36% amounts to roughly 2 dollars per month. Over a year, that's about 24 dollars in savings—enough for a nice dinner, but certainly not a game-changer for your housing budget.
+Let's put these numbers into perspective with a real example. On a 400,000 dollar home purchase with 20% down (a 320,000 dollar loan), the difference between last week's 6.37% rate and this week's 6.36% amounts to roughly 2 dollars per month. Over a year, that's about 24 dollars in savings. Enough for a nice dinner, but certainly not a game-changer for your housing budget.
 
 However, the monthly payment at 6.36% on that same loan would be approximately 1,997 dollars in principal and interest. That's important context as you're planning your budget and determining what you can comfortably afford in today's market.
 
