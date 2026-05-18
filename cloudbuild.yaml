@@ -1,0 +1,36 @@
+steps:
+  # Step 1: Build the Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/sawicki-group-web-1/sawicki-group-web:$COMMIT_SHA'
+      - '-t'
+      - 'gcr.io/sawicki-group-web-1/sawicki-group-web:latest'
+      - '.'
+
+  # Step 2: Push both tags to Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - '--all-tags'
+      - 'gcr.io/sawicki-group-web-1/sawicki-group-web'
+
+  # Step 3: Deploy to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'sawicki-group-web'
+      - '--image'
+      - 'gcr.io/sawicki-group-web-1/sawicki-group-web:$COMMIT_SHA'
+      - '--platform'
+      - 'managed'
+      - '--region'
+      - 'us-central1'
+      - '--allow-unauthenticated'
+      - '--set-secrets=RESEND_API_KEY=RESEND_API_KEY:latest'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
