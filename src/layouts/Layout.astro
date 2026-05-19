@@ -4,11 +4,13 @@ import "../styles/global.css";
 interface Props {
   title: string;
   description?: string;
+  jsonLd?: object;
 }
 
 const {
   title,
   description = "Twin Cities real estate expert serving Minneapolis, Saint Paul, and surrounding communities.",
+  jsonLd,
 } = Astro.props;
 ---
 
@@ -16,54 +18,28 @@ const {
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1"
-    />
-    <meta
-      name="description"
-      content={description}
-    />
-    <link
-      rel="icon"
-      type="image/svg+xml"
-      href="/favicon.svg"
-    />
-    <meta
-      name="generator"
-      content={Astro.generator}
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
     <title>{title} | The Sawicki Group</title>
+    {jsonLd && (
+      <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    )}
   </head>
   <body class="bg-white text-stone-800 font-sans antialiased">
     <!-- NAV -->
     <header class="border-b border-stone-200">
-      <nav
-        class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between"
-      >
-        <a
-          href="/"
-          class="text-xl font-semibold tracking-tight text-stone-900"
-        >
+      <nav class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+        <a href="/" class="text-xl font-semibold tracking-tight text-stone-900">
           The Sawicki Group
         </a>
         <div class="flex items-center gap-8 text-sm text-stone-600">
-          <a
-            href="/search"
-            class="hover:text-stone-900 transition-colors"
-            >Search</a
-          >
-          <a
-            href="/blog"
-            class="hover:text-stone-900 transition-colors"
-            >Market Updates</a
-          >
-          <a
-            href="/about"
-            class="hover:text-stone-900 transition-colors"
-            >About</a
-          >
-          <a
+          <a href="/listings" class="hover:text-stone-900 transition-colors">Listings</a>
+          <a href="/search" class="hover:text-stone-900 transition-colors">Search</a>
+          <a href="/blog" class="hover:text-stone-900 transition-colors">Market Updates</a>
+          <a href="/about" class="hover:text-stone-900 transition-colors">About</a>
+          
             href="/contact"
             class="bg-stone-900 text-white px-4 py-2 rounded-lg hover:bg-stone-700 transition-colors"
           >
@@ -80,9 +56,7 @@ const {
 
     <!-- FOOTER -->
     <footer class="border-t border-stone-200 mt-24">
-      <div
-        class="max-w-6xl mx-auto px-6 py-12 grid grid-cols-3 gap-8 text-sm text-stone-500"
-      >
+      <div class="max-w-6xl mx-auto px-6 py-12 grid grid-cols-3 gap-8 text-sm text-stone-500">
         <div>
           <div class="font-semibold text-stone-900 mb-3">The Sawicki Group</div>
           <div>Coldwell Banker Realty</div>
@@ -91,47 +65,20 @@ const {
         <div>
           <div class="font-semibold text-stone-900 mb-3">Navigate</div>
           <div class="flex flex-col gap-2">
-            <a
-              href="/search"
-              class="hover:text-stone-900 transition-colors"
-              >Search Homes</a
-            >
-            <a
-              href="/blog"
-              class="hover:text-stone-900 transition-colors"
-              >Market Updates</a
-            >
-            <a
-              href="/about"
-              class="hover:text-stone-900 transition-colors"
-              >About</a
-            >
-            <a
-              href="/contact"
-              class="hover:text-stone-900 transition-colors"
-              >Contact</a
-            >
+            <a href="/listings" class="hover:text-stone-900 transition-colors">Listings</a>
+            <a href="/search" class="hover:text-stone-900 transition-colors">Search Homes</a>
+            <a href="/blog" class="hover:text-stone-900 transition-colors">Market Updates</a>
+            <a href="/about" class="hover:text-stone-900 transition-colors">About</a>
+            <a href="/contact" class="hover:text-stone-900 transition-colors">Contact</a>
           </div>
         </div>
         <div>
           <div class="font-semibold text-stone-900 mb-3">Legal</div>
           <div class="flex flex-col gap-2">
+            <a href="/privacy" class="hover:text-stone-900 transition-colors">Privacy Policy</a>
             <span>Licensed in Minnesota</span>
             <span>© {new Date().getFullYear()} The Sawicki Group</span>
             <span>All rights reserved</span>
-          </div>
-          <div>
-            <div class="font-semibold text-stone-900 mb-3">Legal</div>
-            <div class="flex flex-col gap-2">
-              <a
-                href="/privacy"
-                class="hover:text-stone-900 transition-colors"
-                >Privacy Policy</a
-              >
-              <span>Licensed in Minnesota</span>
-              <span>© {new Date().getFullYear()} The Sawicki Group</span>
-              <span>All rights reserved</span>
-            </div>
           </div>
         </div>
       </div>

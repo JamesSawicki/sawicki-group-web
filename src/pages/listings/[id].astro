@@ -1,0 +1,277 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import ListingChat from "../../components/ListingChat.jsx";
+import type { Listing } from "../../types/listing";   // ← add this
+
+const { id } = Astro.params;
+const apiBase = import.meta.env.PUBLIC_API_BASE_URL;
+
+const res = await fetch(`${apiBase}/api/listings/${id}`);
+
+if (!res.ok) {
+  return new Response(null, { status: 404, statusText: "Not Found" });
+}
+
+const listing = await res.json() as Listing;   // ← cast here
+// ... rest unchanged
+
+// ─── Parse address components for JSON-LD ───────────────────────────────────
+// cityStateZip format: "Saint Paul, MN 55105"
+const cityStateZipParts = listing.cityStateZip?.split(", ") ?? [];
+const city = cityStateZipParts[0] ?? "";
+const stateZipParts = (cityStateZipParts[1] ?? "").split(" ");
+const state = stateZipParts[0] ?? "";
+const zip = stateZipParts[1] ?? "";
+
+// Strip "$" and commas from price for schema numeric value
+const priceNumeric = listing.price?.replace(/[$,]/g, "") ?? "";
+
+// ─── JSON-LD: RealEstateListing ──────────────────────────────────────────────
+// Schema.org type for property listings. Helps Google and AI search engines
+// understand structured property data rather than parsing prose.
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "RealEstateListing",
+  "name": `${listing.beds} BD / ${listing.baths} BA ${listing.style ?? "Home"} — ${listing.address}`,
+  "description": listing.description ?? "",
+  "url": `${Astro.url.origin}/listings/${listing.id}`,
+  "datePosted": new Date().toISOString().split("T")[0],
+  "price": priceNumeric,
+  "priceCurrency": "USD",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": listing.address,
+    "addressLocality": city,
+    "addressRegion": state,
+    "postalCode": zip,
+    "addressCountry": "US"
+  },
+  ...(listing.sqft && {
+    "floorSize": {
+      "@type": "QuantitativeValue",
+      "value": listing.sqft.replace(/,/g, ""),
+      "unitCode": "FTK"
+    }
+  }),
+  "numberOfRooms": listing.beds ?? undefined,
+  "broker": {
+    "@type": "RealEstateAgent",
+    "name": listing.agentName ?? "Jim Sawicki",
+    "url": Astro.url.origin
+  }
+};
+
+// ─── System prompt ───────────────────────────────────────────────────────────
+// This is sent client-side with every chat request. It gives the AI full
+// context about the property so it can answer buyer questions accurately.
+const features = listing.features
+  ? listing.features.split("\n").map(f => `• ${f}`).join("\n")
+  : "";
+
+const locationHighlights = listing.location
+  ? listing.location.split("\n").map(l => `• ${l}`).join("\n")
+  : "";
+
+const systemPrompt = `You are a helpful real estate assistant for The Sawicki Group, a licensed real estate team in the Twin Cities area. You are answering questions about a specific property listing on behalf of agent ${listing.agentName ?? "Jim Sawicki"}.
+
+PROPERTY DETAILS
+Address: ${listing.address}, ${listing.cityStateZip}
+${listing.neighborhood ? `Neighborhood: ${listing.neighborhood}` : ""}
+Asking Price: ${listing.price}
+Style: ${listing.style ?? "N/A"}
+Year Built: ${listing.yearBuilt ?? "N/A"}
+Bedrooms: ${listing.beds ?? "N/A"}
+Bathrooms: ${listing.baths ?? "N/A"}
+Square Feet: ${listing.sqft ?? "N/A"}
+Lot Size: ${listing.lotSqft ?? "N/A"}
+Garage: ${listing.garage ?? "N/A"}
+Property Taxes: ${listing.taxes ?? "N/A"}
+Estimated Monthly Payment: ${listing.estimatedPayment ?? "N/A"}
+
+DESCRIPTION
+${listing.description ?? ""}
+
+KEY FEATURES
+${features}
+
+LOCATION HIGHLIGHTS
+${locationHighlights}
+
+YOUR ROLE
+- Answer questions about this property accurately and helpfully
+- Be knowledgeable and enthusiastic but never fabricate details not listed above
+- If asked about scheduling a showing or for more information, direct buyers to contact ${listing.agentName ?? "Jim Sawicki"} via the contact form at ${Astro.url.origin}/contact
+- Keep responses concise and conversational — 2 to 4 sentences is ideal
+- If asked something not covered above, say so honestly and suggest contacting the agent directly
+- Do not discuss other properties or give general market advice`;
+---
+
+<Layout
+  title={`${listing.address} — ${listing.price}`}
+  description={`${listing.beds} bed, ${listing.baths} bath ${listing.style ?? "home"} in ${listing.neighborhood ?? city}. ${listing.sqft} sqft. Listed at ${listing.price} by The Sawicki Group.`}
+  jsonLd={jsonLd}
+>
+  <!-- BREADCRUMB -->
+  <div class="max-w-6xl mx-auto px-6 pt-8">
+    <nav class="text-sm text-stone-400">
+      <a href="/" class="hover:text-stone-600 transition-colors">Home</a>
+      <span class="mx-2">›</span>
+      <a href="/listings" class="hover:text-stone-600 transition-colors">Listings</a>
+      <span class="mx-2">›</span>
+      <span class="text-stone-600">{listing.address}</span>
+    </nav>
+  </div>
+
+  <!-- HERO -->
+  <div class="max-w-6xl mx-auto px-6 pt-6 pb-8 border-b border-stone-100">
+    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+      <div>
+        <h1 class="text-3xl font-semibold text-stone-900">{listing.address}</h1>
+        <div class="text-stone-500 mt-1">{listing.cityStateZip}</div>
+        {listing.neighborhood && (
+          <div class="text-xs text-stone-400 uppercase tracking-widest mt-1">
+            {listing.neighborhood}
+          </div>
+        )}
+      </div>
+      <div class="text-3xl font-semibold text-stone-900 shrink-0">
+        {listing.price}
+      </div>
+    </div>
+
+    <!-- KEY STATS -->
+    <div class="flex flex-wrap gap-6 mt-6 text-sm text-stone-700">
+      {listing.beds && (
+        <div>
+          <span class="font-semibold text-stone-900">{listing.beds}</span> Bedrooms
+        </div>
+      )}
+      {listing.baths && (
+        <div>
+          <span class="font-semibold text-stone-900">{listing.baths}</span> Bathrooms
+        </div>
+      )}
+      {listing.sqft && (
+        <div>
+          <span class="font-semibold text-stone-900">{listing.sqft}</span> Sq Ft
+        </div>
+      )}
+      {listing.style && (
+        <div>
+          <span class="font-semibold text-stone-900">{listing.style}</span>
+        </div>
+      )}
+      {listing.yearBuilt && (
+        <div>
+          Built <span class="font-semibold text-stone-900">{listing.yearBuilt}</span>
+        </div>
+      )}
+      {listing.garage && (
+        <div>
+          <span class="font-semibold text-stone-900">{listing.garage}</span> Garage
+        </div>
+      )}
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT + CHAT (two-column on desktop) -->
+  <div class="max-w-6xl mx-auto px-6 py-10 grid grid-cols-1 lg:grid-cols-5 gap-12">
+
+    <!-- LEFT: LISTING DETAILS -->
+    <div class="lg:col-span-3 space-y-10">
+
+      <!-- Description -->
+      {listing.description && (
+        <div>
+          <h2 class="text-lg font-semibold text-stone-900 mb-3">About This Home</h2>
+          <p class="text-stone-600 leading-relaxed">{listing.description}</p>
+        </div>
+      )}
+
+      <!-- Features -->
+      {listing.features && (
+        <div>
+          <h2 class="text-lg font-semibold text-stone-900 mb-3">Features</h2>
+          <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {listing.features.split("\n").filter(Boolean).map((feature) => (
+              <li class="flex items-start gap-2 text-sm text-stone-600">
+                <span class="text-stone-400 mt-0.5 shrink-0">✓</span>
+                {feature}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <!-- Location -->
+      {listing.location && (
+        <div>
+          <h2 class="text-lg font-semibold text-stone-900 mb-3">Location Highlights</h2>
+          <ul class="space-y-1">
+            {listing.location.split("\n").filter(Boolean).map((point) => (
+              <li class="text-sm text-stone-600 flex items-start gap-2">
+                <span class="text-stone-400 shrink-0">·</span>
+                {point}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <!-- Financial details -->
+      <div>
+        <h2 class="text-lg font-semibold text-stone-900 mb-3">Financial Details</h2>
+        <div class="grid grid-cols-2 gap-4 text-sm">
+          {listing.taxes && (
+            <div>
+              <div class="text-stone-400 mb-0.5">Annual Taxes</div>
+              <div class="font-medium text-stone-800">{listing.taxes}</div>
+            </div>
+          )}
+          {listing.estimatedPayment && (
+            <div>
+              <div class="text-stone-400 mb-0.5">Est. Monthly Payment</div>
+              <div class="font-medium text-stone-800">{listing.estimatedPayment}</div>
+            </div>
+          )}
+          {listing.lotSqft && (
+            <div>
+              <div class="text-stone-400 mb-0.5">Lot Size</div>
+              <div class="font-medium text-stone-800">{listing.lotSqft} sq ft</div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <div class="border border-stone-200 rounded-xl p-6">
+        <div class="font-semibold text-stone-900 mb-1">Interested in this property?</div>
+        <p class="text-sm text-stone-500 mb-4">
+          Schedule a showing or ask questions — {listing.agentName ?? "Jim Sawicki"} typically responds within a few hours.
+        </p>
+        
+          href="/contact"
+          class="inline-block bg-stone-900 text-white text-sm px-5 py-2.5 rounded-lg hover:bg-stone-700 transition-colors"
+        >
+          Request a Showing
+        </a>
+      </div>
+    </div>
+
+    <!-- RIGHT: AI CHAT -->
+    <div class="lg:col-span-2">
+      <div class="sticky top-8">
+        <h2 class="text-lg font-semibold text-stone-900 mb-1">Ask About This Property</h2>
+        <p class="text-sm text-stone-500 mb-4">
+          Get instant answers about features, the neighborhood, financials, or anything else.
+        </p>
+        <ListingChat
+          client:load
+          systemPrompt={systemPrompt}
+          apiBaseUrl={apiBase}
+        />
+      </div>
+    </div>
+
+  </div>
+</Layout>
