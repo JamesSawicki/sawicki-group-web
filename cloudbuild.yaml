@@ -31,6 +31,6 @@ steps:
       - 'us-central1'
       - '--allow-unauthenticated'
       - '--set-secrets=RESEND_API_KEY=RESEND_API_KEY:latest'
-
+      - '--update-env-vars=PUBLIC_API_BASE_URL=https://listing-agent-api-production.up.railway.app'
 options:
   logging: CLOUD_LOGGING_ONLY
