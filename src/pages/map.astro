@@ -1,0 +1,50 @@
+---
+import "mapbox-gl/dist/mapbox-gl.css";
+import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
+
+import Layout from "../layouts/Layout.astro";
+import MapSearch from "../components/MapSearch.jsx";
+import type { Listing, Page } from "../types/listing";
+
+const apiBase     = import.meta.env.PUBLIC_API_BASE_URL;
+const mapboxToken = import.meta.env.PUBLIC_MAPBOX_TOKEN;
+
+const params = Astro.url.searchParams;
+const minLat = parseFloat(params.get("minLat") ?? "44.75");
+const maxLat = parseFloat(params.get("maxLat") ?? "45.15");
+const minLng = parseFloat(params.get("minLng") ?? "-93.90");
+const maxLng = parseFloat(params.get("maxLng") ?? "-93.10");
+const status = params.get("status") ?? "Active";
+
+let initialListings: Listing[] = [];
+
+try {
+  const url = new URL(`${apiBase}/api/listings/search`);
+  url.searchParams.set("minLat", String(minLat));
+  url.searchParams.set("maxLat", String(maxLat));
+  url.searchParams.set("minLng", String(minLng));
+  url.searchParams.set("maxLng", String(maxLng));
+  url.searchParams.set("status", status);
+  url.searchParams.set("size",   "200");
+
+  const res = await fetch(url.toString());
+  if (res.ok) {
+    const data = await res.json() as Page<Listing>;
+    initialListings = data.content;
+  }
+} catch (_) {}
+---
+
+<Layout
+  title="Map Search | The Sawicki Group"
+  description="Search Twin Cities homes for sale on an interactive map."
+>
+  <MapSearch
+    client:load
+    initialListings={initialListings as any}
+    initialBbox={{ minLat, maxLat, minLng, maxLng }}
+    initialStatus={status}
+    apiBaseUrl={apiBase}
+    mapboxToken={mapboxToken}
+  />
+</Layout>

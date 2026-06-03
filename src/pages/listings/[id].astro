@@ -1,116 +1,209 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import ListingChat from "../../components/ListingChat.jsx";
-import type { Listing } from "../../types/listing";   // ← add this
+import type { Listing } from "../../types/listing";
+import {
+  formatPrice,
+  formatBathTotal,
+  formatSqft,
+  formatLot,
+  parseRooms,
+  hasPriceReduction,
+  statusBadgeClasses,
+  statusLabel,
+} from "../../lib/listing-utils";
 
 const { id } = Astro.params;
 const apiBase = import.meta.env.PUBLIC_API_BASE_URL;
 
 const res = await fetch(`${apiBase}/api/listings/${id}`);
-
 if (!res.ok) {
   return new Response(null, { status: 404, statusText: "Not Found" });
 }
 
-const listing = await res.json() as Listing;   // ← cast here
-// ... rest unchanged
+const listing = await res.json() as Listing;
 
-// ─── Parse address components for JSON-LD ───────────────────────────────────
-// cityStateZip format: "Saint Paul, MN 55105"
-const cityStateZipParts = listing.cityStateZip?.split(", ") ?? [];
-const city = cityStateZipParts[0] ?? "";
-const stateZipParts = (cityStateZipParts[1] ?? "").split(" ");
-const state = stateZipParts[0] ?? "";
-const zip = stateZipParts[1] ?? "";
+// ─── Derived display values ──────────────────────────────────────────────────
+// Compute once here; reference throughout the template.
+// Never call utility functions multiple times for the same value.
+const priceDisplay   = formatPrice(listing.listPrice);
+const bathDisplay    = formatBathTotal(listing);
+const sqftDisplay    = formatSqft(listing.sqftTotal);
+const lotDisplay     = formatLot(listing.lotSqft);
+const priceReduced   = hasPriceReduction(listing);
+const rooms          = parseRooms(listing.roomInfo);
+const agentName      = listing.listAgentName ?? "Jim Sawicki";
 
-// Strip "$" and commas from price for schema numeric value
-const priceNumeric = listing.price?.replace(/[$,]/g, "") ?? "";
+// cityState for display: "Edina, MN 55436"
+const cityStateZip = [listing.city, "MN", listing.zipCode]
+  .filter(Boolean)
+  .join(" ")
+  .replace(/MN /, "MN ");  // "Edina MN 55436" → fix spacing
+// Cleaner approach:
+const cityLine = listing.city
+  ? `${listing.city}, MN${listing.zipCode ? ` ${listing.zipCode}` : ""}`
+  : "";
+
+// Amenities: stored as comma-separated string → display as grid items
+const amenitiesList: string[] = listing.amenities
+  ? listing.amenities.split(", ").filter(Boolean)
+  : [];
+
+// Appliances: same pattern
+const appliancesList: string[] = listing.appliances
+  ? listing.appliances.split(", ").filter(Boolean)
+  : [];
+
+// Pre-compute dynamic sections of the system prompt using plain string
+// concatenation — no nested template literals. Astro's language server
+// fails to parse template literals nested 3 levels deep (a template literal
+// inside ${...} inside another template literal), which causes it to
+// misidentify the frontmatter closing --- and produce cascading parse errors.
+const amenitiesSection = amenitiesList.length !== 0
+  ? "AMENITIES\n" + amenitiesList.map(a => "• " + a).join("\n")
+  : "";
+
+const waterfrontSection = listing.waterfrontFeet
+  ? "WATERFRONT\n" +
+    "Body of Water: " + (listing.waterBodyName ?? "N/A") + "\n" +
+    "Frontage: " + listing.waterfrontFeet + " ft\n" +
+    "View: " + (listing.waterfrontView ?? "N/A") + "\n" +
+    "DNR Lake Class: " + (listing.dnrLakeClass ?? "N/A")
+  : "";
+
+const hoaSection = listing.associationFee && listing.associationFee !== "0"
+  ? "HOA\n" +
+    "Fee: $" + listing.associationFee + "/" + (listing.associationFeeFrequency ?? "month") + "\n" +
+    "Includes: " + (listing.associationFeeIncludes ?? "N/A")
+  : "No HOA";
+
+
 
 // ─── JSON-LD: RealEstateListing ──────────────────────────────────────────────
-// Schema.org type for property listings. Helps Google and AI search engines
-// understand structured property data rather than parsing prose.
+// city, zipCode now come directly from the model — no string parsing needed.
+// listPrice is already a number — no "$" stripping needed.
+// sqftTotal is already a number — no comma stripping needed.
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "RealEstateListing",
-  "name": `${listing.beds} BD / ${listing.baths} BA ${listing.style ?? "Home"} — ${listing.address}`,
-  "description": listing.description ?? "",
+  "name": `${listing.beds} BD / ${bathDisplay} BA ${listing.style ?? "Home"} — ${listing.address}`,
+  "description": listing.publicRemarks ?? "",
   "url": `${Astro.url.origin}/listings/${listing.id}`,
-  "datePosted": new Date().toISOString().split("T")[0],
-  "price": priceNumeric,
+  "datePosted": listing.listDate ?? new Date().toISOString().split("T")[0],
+  "price": listing.listPrice,
   "priceCurrency": "USD",
   "address": {
     "@type": "PostalAddress",
     "streetAddress": listing.address,
-    "addressLocality": city,
-    "addressRegion": state,
-    "postalCode": zip,
+    "addressLocality": listing.city,
+    "addressRegion": "MN",
+    "postalCode": listing.zipCode ?? "",
     "addressCountry": "US"
   },
-  ...(listing.sqft && {
+  ...(listing.sqftTotal && {
     "floorSize": {
       "@type": "QuantitativeValue",
-      "value": listing.sqft.replace(/,/g, ""),
+      "value": listing.sqftTotal,
       "unitCode": "FTK"
     }
   }),
-  "numberOfRooms": listing.beds ?? undefined,
+  "numberOfRooms": listing.beds,
   "broker": {
     "@type": "RealEstateAgent",
-    "name": listing.agentName ?? "Jim Sawicki",
+    "name": agentName,
     "url": Astro.url.origin
   }
 };
 
-// ─── System prompt ───────────────────────────────────────────────────────────
-// This is sent client-side with every chat request. It gives the AI full
-// context about the property so it can answer buyer questions accurately.
-const features = listing.features
-  ? listing.features.split("\n").map(f => `• ${f}`).join("\n")
-  : "";
-
-const locationHighlights = listing.location
-  ? listing.location.split("\n").map(l => `• ${l}`).join("\n")
-  : "";
-
-const systemPrompt = `You are a helpful real estate assistant for The Sawicki Group, a licensed real estate team in the Twin Cities area. You are answering questions about a specific property listing on behalf of agent ${listing.agentName ?? "Jim Sawicki"}.
+// ─── System prompt for AI chat island ───────────────────────────────────────
+// Built server-side from listing data. Sent client-side with every chat
+// request. The AI has full context without the browser ever fetching the API.
+// We include every material field — the AI should be able to answer anything
+// a serious buyer would ask without fabricating details.
+const systemPrompt = `You are a helpful real estate assistant for The Sawicki Group, a licensed real estate team in the Twin Cities area. You are answering questions about a specific property listing on behalf of agent ${agentName}.
 
 PROPERTY DETAILS
-Address: ${listing.address}, ${listing.cityStateZip}
+Address: ${listing.address}, ${cityLine}
 ${listing.neighborhood ? `Neighborhood: ${listing.neighborhood}` : ""}
-Asking Price: ${listing.price}
+${listing.complexSubdiv ? `Development: ${listing.complexSubdiv}` : ""}
+MLS #: ${listing.mlsId ?? "N/A"}
+Status: ${listing.status ?? "N/A"}
+List Price: ${priceDisplay}
+${priceReduced ? `Original Price: ${formatPrice(listing.originalListPrice)} (Price reduced)` : ""}
+Listed: ${listing.listDate ?? "N/A"}
+Days on Market: ${listing.daysOnMarket ?? "N/A"}
+
+PROPERTY BASICS
+Type: ${listing.propertyType ?? "N/A"}
 Style: ${listing.style ?? "N/A"}
 Year Built: ${listing.yearBuilt ?? "N/A"}
+Stories: ${listing.stories ?? "N/A"}
+Construction Status: ${listing.constructionStatus ?? "N/A"}
 Bedrooms: ${listing.beds ?? "N/A"}
-Bathrooms: ${listing.baths ?? "N/A"}
-Square Feet: ${listing.sqft ?? "N/A"}
-Lot Size: ${listing.lotSqft ?? "N/A"}
-Garage: ${listing.garage ?? "N/A"}
-Property Taxes: ${listing.taxes ?? "N/A"}
-Estimated Monthly Payment: ${listing.estimatedPayment ?? "N/A"}
+Full Baths: ${listing.bathsFull ?? 0} | 3/4 Baths: ${listing.bathsThreeQuarter ?? 0} | Half Baths: ${listing.bathsHalf ?? 0} | Quarter Baths: ${listing.bathsQuarter ?? 0}
+Total Bath Count: ${bathDisplay}
+Above Grade Sqft: ${formatSqft(listing.sqftAboveGrade)}
+Below Grade Sqft: ${formatSqft(listing.sqftBelowGrade)}
+Total Finished Sqft: ${sqftDisplay}
+Lot Size: ${lotDisplay}
+${listing.lotDimensions ? `Lot Dimensions: ${listing.lotDimensions}` : ""}
+Garage Stalls: ${listing.garageStalls ?? "N/A"}
+${listing.pool && listing.pool !== "None" ? `Pool: ${listing.pool}` : ""}
+
+INTERIOR FEATURES
+Heating: ${listing.heating ?? "N/A"}
+Air Conditioning: ${listing.airConditioning ?? "N/A"}
+Fuel: ${listing.fuelType ?? "N/A"}
+Basement: ${listing.basement ?? "N/A"}
+Fireplaces: ${listing.fireplaces ?? "0"} — ${listing.fireplaceFeatures ?? ""}
+Appliances: ${listing.appliances ?? "N/A"}
+Laundry: ${listing.laundryFeatures ?? "N/A"}
+Parking: ${listing.parkingFeatures ?? "N/A"}
+
+EXTERIOR & CONSTRUCTION
+Construction Materials: ${listing.constructionMaterials ?? "N/A"}
+Exterior Features: ${listing.exteriorFeatures ?? "N/A"}
+Roof: ${listing.roof ?? "N/A"}
+Lot Features: ${listing.lotFeatures ?? "N/A"}
+Fencing: ${listing.fencing ?? "N/A"}
+Sewer: ${listing.sewer ?? "N/A"}
+Water: ${listing.waterSource ?? "N/A"}
+Electric: ${listing.electric ?? "N/A"}
+
+${amenitiesSection}
+
+${waterfrontSection}
+
+${hoaSection}
+
+FINANCIALS
+Annual Taxes: $${listing.taxAmount ?? "N/A"} (${listing.taxYear ?? "N/A"})
+Financing Terms: ${listing.financing ?? "N/A"}
+
+SCHOOLS
+Elementary: ${listing.elementarySchool ?? "N/A"}
+Middle: ${listing.middleSchool ?? "N/A"}
+High School: ${listing.highSchool ?? "N/A"}
+School District: ${listing.schoolDistrict ?? "N/A"}
 
 DESCRIPTION
-${listing.description ?? ""}
-
-KEY FEATURES
-${features}
-
-LOCATION HIGHLIGHTS
-${locationHighlights}
+${listing.publicRemarks ?? ""}
 
 YOUR ROLE
 - Answer questions about this property accurately and helpfully
 - Be knowledgeable and enthusiastic but never fabricate details not listed above
-- If asked about scheduling a showing or for more information, direct buyers to contact ${listing.agentName ?? "Jim Sawicki"} via the contact form at ${Astro.url.origin}/contact
+- If asked about scheduling a showing or for more information, direct buyers to contact ${agentName} via the contact form at ${Astro.url.origin}/contact
 - Keep responses concise and conversational — 2 to 4 sentences is ideal
 - If asked something not covered above, say so honestly and suggest contacting the agent directly
 - Do not discuss other properties or give general market advice`;
 ---
 
 <Layout
-  title={`${listing.address} — ${listing.price}`}
-  description={`${listing.beds} bed, ${listing.baths} bath ${listing.style ?? "home"} in ${listing.neighborhood ?? city}. ${listing.sqft} sqft. Listed at ${listing.price} by The Sawicki Group.`}
+  title={`${listing.address} — ${priceDisplay}`}
+  description={`${listing.beds ?? ""} bed, ${bathDisplay} bath ${listing.style ?? "home"} in ${listing.neighborhood ?? listing.city}. ${sqftDisplay} sqft. Listed at ${priceDisplay} by The Sawicki Group.`}
   jsonLd={jsonLd}
 >
+
   <!-- BREADCRUMB -->
   <div class="max-w-6xl mx-auto px-6 pt-8">
     <nav class="text-sm text-stone-400">
@@ -126,152 +219,514 @@ YOUR ROLE
   <div class="max-w-6xl mx-auto px-6 pt-6 pb-8 border-b border-stone-100">
     <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
       <div>
+        <div class="flex items-center gap-2 mb-2">
+          {listing.status && (
+            <span class={statusBadgeClasses(listing.status)}>{statusLabel(listing.status)}</span>
+          )}
+          {priceReduced && (
+            <span class="inline-block px-2 py-1 text-xs font-semibold rounded bg-red-100 text-red-700">
+              Price Reduced
+            </span>
+          )}
+        </div>
         <h1 class="text-3xl font-semibold text-stone-900">{listing.address}</h1>
-        <div class="text-stone-500 mt-1">{listing.cityStateZip}</div>
+        <div class="text-stone-500 mt-1">{cityLine}</div>
         {listing.neighborhood && (
           <div class="text-xs text-stone-400 uppercase tracking-widest mt-1">
             {listing.neighborhood}
           </div>
         )}
       </div>
-      <div class="text-3xl font-semibold text-stone-900 shrink-0">
-        {listing.price}
+      <div class="text-right shrink-0">
+        <div class="text-3xl font-semibold text-stone-900">{priceDisplay}</div>
+        {priceReduced && (
+          <div class="text-sm text-stone-400 line-through mt-0.5">{formatPrice(listing.originalListPrice)}</div>
+        )}
+        {listing.mlsId && (
+          <div class="text-xs text-stone-400 mt-1">MLS #{listing.mlsId}</div>
+        )}
       </div>
     </div>
 
-    <!-- KEY STATS -->
+    <!-- KEY STATS BAR -->
     <div class="flex flex-wrap gap-6 mt-6 text-sm text-stone-700">
       {listing.beds && (
-        <div>
-          <span class="font-semibold text-stone-900">{listing.beds}</span> Bedrooms
-        </div>
+        <div><span class="font-semibold text-stone-900">{listing.beds}</span> Beds</div>
       )}
-      {listing.baths && (
-        <div>
-          <span class="font-semibold text-stone-900">{listing.baths}</span> Bathrooms
-        </div>
+      {bathDisplay !== "0" && (
+        <div><span class="font-semibold text-stone-900">{bathDisplay}</span> Baths</div>
       )}
-      {listing.sqft && (
-        <div>
-          <span class="font-semibold text-stone-900">{listing.sqft}</span> Sq Ft
-        </div>
+      {listing.sqftTotal && (
+        <div><span class="font-semibold text-stone-900">{sqftDisplay}</span> Sqft</div>
+      )}
+      {listing.lotSqft && (
+        <div><span class="font-semibold text-stone-900">{lotDisplay}</span> Lot</div>
       )}
       {listing.style && (
-        <div>
-          <span class="font-semibold text-stone-900">{listing.style}</span>
-        </div>
+        <div><span class="font-semibold text-stone-900">{listing.style}</span></div>
       )}
       {listing.yearBuilt && (
-        <div>
-          Built <span class="font-semibold text-stone-900">{listing.yearBuilt}</span>
-        </div>
+        <div>Built <span class="font-semibold text-stone-900">{listing.yearBuilt}</span></div>
       )}
-      {listing.garage && (
-        <div>
-          <span class="font-semibold text-stone-900">{listing.garage}</span> Garage
-        </div>
+      {listing.garageStalls != null && (
+        <div><span class="font-semibold text-stone-900">{listing.garageStalls}</span> Car Garage</div>
+      )}
+      {listing.daysOnMarket != null && (
+        <div><span class="font-semibold text-stone-900">{listing.daysOnMarket}</span> Days on Market</div>
       )}
     </div>
   </div>
 
-  <!-- MAIN CONTENT + CHAT (two-column on desktop) -->
+  <!-- MAIN CONTENT + CHAT -->
   <div class="max-w-6xl mx-auto px-6 py-10 grid grid-cols-1 lg:grid-cols-5 gap-12">
 
     <!-- LEFT: LISTING DETAILS -->
     <div class="lg:col-span-3 space-y-10">
 
       <!-- Description -->
-      {listing.description && (
+      {listing.publicRemarks && (
         <div>
           <h2 class="text-lg font-semibold text-stone-900 mb-3">About This Home</h2>
-          <p class="text-stone-600 leading-relaxed">{listing.description}</p>
+          <p class="text-stone-600 leading-relaxed">{listing.publicRemarks}</p>
         </div>
       )}
 
-      <!-- Features -->
-      {listing.features && (
+      <!-- Room Dimensions -->
+      {rooms.length !== 0 && (
         <div>
-          <h2 class="text-lg font-semibold text-stone-900 mb-3">Features</h2>
+          <h2 class="text-lg font-semibold text-stone-900 mb-3">Room Dimensions</h2>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-stone-200 text-left text-stone-500 text-xs uppercase tracking-wide">
+                  <th class="pb-2 font-medium">Room</th>
+                  <th class="pb-2 font-medium">Level</th>
+                  <th class="pb-2 font-medium">Dimensions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rooms.map((room) => (
+                  <tr class="border-b border-stone-100">
+                    <td class="py-2 text-stone-800 font-medium">{room.room}</td>
+                    <td class="py-2 text-stone-600">{room.level}</td>
+                    <td class="py-2 text-stone-600">{room.dim}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      <!-- Square Footage Breakdown -->
+      {(listing.sqftAboveGrade || listing.sqftBelowGrade) && (
+        <div>
+          <h2 class="text-lg font-semibold text-stone-900 mb-3">Square Footage</h2>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+            {listing.sqftAboveGrade && (
+              <div>
+                <div class="text-stone-400 mb-0.5 text-xs">Above Grade</div>
+                <div class="font-semibold text-stone-800">{formatSqft(listing.sqftAboveGrade)}</div>
+              </div>
+            )}
+            {listing.sqftBelowGrade != null && (
+              <div>
+                <div class="text-stone-400 mb-0.5 text-xs">Below Grade</div>
+                <div class="font-semibold text-stone-800">{formatSqft(listing.sqftBelowGrade)}</div>
+              </div>
+            )}
+            {listing.sqftMainLevel && (
+              <div>
+                <div class="text-stone-400 mb-0.5 text-xs">Main Level</div>
+                <div class="font-semibold text-stone-800">{formatSqft(listing.sqftMainLevel)}</div>
+              </div>
+            )}
+            {listing.sqftTotal && (
+              <div>
+                <div class="text-stone-400 mb-0.5 text-xs">Total Finished</div>
+                <div class="font-semibold text-stone-800">{sqftDisplay}</div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      <!-- Bath Detail -->
+      <div>
+        <h2 class="text-lg font-semibold text-stone-900 mb-3">Bathroom Detail</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+          <div>
+            <div class="text-stone-400 mb-0.5 text-xs">Full</div>
+            <div class="font-semibold text-stone-800">{listing.bathsFull ?? 0}</div>
+          </div>
+          <div>
+            <div class="text-stone-400 mb-0.5 text-xs">Three-Quarter</div>
+            <div class="font-semibold text-stone-800">{listing.bathsThreeQuarter ?? 0}</div>
+          </div>
+          <div>
+            <div class="text-stone-400 mb-0.5 text-xs">Half</div>
+            <div class="font-semibold text-stone-800">{listing.bathsHalf ?? 0}</div>
+          </div>
+          <div>
+            <div class="text-stone-400 mb-0.5 text-xs">Quarter</div>
+            <div class="font-semibold text-stone-800">{listing.bathsQuarter ?? 0}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interior Features -->
+      <div>
+        <h2 class="text-lg font-semibold text-stone-900 mb-3">Interior Features</h2>
+        <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-sm">
+          {listing.heating && (
+            <div class="flex justify-between border-b border-stone-100 pb-2">
+              <dt class="text-stone-500">Heating</dt>
+              <dd class="text-stone-800 font-medium text-right max-w-[60%]">{listing.heating}</dd>
+            </div>
+          )}
+          {listing.airConditioning && (
+            <div class="flex justify-between border-b border-stone-100 pb-2">
+              <dt class="text-stone-500">Cooling</dt>
+              <dd class="text-stone-800 font-medium text-right max-w-[60%]">{listing.airConditioning}</dd>
+            </div>
+          )}
+          {listing.fuelType && (
+            <div class="flex justify-between border-b border-stone-100 pb-2">
+              <dt class="text-stone-500">Fuel</dt>
+              <dd class="text-stone-800 font-medium text-right max-w-[60%]">{listing.fuelType}</dd>
+            </div>
+          )}
+          {listing.basement && (
+            <div class="flex justify-between border-b border-stone-100 pb-2">
+              <dt class="text-stone-500">Basement</dt>
+              <dd class="text-stone-800 font-medium text-right max-w-[60%]">{listing.basement}</dd>
+            </div>
+          )}
+          {listing.fireplaces && listing.fireplaces !== "0" && (
+            <div class="flex justify-between border-b border-stone-100 pb-2">
+              <dt class="text-stone-500">Fireplaces</dt>
+              <dd class="text-stone-800 font-medium text-right max-w-[60%]">{listing.fireplaces} — {listing.fireplaceFeatures}</dd>
+            </div>
+          )}
+          {listing.laundryFeatures && (
+            <div class="flex justify-between border-b border-stone-100 pb-2">
+              <dt class="text-stone-500">Laundry</dt>
+              <dd class="text-stone-800 font-medium text-right max-w-[60%]">{listing.laundryFeatures}</dd>
+            </div>
+          )}
+          {listing.parkingFeatures && (
+            <div class="flex justify-between border-b border-stone-100 pb-2">
+              <dt class="text-stone-500">Parking</dt>
+              <dd class="text-stone-800 font-medium text-right max-w-[60%]">{listing.parkingFeatures}</dd>
+            </div>
+          )}
+          {listing.garageSqft && (
+            <div class="flex justify-between border-b border-stone-100 pb-2">
+              <dt class="text-stone-500">Garage Sqft</dt>
+              <dd class="text-stone-800 font-medium">{formatSqft(listing.garageSqft)}</dd>
+            </div>
+          )}
+          {listing.electric && (
+            <div class="flex justify-between border-b border-stone-100 pb-2">
+              <dt class="text-stone-500">Electric</dt>
+              <dd class="text-stone-800 font-medium text-right max-w-[60%]">{listing.electric}</dd>
+            </div>
+          )}
+          {listing.sewer && (
+            <div class="flex justify-between border-b border-stone-100 pb-2">
+              <dt class="text-stone-500">Sewer</dt>
+              <dd class="text-stone-800 font-medium text-right max-w-[60%]">{listing.sewer}</dd>
+            </div>
+          )}
+          {listing.waterSource && (
+            <div class="flex justify-between border-b border-stone-100 pb-2">
+              <dt class="text-stone-500">Water</dt>
+              <dd class="text-stone-800 font-medium text-right max-w-[60%]">{listing.waterSource}</dd>
+            </div>
+          )}
+        </dl>
+      </div>
+
+      <!-- Appliances -->
+      {appliancesList.length !== 0 && (
+        <div>
+          <h2 class="text-lg font-semibold text-stone-900 mb-3">Appliances</h2>
           <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {listing.features.split("\n").filter(Boolean).map((feature) => (
+            {appliancesList.map((item) => (
               <li class="flex items-start gap-2 text-sm text-stone-600">
                 <span class="text-stone-400 mt-0.5 shrink-0">✓</span>
-                {feature}
+                {item}
               </li>
             ))}
           </ul>
         </div>
       )}
 
-      <!-- Location -->
-      {listing.location && (
+      <!-- Exterior & Construction -->
+      <div>
+        <h2 class="text-lg font-semibold text-stone-900 mb-3">Exterior & Construction</h2>
+        <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-sm">
+          {listing.constructionMaterials && (
+            <div class="flex justify-between border-b border-stone-100 pb-2">
+              <dt class="text-stone-500">Construction</dt>
+              <dd class="text-stone-800 font-medium text-right max-w-[60%]">{listing.constructionMaterials}</dd>
+            </div>
+          )}
+          {listing.roof && (
+            <div class="flex justify-between border-b border-stone-100 pb-2">
+              <dt class="text-stone-500">Roof</dt>
+              <dd class="text-stone-800 font-medium text-right max-w-[60%]">{listing.roof}</dd>
+            </div>
+          )}
+          {listing.exteriorFeatures && (
+            <div class="flex justify-between border-b border-stone-100 pb-2">
+              <dt class="text-stone-500">Exterior Features</dt>
+              <dd class="text-stone-800 font-medium text-right max-w-[60%]">{listing.exteriorFeatures}</dd>
+            </div>
+          )}
+          {listing.lotFeatures && (
+            <div class="flex justify-between border-b border-stone-100 pb-2">
+              <dt class="text-stone-500">Lot Features</dt>
+              <dd class="text-stone-800 font-medium text-right max-w-[60%]">{listing.lotFeatures}</dd>
+            </div>
+          )}
+          {listing.lotDimensions && (
+            <div class="flex justify-between border-b border-stone-100 pb-2">
+              <dt class="text-stone-500">Lot Dimensions</dt>
+              <dd class="text-stone-800 font-medium">{listing.lotDimensions}</dd>
+            </div>
+          )}
+          {listing.fencing && (
+            <div class="flex justify-between border-b border-stone-100 pb-2">
+              <dt class="text-stone-500">Fencing</dt>
+              <dd class="text-stone-800 font-medium text-right max-w-[60%]">{listing.fencing}</dd>
+            </div>
+          )}
+          {listing.pool && listing.pool !== "None" && (
+            <div class="flex justify-between border-b border-stone-100 pb-2">
+              <dt class="text-stone-500">Pool</dt>
+              <dd class="text-stone-800 font-medium text-right max-w-[60%]">{listing.pool}</dd>
+            </div>
+          )}
+        </dl>
+      </div>
+
+      <!-- Amenities -->
+      {amenitiesList.length !== 0 && (
         <div>
-          <h2 class="text-lg font-semibold text-stone-900 mb-3">Location Highlights</h2>
-          <ul class="space-y-1">
-            {listing.location.split("\n").filter(Boolean).map((point) => (
-              <li class="text-sm text-stone-600 flex items-start gap-2">
-                <span class="text-stone-400 shrink-0">·</span>
-                {point}
+          <h2 class="text-lg font-semibold text-stone-900 mb-3">Amenities</h2>
+          <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {amenitiesList.map((item) => (
+              <li class="flex items-start gap-2 text-sm text-stone-600">
+                <span class="text-stone-400 mt-0.5 shrink-0">✓</span>
+                {item}
               </li>
             ))}
           </ul>
         </div>
       )}
 
-      <!-- Financial details -->
+      <!-- Waterfront -->
+      {listing.waterfrontFeet !== 0 && listing.waterfrontFeet != null && (
+        <div>
+          <h2 class="text-lg font-semibold text-stone-900 mb-3">Waterfront / Lake</h2>
+          <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-sm">
+            {listing.waterBodyName && (
+              <div class="flex justify-between border-b border-stone-100 pb-2">
+                <dt class="text-stone-500">Body of Water</dt>
+                <dd class="text-stone-800 font-medium">{listing.waterBodyName}</dd>
+              </div>
+            )}
+            <div class="flex justify-between border-b border-stone-100 pb-2">
+              <dt class="text-stone-500">Frontage</dt>
+              <dd class="text-stone-800 font-medium">{listing.waterfrontFeet} ft</dd>
+            </div>
+            {listing.waterfrontView && (
+              <div class="flex justify-between border-b border-stone-100 pb-2">
+                <dt class="text-stone-500">View</dt>
+                <dd class="text-stone-800 font-medium">{listing.waterfrontView}</dd>
+              </div>
+            )}
+            {listing.surfaceWaterType && (
+              <div class="flex justify-between border-b border-stone-100 pb-2">
+                <dt class="text-stone-500">Water Type</dt>
+                <dd class="text-stone-800 font-medium">{listing.surfaceWaterType}</dd>
+              </div>
+            )}
+            {listing.dnrLakeClass && listing.dnrLakeClass !== "Not Applicable" && (
+              <div class="flex justify-between border-b border-stone-100 pb-2">
+                <dt class="text-stone-500">DNR Lake Class</dt>
+                <dd class="text-stone-800 font-medium">{listing.dnrLakeClass}</dd>
+              </div>
+            )}
+            {listing.lakeAcres && listing.lakeAcres !== "0.000" && (
+              <div class="flex justify-between border-b border-stone-100 pb-2">
+                <dt class="text-stone-500">Lake Acres</dt>
+                <dd class="text-stone-800 font-medium">{listing.lakeAcres}</dd>
+              </div>
+            )}
+            {listing.lakeDepth && listing.lakeDepth !== "0" && (
+              <div class="flex justify-between border-b border-stone-100 pb-2">
+                <dt class="text-stone-500">Lake Depth (ft)</dt>
+                <dd class="text-stone-800 font-medium">{listing.lakeDepth}</dd>
+              </div>
+            )}
+            {listing.lakeBottomType && (
+              <div class="flex justify-between border-b border-stone-100 pb-2">
+                <dt class="text-stone-500">Lake Bottom</dt>
+                <dd class="text-stone-800 font-medium">{listing.lakeBottomType}</dd>
+              </div>
+            )}
+          </dl>
+        </div>
+      )}
+
+      <!-- HOA -->
+      {listing.associationFee && listing.associationFee !== "0" && (
+        <div>
+          <h2 class="text-lg font-semibold text-stone-900 mb-3">HOA / Association</h2>
+          <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-sm">
+            <div class="flex justify-between border-b border-stone-100 pb-2">
+              <dt class="text-stone-500">Fee</dt>
+              <dd class="text-stone-800 font-medium">
+                ${listing.associationFee}/{listing.associationFeeFrequency ?? "month"}
+              </dd>
+            </div>
+            {listing.associationFeeIncludes && (
+              <div class="flex justify-between border-b border-stone-100 pb-2 col-span-2">
+                <dt class="text-stone-500 shrink-0 mr-4">Includes</dt>
+                <dd class="text-stone-800 font-medium text-right">{listing.associationFeeIncludes}</dd>
+              </div>
+            )}
+            {listing.associationMgmtName && (
+              <div class="flex justify-between border-b border-stone-100 pb-2">
+                <dt class="text-stone-500">Management</dt>
+                <dd class="text-stone-800 font-medium">{listing.associationMgmtName}</dd>
+              </div>
+            )}
+          </dl>
+        </div>
+      )}
+
+      <!-- Financial Details -->
       <div>
         <h2 class="text-lg font-semibold text-stone-900 mb-3">Financial Details</h2>
         <div class="grid grid-cols-2 gap-4 text-sm">
-          {listing.taxes && (
+          {listing.taxAmount && (
             <div>
-              <div class="text-stone-400 mb-0.5">Annual Taxes</div>
-              <div class="font-medium text-stone-800">{listing.taxes}</div>
+              <div class="text-stone-400 mb-0.5">Annual Taxes ({listing.taxYear})</div>
+              <div class="font-medium text-stone-800">${listing.taxAmount}</div>
             </div>
           )}
-          {listing.estimatedPayment && (
+          {listing.taxWithAssessments && listing.taxWithAssessments !== listing.taxAmount && (
             <div>
-              <div class="text-stone-400 mb-0.5">Est. Monthly Payment</div>
-              <div class="font-medium text-stone-800">{listing.estimatedPayment}</div>
+              <div class="text-stone-400 mb-0.5">Tax w/ Assessments</div>
+              <div class="font-medium text-stone-800">${listing.taxWithAssessments}</div>
             </div>
           )}
           {listing.lotSqft && (
             <div>
               <div class="text-stone-400 mb-0.5">Lot Size</div>
-              <div class="font-medium text-stone-800">{listing.lotSqft} sq ft</div>
+              <div class="font-medium text-stone-800">{lotDisplay}</div>
+            </div>
+          )}
+          {listing.financing && (
+            <div>
+              <div class="text-stone-400 mb-0.5">Financing Terms</div>
+              <div class="font-medium text-stone-800">{listing.financing}</div>
             </div>
           )}
         </div>
       </div>
 
+      <!-- Schools -->
+      {(listing.elementarySchool || listing.middleSchool || listing.highSchool || listing.schoolDistrict) && (
+        <div>
+          <h2 class="text-lg font-semibold text-stone-900 mb-3">Schools</h2>
+          <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-sm">
+            {listing.schoolDistrict && (
+              <div class="flex justify-between border-b border-stone-100 pb-2">
+                <dt class="text-stone-500">District</dt>
+                <dd class="text-stone-800 font-medium">{listing.schoolDistrict}</dd>
+              </div>
+            )}
+            {listing.elementarySchool && (
+              <div class="flex justify-between border-b border-stone-100 pb-2">
+                <dt class="text-stone-500">Elementary</dt>
+                <dd class="text-stone-800 font-medium">{listing.elementarySchool}</dd>
+              </div>
+            )}
+            {listing.middleSchool && (
+              <div class="flex justify-between border-b border-stone-100 pb-2">
+                <dt class="text-stone-500">Middle</dt>
+                <dd class="text-stone-800 font-medium">{listing.middleSchool}</dd>
+              </div>
+            )}
+            {listing.highSchool && (
+              <div class="flex justify-between border-b border-stone-100 pb-2">
+                <dt class="text-stone-500">High School</dt>
+                <dd class="text-stone-800 font-medium">{listing.highSchool}</dd>
+              </div>
+            )}
+          </dl>
+        </div>
+      )}
+
+      <!-- Directions -->
+      {listing.directions && (
+        <div>
+          <h2 class="text-lg font-semibold text-stone-900 mb-3">Directions</h2>
+          <p class="text-sm text-stone-600">{listing.directions}</p>
+        </div>
+      )}
+
       <!-- CTA -->
       <div class="border border-stone-200 rounded-xl p-6">
         <div class="font-semibold text-stone-900 mb-1">Interested in this property?</div>
         <p class="text-sm text-stone-500 mb-4">
-          Schedule a showing or ask questions — {listing.agentName ?? "Jim Sawicki"} typically responds within a few hours.
+          Schedule a showing or ask questions — {agentName} typically responds within a few hours.
         </p>
-        
-          href="/contact"
-          class="inline-block bg-stone-900 text-white text-sm px-5 py-2.5 rounded-lg hover:bg-stone-700 transition-colors"
-        >
-          Request a Showing
-        </a>
+        <a href="/contact" class="inline-block bg-stone-900 text-white text-sm px-5 py-2.5 rounded-lg hover:bg-stone-700 transition-colors">Request a Showing</a>
       </div>
+
     </div>
 
-    <!-- RIGHT: AI CHAT -->
+    <!-- RIGHT: AGENT INFO + AI CHAT -->
     <div class="lg:col-span-2">
-      <div class="sticky top-8">
-        <h2 class="text-lg font-semibold text-stone-900 mb-1">Ask About This Property</h2>
-        <p class="text-sm text-stone-500 mb-4">
-          Get instant answers about features, the neighborhood, financials, or anything else.
-        </p>
-        <ListingChat
-          client:load
-          systemPrompt={systemPrompt}
-          apiBaseUrl={apiBase}
-        />
+      <div class="sticky top-8 space-y-6">
+
+        <!-- Agent card -->
+        <div class="bg-stone-50 rounded-xl p-4 text-sm">
+          <div class="font-semibold text-stone-900">{agentName}</div>
+          {listing.listOfficeName && (
+            <div class="text-stone-500 mt-0.5">{listing.listOfficeName}</div>
+          )}
+          {listing.listAgentPhone && (
+            <a href={`tel:${listing.listAgentPhone}`} class="text-blue-600 hover:underline mt-1 block">
+              {listing.listAgentPhone}
+            </a>
+          )}
+          {listing.listDate && (
+            <div class="text-stone-400 text-xs mt-2">Listed {listing.listDate}</div>
+          )}
+        </div>
+
+        <!-- AI Chat -->
+        <div>
+          <h2 class="text-lg font-semibold text-stone-900 mb-1">Ask About This Property</h2>
+          <p class="text-sm text-stone-500 mb-4">
+            Get instant answers about features, the neighborhood, financials, or anything else.
+          </p>
+          <ListingChat
+            client:load
+            systemPrompt={systemPrompt}
+            apiBaseUrl={apiBase}
+          />
+        </div>
+
       </div>
     </div>
 
   </div>
+
 </Layout>

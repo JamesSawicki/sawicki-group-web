@@ -1,36 +1,63 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import type { Listing } from "../../types/listing";  
+import type { Listing, Page } from "../../types/listing";
+import { formatPrice, formatBathTotal, formatSqft, statusBadgeClasses, statusLabel } from "../../lib/listing-utils";
 
 const apiBase = import.meta.env.PUBLIC_API_BASE_URL;
 
 let listings: Listing[] = [];
+let totalListings = 0;
 let error = false;
 
 try {
-  const res = await fetch(`${apiBase}/api/listings`);
+  // Use the search endpoint — gives us status filtering, sorting, and pagination.
+  // Active + Pending + TNAS covers everything currently on market.
+  // Sorted newest first: most recently listed appears at top of the page.
+  const url = new URL(`${apiBase}/api/listings/search`);
+  url.searchParams.set("status",  "Active,Pending,TNAS,Coming Soon");
+  url.searchParams.set("sortBy",  "newest");
+  url.searchParams.set("size",    "24");
+
+  const res = await fetch(url.toString());
   if (res.ok) {
-    listings = await res.json();
+    const data = await res.json() as Page<Listing>;
+    listings      = data.content;
+    totalListings = data.totalElements;
   } else {
     error = true;
   }
-} catch (e) {
+} catch (_) {
   error = true;
 }
 ---
 
 <Layout
-  title="Current Listings"
+  title="Current Listings | The Sawicki Group"
   description="Browse current Twin Cities home listings from The Sawicki Group. Minneapolis, Saint Paul, and surrounding communities."
 >
   <div class="max-w-6xl mx-auto px-6 py-16">
-    <div class="mb-10">
-      <h1 class="text-3xl font-semibold text-stone-900 mb-2">Current Listings</h1>
-      <p class="text-stone-500">
-        Homes represented by The Sawicki Group. Contact us for showings or questions.
-      </p>
+
+    {/* Header */}
+    <div class="mb-10 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+      <div>
+        <h1 class="text-3xl font-semibold text-stone-900 mb-2">Current Listings</h1>
+        <p class="text-stone-500">
+          Homes represented by The Sawicki Group.
+          {totalListings > 0 && <span> {totalListings} {totalListings === 1 ? "property" : "properties"} available.</span>}
+        </p>
+      </div>
+      {/* Navigation to search tools */}
+      <div class="flex gap-3 shrink-0">
+        <a href="/search" class="text-sm px-4 py-2 rounded-lg border border-stone-300 text-stone-700 hover:bg-stone-50 transition-colors">
+          Filter Search
+        </a>
+        <a href="/map" class="text-sm px-4 py-2 rounded-lg bg-stone-900 text-white hover:bg-stone-700 transition-colors">
+          Map Search
+        </a>
+      </div>
     </div>
 
+    {/* Error state */}
     {error && (
       <p class="text-stone-500">
         Unable to load listings at this time. Please try again shortly or{" "}
@@ -38,49 +65,76 @@ try {
       </p>
     )}
 
+    {/* Empty state */}
     {!error && listings.length === 0 && (
       <p class="text-stone-500">No active listings at this time. Check back soon.</p>
     )}
 
-   <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-  {listings.map((listing) => (
-    <a href={`/listings/${listing.id}`}
-      class="group border border-stone-200 rounded-xl p-6 hover:border-stone-400 hover:shadow-sm transition-all"
-    >
-      <div class="flex items-start justify-between mb-3">
-        <div>
-          <div class="font-semibold text-stone-900 group-hover:underline">
-            {listing.address}
+    {/* Listing grid */}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      {listings.map((listing) => (
+        <a href={`/listings/${listing.id}`} class="group border border-stone-200 rounded-xl p-6 hover:border-stone-400 hover:shadow-sm transition-all">
+
+          {/* Header row: address + price */}
+          <div class="flex items-start justify-between mb-3">
+            <div class="min-w-0 mr-4">
+              {/* Status badge — only shown for non-Active so the active case stays clean */}
+              {listing.status && listing.status !== "Active" && (
+                <span class={`${statusBadgeClasses(listing.status)} mb-1.5 inline-block`}>
+                  {statusLabel(listing.status)}
+                </span>
+              )}
+              <div class="font-semibold text-stone-900 group-hover:underline">
+                {listing.address}
+              </div>
+              <div class="text-sm text-stone-500">
+                {listing.city}{listing.zipCode ? `, MN ${listing.zipCode}` : ""}
+              </div>
+            </div>
+            <div class="text-lg font-semibold text-stone-900 shrink-0">
+              {formatPrice(listing.listPrice)}
+            </div>
           </div>
-          <div class="text-sm text-stone-500">{listing.cityStateZip}</div>
-        </div>
-        <div class="text-lg font-semibold text-stone-900 shrink-0 ml-4">
-          {listing.price}
-        </div>
+
+          {/* Neighborhood tag */}
+          {listing.neighborhood && (
+            <div class="text-xs text-stone-400 uppercase tracking-wide mb-3">
+              {listing.neighborhood}
+            </div>
+          )}
+
+          {/* Key stats */}
+          <div class="flex flex-wrap gap-4 text-sm text-stone-600 mb-3">
+            {listing.beds      && <span>{listing.beds} {listing.beds === 1 ? "bed" : "beds"}</span>}
+            {listing.bathsFull != null && <span>{formatBathTotal(listing)} bath</span>}
+            {listing.sqftTotal && <span>{formatSqft(listing.sqftTotal)} sqft</span>}
+            {listing.style     && <span>· {listing.style}</span>}
+          </div>
+
+          {/* Description excerpt */}
+          {listing.publicRemarks && (
+            <p class="text-sm text-stone-500 line-clamp-2">{listing.publicRemarks}</p>
+          )}
+
+          <div class="mt-4 text-sm font-medium text-stone-900 group-hover:underline">
+            View property →
+          </div>
+
+        </a>
+      ))}
+    </div>
+
+    {/* Overflow prompt — if more than 24 listings exist, point to search */}
+    {totalListings > 24 && (
+      <div class="mt-12 text-center">
+        <p class="text-stone-500 text-sm mb-3">
+          Showing 24 of {totalListings} listings.
+        </p>
+        <a href="/search" class="inline-block px-6 py-2.5 bg-stone-900 text-white rounded-lg text-sm hover:bg-stone-700 transition-colors">
+          View All Listings
+        </a>
       </div>
+    )}
 
-      {listing.neighborhood && (
-        <div class="text-xs text-stone-400 uppercase tracking-wide mb-3">
-          {listing.neighborhood}
-        </div>
-      )}
-
-      <div class="flex gap-4 text-sm text-stone-600 mb-3">
-        {listing.beds && <span>{listing.beds} bed</span>}
-        {listing.baths && <span>{listing.baths} bath</span>}
-        {listing.sqft && <span>{listing.sqft} sqft</span>}
-        {listing.style && <span>· {listing.style}</span>}
-      </div>
-
-      {listing.description && (
-        <p class="text-sm text-stone-500 line-clamp-2">{listing.description}</p>
-      )}
-
-      <div class="mt-4 text-sm font-medium text-stone-900 group-hover:underline">
-        View property →
-      </div>
-    </a>
-  ))}
-</div>
   </div>
 </Layout>
