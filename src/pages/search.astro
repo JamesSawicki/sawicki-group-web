@@ -27,7 +27,7 @@ const currentPage       = parseInt(params.get("page") ?? "0", 10);
 // ---------------------------------------------------------------------------
 // 2. BUILD API URL — skip empty-string params so the API receives clean input
 // ---------------------------------------------------------------------------
-const apiBase = import.meta.env.PUBLIC_API_BASE_URL;
+const apiBase = process.env.PUBLIC_API_BASE_URL ?? "";
 const apiUrl  = new URL(`${apiBase}/api/listings/search`);
 
 for (const [key, value] of params.entries()) {
