@@ -24,6 +24,7 @@
  * This lets buyers say "show me everything in this neighborhood, even if I need
  * to pan around to see details."
  */
+import { formatPrice, formatBathTotal, formatSqft } from "../lib/listing-utils";
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import mapboxgl from "mapbox-gl";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
@@ -31,24 +32,6 @@ import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
 // CSS for both libraries is imported in map.astro — not here.
 
 // ─── Formatting helpers ───────────────────────────────────────────────────────
-
-function formatPrice(price) {
-  if (price == null) return "Price upon request";
-  return "$" + price.toLocaleString("en-US");
-}
-
-function formatBaths(listing) {
-  const f  = listing.bathsFull         ?? 0;
-  const tq = listing.bathsThreeQuarter ?? 0;
-  const h  = listing.bathsHalf         ?? 0;
-  const q  = listing.bathsQuarter      ?? 0;
-  return (f * 1.0 + tq * 0.75 + h * 0.5 + q * 0.25).toString();
-}
-
-function formatSqft(sqft) {
-  if (sqft == null) return "—";
-  return sqft.toLocaleString("en-US");
-}
 
 // ─── GeoJSON helpers ──────────────────────────────────────────────────────────
 
@@ -66,7 +49,7 @@ function listingsToGeoJSON(listings) {
           city:         l.city ?? "",
           listPrice:    l.listPrice ?? 0,
           beds:         l.beds ?? 0,
-          baths:        formatBaths(l),
+          baths:        formatBathTotal(l),
           sqftTotal:    l.sqftTotal ?? 0,
           priceDisplay: formatPrice(l.listPrice),
           sqftDisplay:  formatSqft(l.sqftTotal),
@@ -147,7 +130,7 @@ function SidebarCard({ listing, isSelected, onClick }) {
         <div className="text-xs text-slate-700 truncate mt-0.5">{listing.address}</div>
         <div className="text-xs text-slate-500">{listing.city}, MN</div>
         <div className="text-xs text-slate-600 mt-1">
-          {listing.beds ?? "—"} bd &nbsp;·&nbsp; {formatBaths(listing)} ba &nbsp;·&nbsp; {formatSqft(listing.sqftTotal)} sqft
+          {listing.beds ?? "—"} bd &nbsp;·&nbsp; {formatBathTotal(listing)} ba &nbsp;·&nbsp; {formatSqft(listing.sqftTotal)} sqft
         </div>
       </div>
     </div>

@@ -35,6 +35,8 @@ export interface Listing {
   county?: string;
   neighborhood?: string;
   complexSubdiv?: string;
+  latitude?: number;
+  longitude?: number;
 
   // Property Basics
   propertyType?: string;
@@ -124,6 +126,7 @@ export interface Listing {
   publicRemarks?: string;
   photosCount?: number;
   directions?: string;
+  amenityScores?: string;
 }
 
 /**
