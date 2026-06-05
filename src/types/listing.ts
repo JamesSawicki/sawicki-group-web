@@ -154,3 +154,16 @@ export interface Room {
   level: string;
   dim: string;
 }
+
+export interface CategoryScore {
+  count: number;
+  nearestName?: string;
+  nearestMeters?: number;
+  subtypes?: Record<string, number>;
+}
+
+export interface AmenityScores {
+  generatedAt: string;
+  scores: Record<string, Record<string, CategoryScore>>;
+  // scores["walk_10min"]["grocery"] = CategoryScore
+}

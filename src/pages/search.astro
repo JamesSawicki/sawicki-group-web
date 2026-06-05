@@ -7,7 +7,7 @@ import type { Listing, Page } from "../types/listing";
 // 1. PARSE URL PARAMS
 // ---------------------------------------------------------------------------
 const params = Astro.url.searchParams;
-
+console.log("DEBUG search.astro apiBase=", JSON.stringify(process.env.PUBLIC_API_BASE_URL));
 const filterStatus      = params.get("status")        ?? "Active";
 const filterMinPrice    = params.get("minPrice")       ?? "";
 const filterMaxPrice    = params.get("maxPrice")       ?? "";
@@ -27,7 +27,19 @@ const currentPage       = parseInt(params.get("page") ?? "0", 10);
 // ---------------------------------------------------------------------------
 // 2. BUILD API URL — skip empty-string params so the API receives clean input
 // ---------------------------------------------------------------------------
-const apiBase = process.env.PUBLIC_API_BASE_URL ?? "";
+// Production: Cloud Run sets process.env at runtime.
+// Dev: Vite populates import.meta.env from .env.local but NOT process.env.
+// Use both with || so either source works.
+const apiBase = process.env.PUBLIC_API_BASE_URL || import.meta.env.PUBLIC_API_BASE_URL;
+
+if (!apiBase) {
+  throw new Error(
+    "PUBLIC_API_BASE_URL not set in process.env (production) or import.meta.env (dev). " +
+    "In dev: confirm sawicki-group-web/.env.local has the line and `npm run dev` was restarted. " +
+    "In production: confirm Cloud Run has the env var set via cloudbuild.yaml --update-env-vars."
+  );
+}
+const url = new URL(`${apiBase}/api/listings/search`);
 const apiUrl  = new URL(`${apiBase}/api/listings/search`);
 
 for (const [key, value] of params.entries()) {

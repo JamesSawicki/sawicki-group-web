@@ -1,5 +1,5 @@
 import type { Listing, Room } from "../types/listing";
-
+import type { AmenityScores } from "../types/listing";
 /**
  * listing-utils.ts — pure functions for formatting and deriving listing values.
  *
@@ -161,4 +161,59 @@ export function hasPriceReduction(l: Listing): boolean {
 export function priceReductionAmount(l: Listing): number {
   if (!hasPriceReduction(l)) return 0;
   return (l.originalListPrice ?? 0) - (l.listPrice ?? 0);
+}
+
+/**
+ * Parse the amenityScores JSON string from the API into a typed object.
+ * Returns null if the field is missing, empty, or malformed.
+ */
+export function parseAmenityScores(json: string | null | undefined): AmenityScores | null {
+  if (!json) return null;
+  try {
+    const parsed = JSON.parse(json) as AmenityScores;
+    if (!parsed.scores || Object.keys(parsed.scores).length === 0) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Display a distance in meters, switching to km past 1000m.
+ * 580 -> "580 m", 1230 -> "1.2 km"
+ */
+export function formatDistance(meters: number | undefined): string {
+  if (meters === undefined || meters === null) return "—";
+  if (meters < 1000) return `${meters} m`;
+  return `${(meters / 1000).toFixed(1)} km`;
+}
+
+/**
+ * Map our internal category and subtype keys to display labels.
+ * Kept here so the Astro page stays template-focused.
+ */
+export function categoryLabel(jsonKey: string): string {
+  const labels: Record<string, string> = {
+    grocery: "Grocery",
+    restaurants: "Food & drink",
+    pharmacy: "Pharmacy",
+    hardware: "Hardware",
+  };
+  return labels[jsonKey] ?? jsonKey;
+}
+
+export function subtypeLabel(subtype: string): string {
+  const labels: Record<string, string> = {
+    restaurant: "Restaurant",
+    cafe: "Café",
+    fast_food: "Fast food",
+    bar: "Bar",
+    pub: "Pub",
+    ice_cream: "Ice cream",
+    supermarket: "Supermarket",
+    grocery: "Grocery store",
+    hardware: "Hardware store",
+    doityourself: "Home center",
+  };
+  return labels[subtype] ?? subtype;
 }

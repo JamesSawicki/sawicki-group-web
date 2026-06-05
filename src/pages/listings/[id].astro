@@ -11,10 +11,25 @@ import {
   hasPriceReduction,
   statusBadgeClasses,
   statusLabel,
+  parseAmenityScores,
+  formatDistance,
+  categoryLabel,
+  subtypeLabel
 } from "../../lib/listing-utils";
 
 const { id } = Astro.params;
-const apiBase = process.env.PUBLIC_API_BASE_URL ?? ""
+// Production: Cloud Run sets process.env at runtime.
+// Dev: Vite populates import.meta.env from .env.local but NOT process.env.
+// Use both with || so either source works.
+const apiBase = process.env.PUBLIC_API_BASE_URL || import.meta.env.PUBLIC_API_BASE_URL;
+
+if (!apiBase) {
+  throw new Error(
+    "PUBLIC_API_BASE_URL not set in process.env (production) or import.meta.env (dev). " +
+    "In dev: confirm sawicki-group-web/.env.local has the line and `npm run dev` was restarted. " +
+    "In production: confirm Cloud Run has the env var set via cloudbuild.yaml --update-env-vars."
+  );
+}
 
 const res = await fetch(`${apiBase}/api/listings/${id}`);
 if (!res.ok) {
@@ -114,6 +129,44 @@ const jsonLd = {
     "url": Astro.url.origin
   }
 };
+// hey look amenityscores are right here in the frontmatter! We fetched them server-side along with the listing, so we can parse and display them without any client-side API calls. This is a great example of why we built our own backend instead of using a headless CMS — we have full control over the data model and can optimize for our specific use case.
+const amenityScores = parseAmenityScores(listing.amenityScores);
+
+// Pre-compute the scorecard to avoid complex JSX expressions in the template.
+// Astro's parser handles single-expression arrows cleanly; block-body arrows
+// with multi-line JSX returning class attributes break it.
+const SCORECARD_CATEGORIES = ["grocery", "restaurants", "pharmacy", "hardware"] as const;
+const SCORECARD_MODES = [
+  { key: "walk",  label: "Walking",  icon: "🚶" },
+  { key: "bike",  label: "Cycling",  icon: "🚴" },
+  { key: "drive", label: "Driving",  icon: "🚗" },
+] as const;
+
+const scorecardData = amenityScores ? SCORECARD_MODES.map((mode) => {
+  const rows = SCORECARD_CATEGORIES.map((catKey) => {
+    const c5  = amenityScores.scores[`${mode.key}_5min`]?.[catKey];
+    const c10 = amenityScores.scores[`${mode.key}_10min`]?.[catKey];
+    const c15 = amenityScores.scores[`${mode.key}_15min`]?.[catKey];
+    const closest = c5 ?? c10 ?? c15;
+    const subtypeEntries = closest?.subtypes ? Object.entries(closest.subtypes) : [];
+    return {
+      catLabel: categoryLabel(catKey),
+      c5Count: c5?.count,
+      c10Count: c10?.count,
+      c15Count: c15?.count,
+      closestName: closest?.nearestName,
+      closestMeters: closest?.nearestMeters,
+      subtypeEntries,
+      showBreakdown: subtypeEntries.length > 1,
+    };
+  });
+  return { ...mode, rows };
+}) : [];
+
+const generatedAtFormatted = amenityScores
+  ? new Date(amenityScores.generatedAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })
+  : "";
+
 
 // ─── System prompt for AI chat island ───────────────────────────────────────
 // Built server-side from listing data. Sent client-side with every chat
@@ -290,7 +343,69 @@ YOUR ROLE
           <p class="text-stone-600 leading-relaxed">{listing.publicRemarks}</p>
         </div>
       )}
+{amenityScores && (
+  <section class="my-12">
+    <h2 class="text-2xl font-semibold mb-2">What's nearby</h2>
+    <p class="text-sm text-gray-500 mb-8">
+      Travel times computed from real road and path networks, not radius circles.
+    </p>
 
+    <div class="space-y-10">
+      {scorecardData.map((mode) => (
+        <div>
+          <h3 class="text-lg font-semibold mb-3 flex items-center gap-2">
+            <span aria-hidden="true">{mode.icon}</span> {mode.label}
+          </h3>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm border-collapse">
+              <thead>
+                <tr class="border-b border-gray-200 text-gray-600">
+                  <th class="text-left py-2 pr-4 font-medium">Category</th>
+                  <th class="text-center px-3 font-medium">5 min</th>
+                  <th class="text-center px-3 font-medium">10 min</th>
+                  <th class="text-center px-3 font-medium">15 min</th>
+                  <th class="text-left pl-4 font-medium">Closest</th>
+                </tr>
+              </thead>
+              <tbody>
+                {mode.rows.map((row) => (
+                  <tr class="border-b border-gray-100">
+                    <td class="py-2 pr-4">{row.catLabel}</td>
+                    <td class="text-center px-3">{row.c5Count ?? "—"}</td>
+                    <td class="text-center px-3">{row.c10Count ?? "—"}</td>
+                    <td class="text-center px-3">{row.c15Count ?? "—"}</td>
+                    <td class="pl-4 text-gray-700">
+                      {row.closestName ? (
+                        <span>
+                          <span>{row.closestName} · {formatDistance(row.closestMeters)}</span>
+                          {row.showBreakdown && (
+                            <details class="inline-block ml-2 align-middle">
+                              <summary class="text-xs text-blue-600 cursor-pointer hover:underline list-none">breakdown</summary>
+                              <ul class="text-xs mt-1 ml-4 text-gray-600 space-y-0.5">
+                                {row.subtypeEntries.map(([type, n]) => (
+                                  <li>{subtypeLabel(type)}: {n}</li>
+                                ))}
+                              </ul>
+                            </details>
+                          )}
+                        </span>
+                      ) : "—"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    <p class="text-xs text-gray-400 mt-8">
+      Data via Mapbox isochrones and OpenStreetMap. Updated {generatedAtFormatted}.
+    </p>
+  </section>
+)}
       <!-- Room Dimensions -->
       {rooms.length !== 0 && (
         <div>

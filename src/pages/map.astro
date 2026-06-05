@@ -6,8 +6,8 @@ import Layout from "../layouts/Layout.astro";
 import MapSearch from "../components/MapSearch.jsx";
 import type { Listing, Page } from "../types/listing";
 
-const apiBase = process.env.PUBLIC_API_BASE_URL ?? "";
-const mapboxToken = process.env.PUBLIC_MAPBOX_TOKEN ?? "";
+const apiBase = process.env.PUBLIC_API_BASE_URL || import.meta.env.PUBLIC_API_BASE_URL;
+const mapboxToken = process.env.PUBLIC_MAPBOX_TOKEN || import.meta.env.PUBLIC_MAPBOX_TOKEN;
 
 const params = Astro.url.searchParams;
 const minLat = parseFloat(params.get("minLat") ?? "44.75");

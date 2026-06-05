@@ -3,7 +3,18 @@ import Layout from "../../layouts/Layout.astro";
 import type { Listing, Page } from "../../types/listing";
 import { formatPrice, formatBathTotal, formatSqft, statusBadgeClasses, statusLabel } from "../../lib/listing-utils";
 
-const apiBase = process.env.PUBLIC_API_BASE_URL ?? "";
+// Production: Cloud Run sets process.env at runtime.
+// Dev: Vite populates import.meta.env from .env.local but NOT process.env.
+// Use both with || so either source works.
+const apiBase = process.env.PUBLIC_API_BASE_URL || import.meta.env.PUBLIC_API_BASE_URL;
+
+if (!apiBase) {
+  throw new Error(
+    "PUBLIC_API_BASE_URL not set in process.env (production) or import.meta.env (dev). " +
+    "In dev: confirm sawicki-group-web/.env.local has the line and `npm run dev` was restarted. " +
+    "In production: confirm Cloud Run has the env var set via cloudbuild.yaml --update-env-vars."
+  );
+}
 
 let listings: Listing[] = [];
 let totalListings = 0;
