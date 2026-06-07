@@ -14,8 +14,10 @@ import {
   parseAmenityScores,
   formatDistance,
   categoryLabel,
-  subtypeLabel
+  subtypeLabel,
+  formatMlsId,
 } from "../../lib/listing-utils";
+import { agent, brokerage, site } from "../../lib/site.config";
 
 const { id } = Astro.params;
 // Production: Cloud Run sets process.env at runtime.
@@ -47,7 +49,8 @@ const sqftDisplay    = formatSqft(listing.sqftTotal);
 const lotDisplay     = formatLot(listing.lotSqft);
 const priceReduced   = hasPriceReduction(listing);
 const rooms          = parseRooms(listing.roomInfo);
-const agentName      = listing.listAgentName ?? "Jim Sawicki";
+const agentName      = listing.listAgentName ?? agent.name;
+const mlsID          = formatMlsId(listing.mlsId);
 
 // cityState for display: "Edina, MN 55436"
 const cityStateZip = [listing.city, "MN", listing.zipCode]
@@ -173,13 +176,13 @@ const generatedAtFormatted = amenityScores
 // request. The AI has full context without the browser ever fetching the API.
 // We include every material field — the AI should be able to answer anything
 // a serious buyer would ask without fabricating details.
-const systemPrompt = `You are a helpful real estate assistant for The Sawicki Group, a licensed real estate team in the Twin Cities area. You are answering questions about a specific property listing on behalf of agent ${agentName}.
+const systemPrompt = `You are a helpful real estate assistant for ${site.name}, a licensed real estate team in the ${brokerage.serviceArea} area. You are answering questions about a specific property listing on behalf of agent ${agentName}.
 
 PROPERTY DETAILS
 Address: ${listing.address}, ${cityLine}
 ${listing.neighborhood ? `Neighborhood: ${listing.neighborhood}` : ""}
 ${listing.complexSubdiv ? `Development: ${listing.complexSubdiv}` : ""}
-MLS #: ${listing.mlsId ?? "N/A"}
+MLS #: ${mlsID ?? "N/A"}
 Status: ${listing.status ?? "N/A"}
 List Price: ${priceDisplay}
 ${priceReduced ? `Original Price: ${formatPrice(listing.originalListPrice)} (Price reduced)` : ""}
@@ -253,7 +256,7 @@ YOUR ROLE
 
 <Layout
   title={`${listing.address} — ${priceDisplay}`}
-  description={`${listing.beds ?? ""} bed, ${bathDisplay} bath ${listing.style ?? "home"} in ${listing.neighborhood ?? listing.city}. ${sqftDisplay} sqft. Listed at ${priceDisplay} by The Sawicki Group.`}
+  description={`${listing.beds ?? ""} bed, ${bathDisplay} bath ${listing.style ?? "home"} in ${listing.neighborhood ?? listing.city}. ${sqftDisplay} sqft. Listed at ${priceDisplay} by ${site.name}.`}
   jsonLd={jsonLd}
 >
 
@@ -295,8 +298,8 @@ YOUR ROLE
         {priceReduced && (
           <div class="text-sm text-stone-400 line-through mt-0.5">{formatPrice(listing.originalListPrice)}</div>
         )}
-        {listing.mlsId && (
-          <div class="text-xs text-stone-400 mt-1">MLS #{listing.mlsId}</div>
+        {mlsID && (
+          <div class="text-xs text-stone-400 mt-1">MLS #{mlsID}</div>
         )}
       </div>
     </div>

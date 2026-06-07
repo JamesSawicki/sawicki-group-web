@@ -201,6 +201,15 @@ export function categoryLabel(jsonKey: string): string {
   };
   return labels[jsonKey] ?? jsonKey;
 }
+/**
+ * Function to strip the three letter MLS identifier off of the mlsId
+ * @param mlsId 
+ * @returns 
+ */
+export function formatMlsId(mlsId: string | null | undefined): string {
+  if (!mlsId) return '';
+  return mlsId.replace(/^[A-Z]+/, '');
+}
 
 export function subtypeLabel(subtype: string): string {
   const labels: Record<string, string> = {

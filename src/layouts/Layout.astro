@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import { agent, brokerage, site } from "../lib/site.config";
 
 interface Props {
   title: string;
@@ -22,7 +23,7 @@ const {
     <meta name="description" content={description} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
-    <title>{title} | The Sawicki Group</title>
+    <title>{title} | {site.name}</title>
     {jsonLd && (
       <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
     )}
@@ -32,7 +33,7 @@ const {
     <header class="border-b border-stone-200">
       <nav class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
         <a href="/" class="text-xl font-semibold tracking-tight text-stone-900">
-          The Sawicki Group
+          {site.name}
         </a>
         <div class="flex items-center gap-8 text-sm text-stone-600">
           <a href="/listings" class="hover:text-stone-900 transition-colors">Listings</a>
@@ -54,9 +55,9 @@ const {
     <footer class="border-t border-stone-200 mt-24">
       <div class="max-w-6xl mx-auto px-6 py-12 grid grid-cols-3 gap-8 text-sm text-stone-500">
         <div>
-          <div class="font-semibold text-stone-900 mb-3">The Sawicki Group</div>
-          <div>Coldwell Banker Realty</div>
-          <div>Twin Cities, Minnesota</div>
+          <div class="font-semibold text-stone-900 mb-3">{site.name}</div>
+          <div>{brokerage.name}</div>
+          <div>{brokerage.serviceArea}</div>
         </div>
         <div>
           <div class="font-semibold text-stone-900 mb-3">Navigate</div>
@@ -72,8 +73,8 @@ const {
           <div class="font-semibold text-stone-900 mb-3">Legal</div>
           <div class="flex flex-col gap-2">
             <a href="/privacy" class="hover:text-stone-900 transition-colors">Privacy Policy</a>
-            <span>Licensed in Minnesota</span>
-            <span>© {new Date().getFullYear()} The Sawicki Group</span>
+            <span>{agent.licenseText}</span>
+            <span>© {new Date().getFullYear()} {site.name}</span>
             <span>All rights reserved</span>
           </div>
         </div>

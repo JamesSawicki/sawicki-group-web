@@ -1,7 +1,7 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import type { Listing, Page } from "../../types/listing";
-import { formatPrice, formatBathTotal, formatSqft, statusBadgeClasses, statusLabel } from "../../lib/listing-utils";
+import { formatPrice, formatBathTotal, formatSqft, statusBadgeClasses, statusLabel, formatMlsId } from "../../lib/listing-utils";
 
 // Production: Cloud Run sets process.env at runtime.
 // Dev: Vite populates import.meta.env from .env.local but NOT process.env.

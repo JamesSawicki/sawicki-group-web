@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro'
 import { Resend } from 'resend'
+import { agent, site } from '../../lib/site.config'
 
 const resend = new Resend(import.meta.env.RESEND_API_KEY)
 
@@ -23,10 +24,10 @@ export const POST: APIRoute = async ({ request }) => {
 
   try {
     await resend.emails.send({
-      from: 'The Sawicki Group <onboarding@resend.dev>',  // Resend's test sender — works without a verified domain
-      to: 'jamesvsawicki@gmail.com',
+      from: `${site.name} <onboarding@resend.dev>`,  // Resend's test sender — works without a verified domain
+      to: agent.email,
       replyTo: email,
-      subject: `New inquiry from ${name} — The Sawicki Group`,
+      subject: `New inquiry from ${name} — ${site.name}`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #1a1612;">New Contact Form Submission</h2>

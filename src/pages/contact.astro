@@ -1,8 +1,9 @@
 ---
 import Layout from '../layouts/Layout.astro'
+import { agent, brokerage, site } from '../lib/site.config'
 ---
 
-<Layout title="Contact" description="Get in touch with Jim Sawicki at The Sawicki Group, Coldwell Banker Realty.">
+<Layout title="Contact" description={`Get in touch with ${agent.name} at ${site.name}, ${brokerage.name}.`}>
 
   <section class="max-w-3xl mx-auto px-6 py-20">
 
@@ -104,13 +105,13 @@ import Layout from '../layouts/Layout.astro'
         </div>
         <div>
           <div class="font-semibold text-stone-900 mb-2">Email</div>
-          <p>jamesvsawicki@gmail.com</p>
+          <p><a href={`mailto:${agent.email}`} class="hover:underline">{agent.email}</a></p>
         </div>
         <div>
           <div class="font-semibold text-stone-900 mb-2">Brokerage</div>
           <p class="leading-relaxed">
-            Coldwell Banker Realty<br />
-            Twin Cities, Minnesota
+            {brokerage.name}<br />
+            {brokerage.serviceArea}
           </p>
         </div>
       </div>
