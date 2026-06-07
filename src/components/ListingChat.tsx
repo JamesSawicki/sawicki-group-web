@@ -1,22 +1,43 @@
 import { useState, useRef, useEffect } from "react";
 
-export default function ListingChat({ systemPrompt, apiBaseUrl }) {
-  const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const bottomRef = useRef(null);
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface Props {
+  systemPrompt: string;
+  apiBaseUrl: string;
+}
+
+/**
+ * A single message in the chat thread.
+ * `role` is a discriminated union — TypeScript uses it to narrow the type
+ * when rendering (e.g. user messages go right, assistant go left).
+ */
+interface Message {
+  role: "user" | "assistant";
+  content: string;
+}
+
+// ─── Component ───────────────────────────────────────────────────────────────
+
+export default function ListingChat({ systemPrompt, apiBaseUrl }: Props) {
+  const [messages,  setMessages]  = useState<Message[]>([]);
+  const [input,     setInput]     = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error,     setError]     = useState<string | null>(null);
+
+  // Typed as HTMLDivElement because we call .scrollIntoView() on it.
+  const bottomRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to latest message
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading]);
 
-  const sendMessage = async () => {
+  const sendMessage = async (): Promise<void> => {
     const trimmed = input.trim();
     if (!trimmed || isLoading) return;
 
-    const userMessage = { role: "user", content: trimmed };
+    const userMessage: Message = { role: "user", content: trimmed };
     const updatedMessages = [...messages, userMessage];
 
     setMessages(updatedMessages);
@@ -43,17 +64,19 @@ export default function ListingChat({ systemPrompt, apiBaseUrl }) {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
       const data = await res.json();
-      const assistantContent = data?.content?.[0]?.text ?? "Sorry, I couldn't generate a response.";
+      const assistantContent: string =
+        data?.content?.[0]?.text ?? "Sorry, I couldn't generate a response.";
 
       setMessages([...updatedMessages, { role: "assistant", content: assistantContent }]);
-    } catch (err) {
+    } catch {
       setError("Something went wrong. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleKeyDown = (e) => {
+  // TypeScript infers the event type from the element — no explicit annotation needed.
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>): void => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       sendMessage();

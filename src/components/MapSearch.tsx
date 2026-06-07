@@ -1,5 +1,5 @@
 /**
- * MapSearch.jsx — Interactive map search island with polygon draw.
+ * MapSearch.tsx — Interactive map search island with polygon draw.
  *
  * Phase 1: bbox search, markers, clusters, sidebar (complete)
  * Phase 2: this file (complete)
@@ -29,20 +29,66 @@ import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import mapboxgl from "mapbox-gl";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
+import type { Listing } from "../types/listing";
 // CSS for both libraries is imported in map.astro — not here.
 
-// ─── Formatting helpers ───────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface Bbox {
+  minLat: number;
+  maxLat: number;
+  minLng: number;
+  maxLng: number;
+}
+
+interface Props {
+  initialListings?: Listing[];
+  initialBbox: Bbox;
+  initialStatus?: string;
+  apiBaseUrl: string;
+  mapboxToken: string;
+}
+
+/**
+ * The subset of GeoJSON feature properties we store on each map marker.
+ * Typed separately so buildPopupHTML and the cluster click handler are
+ * explicit about what they receive — no implicit `any` from feature.properties.
+ */
+interface MarkerProperties {
+  id: string;
+  address: string;
+  city: string;
+  listPrice: number;
+  beds: number;
+  baths: string;
+  sqftTotal: number;
+  priceDisplay: string;
+  sqftDisplay: string;
+}
+
+/**
+ * MapboxDraw fires custom events on the map instance. mapbox-gl's type system
+ * doesn't know about them so the event parameter comes through as the generic
+ * map event type. We cast to DrawEvent where we need to access .features.
+ */
+interface DrawEvent {
+  features: GeoJSON.Feature<GeoJSON.Polygon>[];
+  mode?: string;
+}
 
 // ─── GeoJSON helpers ──────────────────────────────────────────────────────────
 
-function listingsToGeoJSON(listings) {
+function listingsToGeoJSON(listings: Listing[]): GeoJSON.FeatureCollection {
   return {
     type: "FeatureCollection",
     features: listings
-      .filter(l => l.latitude != null && l.longitude != null)
-      .map(l => ({
-        type: "Feature",
-        geometry: { type: "Point", coordinates: [l.longitude, l.latitude] },
+      .filter((l) => l.latitude != null && l.longitude != null)
+      .map((l) => ({
+        type: "Feature" as const,
+        geometry: {
+          type: "Point" as const,
+          coordinates: [l.longitude!, l.latitude!],
+        },
         properties: {
           id:           String(l.id),
           address:      l.address,
@@ -53,12 +99,12 @@ function listingsToGeoJSON(listings) {
           sqftTotal:    l.sqftTotal ?? 0,
           priceDisplay: formatPrice(l.listPrice),
           sqftDisplay:  formatSqft(l.sqftTotal),
-        },
+        } satisfies MarkerProperties,
       })),
   };
 }
 
-function buildPopupHTML(props) {
+function buildPopupHTML(props: MarkerProperties): string {
   return `
     <div style="min-width:220px;font-family:inherit;">
       <div style="font-size:1.1rem;font-weight:700;color:#0f172a;margin-bottom:.25rem">
@@ -86,11 +132,18 @@ function buildPopupHTML(props) {
  * Wrapped in try/catch — Turf throws on malformed geometry, which can happen
  * mid-draw if an event fires with an incomplete polygon.
  */
-function listingInPolygon(listing, polygon) {
+function listingInPolygon(
+  listing: Listing,
+  polygon: GeoJSON.Feature<GeoJSON.Polygon>
+): boolean {
   if (listing.latitude == null || listing.longitude == null) return false;
   try {
     return booleanPointInPolygon(
-      { type: "Feature", geometry: { type: "Point", coordinates: [listing.longitude, listing.latitude] } },
+      {
+        type: "Feature",
+        geometry: { type: "Point", coordinates: [listing.longitude, listing.latitude] },
+        properties: {},
+      },
       polygon
     );
   } catch {
@@ -100,7 +153,13 @@ function listingInPolygon(listing, polygon) {
 
 // ─── Sidebar card ─────────────────────────────────────────────────────────────
 
-function SidebarCard({ listing, isSelected, onClick }) {
+interface SidebarCardProps {
+  listing: Listing;
+  isSelected: boolean;
+  onClick: () => void;
+}
+
+function SidebarCard({ listing, isSelected, onClick }: SidebarCardProps) {
   const gradients = [
     "from-slate-400 to-slate-600",
     "from-blue-400 to-blue-700",
@@ -145,43 +204,48 @@ export default function MapSearch({
   initialStatus = "Active",
   apiBaseUrl,
   mapboxToken,
-}) {
-  const mapContainerRef  = useRef(null);
-  const mapRef           = useRef(null);
-  const drawRef          = useRef(null);
-  const debounceRef      = useRef(null);
-  const popupRef         = useRef(null);
+}: Props) {
+  // Refs typed to their concrete DOM/library types so method calls type-check.
+  // `| null` because useRef starts null and the map is created asynchronously.
+  const mapContainerRef  = useRef<HTMLDivElement>(null);
+  const mapRef           = useRef<mapboxgl.Map | null>(null);
+  const drawRef          = useRef<MapboxDraw | null>(null);
+  const debounceRef      = useRef<number | null>(null);
+  const popupRef         = useRef<mapboxgl.Popup | null>(null);
 
   // Keep polygon in a ref so the moveend closure always sees the latest value
   // without needing to re-register the event listener on each state change.
-  const activePolygonRef = useRef(null);
+  const activePolygonRef = useRef<GeoJSON.Feature<GeoJSON.Polygon> | null>(null);
 
-  const [listings,      setListings]      = useState(initialListings);
-  const [selectedId,    setSelectedId]    = useState(null);
-  const [isLoading,     setIsLoading]     = useState(false);
-  const [activePolygon, setActivePolygon] = useState(null);
-  const [isDrawing,     setIsDrawing]     = useState(false);
+  const [listings,      setListings]      = useState<Listing[]>(initialListings);
+  const [selectedId,    setSelectedId]    = useState<number | null>(null);
+  const [isLoading,     setIsLoading]     = useState<boolean>(false);
+  const [activePolygon, setActivePolygon] = useState<GeoJSON.Feature<GeoJSON.Polygon> | null>(null);
+  const [isDrawing,     setIsDrawing]     = useState<boolean>(false);
 
   // ── Derived listing set ────────────────────────────────────────────────────
   // When a polygon is active, filter listings to those inside it.
   // useMemo recalculates automatically whenever listings or activePolygon changes,
   // so the sidebar and map markers stay in sync without manual coordination.
-  const displayedListings = useMemo(() => {
+  const displayedListings = useMemo<Listing[]>(() => {
     if (!activePolygon) return listings;
-    return listings.filter(l => listingInPolygon(l, activePolygon));
+    return listings.filter((l) => listingInPolygon(l, activePolygon));
   }, [listings, activePolygon]);
 
   // ── Sync map markers with displayedListings ────────────────────────────────
   // Fires whenever displayedListings changes — covers both viewport fetches
   // (listings state updates) and polygon draw/clear (activePolygon changes).
   useEffect(() => {
-    const source = mapRef.current?.getSource("listings");
+    const source = mapRef.current?.getSource("listings") as mapboxgl.GeoJSONSource | undefined;
     if (!source) return;
     source.setData(listingsToGeoJSON(displayedListings));
   }, [displayedListings]);
 
   // ── Fetch listings for current viewport ───────────────────────────────────
-  const fetchForViewport = useCallback(async (bounds, status) => {
+  const fetchForViewport = useCallback(async (
+    bounds: mapboxgl.LngLatBounds,
+    status: string
+  ): Promise<void> => {
     setIsLoading(true);
     try {
       const url = new URL(`${apiBaseUrl}/api/listings/search`);
@@ -206,8 +270,9 @@ export default function MapSearch({
 
       // setListings triggers useMemo → displayedListings recomputes →
       // useEffect above syncs map markers. No manual source.setData needed here.
-      setListings(data.content);
-    } catch (_) {
+      setListings(data.content as Listing[]);
+    } catch {
+      // Swallow fetch errors silently — map will retry on next moveend
     } finally {
       setIsLoading(false);
     }
@@ -215,7 +280,7 @@ export default function MapSearch({
 
   // ── Draw handlers ──────────────────────────────────────────────────────────
 
-  const startDraw = useCallback(() => {
+  const startDraw = useCallback((): void => {
     if (!drawRef.current) return;
     drawRef.current.deleteAll();
     activePolygonRef.current = null;
@@ -224,13 +289,13 @@ export default function MapSearch({
     setIsDrawing(true);
   }, []);
 
-  const cancelDraw = useCallback(() => {
+  const cancelDraw = useCallback((): void => {
     if (!drawRef.current) return;
     drawRef.current.changeMode("simple_select");
     setIsDrawing(false);
   }, []);
 
-  const clearPolygon = useCallback(() => {
+  const clearPolygon = useCallback((): void => {
     if (!drawRef.current) return;
     drawRef.current.deleteAll();
     activePolygonRef.current = null;
@@ -274,39 +339,38 @@ export default function MapSearch({
     map.addControl(draw);
     drawRef.current = draw;
 
-    // draw.create fires when the user double-clicks to close a polygon.
+    // MapboxDraw fires custom events on the map instance. mapbox-gl's type
+    // system doesn't include them, so we cast the event to our DrawEvent type.
     map.on("draw.create", (e) => {
-      const polygon = e.features[0];
+      const polygon = (e as unknown as DrawEvent).features[0];
       activePolygonRef.current = polygon;
       setActivePolygon(polygon);
       setIsDrawing(false);
     });
 
-    // draw.delete fires when the user presses Delete/Backspace on a selected shape.
     map.on("draw.delete", () => {
       activePolygonRef.current = null;
       setActivePolygon(null);
       setIsDrawing(false);
     });
 
-    // draw.update fires when the user drags a vertex to reshape the polygon.
     map.on("draw.update", (e) => {
-      const polygon = e.features[0];
+      const polygon = (e as unknown as DrawEvent).features[0];
       activePolygonRef.current = polygon;
       setActivePolygon(polygon);
     });
 
     // draw.modechange handles Escape (user cancels mid-draw)
     map.on("draw.modechange", (e) => {
-      if (e.mode === "simple_select") setIsDrawing(false);
+      if ((e as unknown as { mode: string }).mode === "simple_select") setIsDrawing(false);
     });
 
     map.on("load", () => {
       map.addSource("listings", {
-        type:          "geojson",
-        data:          listingsToGeoJSON(initialListings),
-        cluster:       true,
-        clusterRadius: 50,
+        type:           "geojson",
+        data:           listingsToGeoJSON(initialListings),
+        cluster:        true,
+        clusterRadius:  50,
         clusterMaxZoom: 14,
       });
 
@@ -358,24 +422,31 @@ export default function MapSearch({
 
       map.on("click", "clusters", (e) => {
         const [feature] = map.queryRenderedFeatures(e.point, { layers: ["clusters"] });
-        map.getSource("listings").getClusterExpansionZoom(
-          feature.properties.cluster_id,
-          (err, zoom) => {
-            if (!err) map.easeTo({ center: feature.geometry.coordinates, zoom });
+        // Cast required: getSource returns AnySourceImpl; GeoJSONSource has getClusterExpansionZoom.
+        const source = map.getSource("listings") as mapboxgl.GeoJSONSource;
+        source.getClusterExpansionZoom(
+          feature.properties!["cluster_id"] as number,
+          (err: Error | null, zoom: number | null) => {
+            if (!err && zoom !== null) {
+              map.easeTo({
+                center: feature.geometry.coordinates as [number, number],
+                zoom,
+              });
+            }
           }
         );
       });
 
       map.on("click", "unclustered-point", (e) => {
-        const [feature] = e.features;
+        const [feature] = e.features!;
         if (popupRef.current) popupRef.current.remove();
         popupRef.current = new mapboxgl.Popup({ offset: 15 })
-          .setLngLat(feature.geometry.coordinates.slice())
-          .setHTML(buildPopupHTML(feature.properties))
+          .setLngLat(feature.geometry.coordinates.slice() as [number, number])
+          .setHTML(buildPopupHTML(feature.properties as MarkerProperties))
           .addTo(map);
       });
 
-      const setCursor = c => () => (map.getCanvas().style.cursor = c);
+      const setCursor = (c: string) => () => { map.getCanvas().style.cursor = c; };
       map.on("mouseenter", "clusters",          setCursor("pointer"));
       map.on("mouseleave", "clusters",          setCursor(""));
       map.on("mouseenter", "unclustered-point", setCursor("pointer"));
@@ -384,26 +455,26 @@ export default function MapSearch({
 
     // Debounced viewport change → fetch new listings
     map.on("moveend", () => {
-      clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => {
-        fetchForViewport(map.getBounds(), initialStatus);
+      if (debounceRef.current !== null) clearTimeout(debounceRef.current);
+      debounceRef.current = window.setTimeout(() => {
+        fetchForViewport(map.getBounds()!, initialStatus);
       }, 400);
     });
 
     return () => {
-      clearTimeout(debounceRef.current);
+      if (debounceRef.current !== null) clearTimeout(debounceRef.current);
       if (popupRef.current) popupRef.current.remove();
       map.remove();
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Sidebar card click → pan + highlight ──────────────────────────────────
-  const handleSidebarClick = useCallback((listing) => {
+  const handleSidebarClick = useCallback((listing: Listing): void => {
     if (!mapRef.current || listing.latitude == null) return;
     setSelectedId(listing.id);
     mapRef.current.setFilter("selected-point", ["==", ["get", "id"], String(listing.id)]);
     mapRef.current.flyTo({
-      center: [listing.longitude, listing.latitude],
+      center: [listing.longitude!, listing.latitude],
       zoom:   Math.max(mapRef.current.getZoom(), 14),
       speed:  1.2,
     });
@@ -454,7 +525,7 @@ export default function MapSearch({
                 : "No listings in this area. Pan the map to explore."}
             </div>
           )}
-          {displayedListings.map(listing => (
+          {displayedListings.map((listing) => (
             <SidebarCard
               key={listing.id}
               listing={listing}
