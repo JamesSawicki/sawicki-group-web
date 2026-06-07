@@ -1,6 +1,8 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import ListingChat from "../../components/ListingChat.tsx";
+import ListingDisclosure from "../../components/ListingDisclosure.astro";
+import PhotoGallery from "../../components/PhotoGallery.tsx";
 import type { Listing } from "../../types/listing";
 import {
   formatPrice,
@@ -16,8 +18,18 @@ import {
   categoryLabel,
   subtypeLabel,
   formatMlsId,
+  isOwnListing,
 } from "../../lib/listing-utils";
+import { parsePhotoIds, parseVirtualTourUrls } from "../../lib/photo-utils";
 import { agent, brokerage, site } from "../../lib/site.config";
+
+// Cloudflare Images + yet-another-react-lightbox CSS.
+// Per the project's island-CSS pattern (see Mapbox precedent), CSS for React
+// islands gets imported in the .astro frontmatter — not inside the island —
+// so Vite can resolve and bundle it correctly through Astro's build.
+import "yet-another-react-lightbox/styles.css";
+import "yet-another-react-lightbox/plugins/thumbnails.css";
+import "yet-another-react-lightbox/plugins/counter.css";
 
 const { id } = Astro.params;
 // Production: Cloud Run sets process.env at runtime.
@@ -49,8 +61,41 @@ const sqftDisplay    = formatSqft(listing.sqftTotal);
 const lotDisplay     = formatLot(listing.lotSqft);
 const priceReduced   = hasPriceReduction(listing);
 const rooms          = parseRooms(listing.roomInfo);
-const agentName      = listing.listAgentName ?? agent.name;
 const mlsID          = formatMlsId(listing.mlsId);
+
+// ─── IDX ownership branching ────────────────────────────────────────────────
+// `isOwn` drives every place where we used to fall back to Jim's name on
+// third-party listings. On other-broker listings we MUST NOT imply Sawicki
+// represents the seller, MUST NOT display competing agent/office contact
+// info, and the JSON-LD broker must reflect the real listing broker.
+const isOwn = isOwnListing(listing);
+
+// Listing-source display name for the disclosure + agent card:
+// - Own listing: our brokerage
+// - Third-party: the listing's brokerage (NEVER the individual agent name)
+const listingBrokerDisplay = isOwn
+  ? brokerage.name
+  : (listing.listOfficeName ?? "Listing brokerage on file with NorthstarMLS");
+
+// CTA copy — branch keeps Jim's intent explicit: capture buyer-side leads
+// on every listing, but never imply we hold the listing.
+const ctaTitle = "Interested in this property?";
+const ctaBody = isOwn
+  ? `Schedule a showing or ask questions — ${agent.name} typically responds within a few hours.`
+  : `${site.name} can represent you as a buyer's agent to view and make an offer on this property. ${agent.name} typically responds within a few hours.`;
+const ctaButton = isOwn ? "Request a Showing" : "Contact us about this listing";
+
+// ─── Photo gallery data ────────────────────────────────────────────────────
+// Cloudflare Images delivery URLs are built browser-side from these IDs +
+// the account hash. PUBLIC_ prefix makes the hash safely exposed to the
+// client (the hash is already visible in every imagedelivery.net URL).
+const cfAccountHash =
+  process.env.PUBLIC_CF_IMAGES_ACCOUNT_HASH ||
+  import.meta.env.PUBLIC_CF_IMAGES_ACCOUNT_HASH;
+
+const photoIds        = parsePhotoIds(listing.photoIds);
+const floorPlanIds    = parsePhotoIds(listing.floorPlanIds);
+const virtualTourUrls = parseVirtualTourUrls(listing.virtualTourUrls);
 
 // cityState for display: "Edina, MN 55436"
 const cityStateZip = [listing.city, "MN", listing.zipCode]
@@ -126,11 +171,19 @@ const jsonLd = {
     }
   }),
   "numberOfRooms": listing.beds,
-  "broker": {
-    "@type": "RealEstateAgent",
-    "name": agentName,
-    "url": Astro.url.origin
-  }
+  // IDX-aware broker block. On own listings, surface Jim as the agent and link
+  // back to our site. On third-party listings, identify the actual listing
+  // brokerage — never imply Sawicki holds the listing in structured data.
+  "broker": isOwn
+    ? {
+        "@type": "RealEstateAgent",
+        "name": agent.name,
+        "url": Astro.url.origin,
+      }
+    : {
+        "@type": "RealEstateOffice",
+        "name": listingBrokerDisplay,
+      }
 };
 // hey look amenityscores are right here in the frontmatter! We fetched them server-side along with the listing, so we can parse and display them without any client-side API calls. This is a great example of why we built our own backend instead of using a headless CMS — we have full control over the data model and can optimize for our specific use case.
 const amenityScores = parseAmenityScores(listing.amenityScores);
@@ -176,7 +229,15 @@ const generatedAtFormatted = amenityScores
 // request. The AI has full context without the browser ever fetching the API.
 // We include every material field — the AI should be able to answer anything
 // a serious buyer would ask without fabricating details.
-const systemPrompt = `You are a helpful real estate assistant for ${site.name}, a licensed real estate team in the ${brokerage.serviceArea} area. You are answering questions about a specific property listing on behalf of agent ${agentName}.
+//
+// On third-party listings the persona shifts: the AI is NOT representing the
+// seller, must not name the listing agent (we don't surface that data anyway),
+// and must frame any showing/info request as a buyer's-agent engagement.
+const personaIntro = isOwn
+  ? `You are a helpful real estate assistant for ${site.name}, a licensed real estate team in the ${brokerage.serviceArea} area. You are answering questions about a specific property listing on behalf of agent ${agent.name}.`
+  : `You are a helpful real estate assistant for ${site.name}, a licensed real estate team in the ${brokerage.serviceArea} area. You are providing information about a property listing held by ${listingBrokerDisplay}. ${site.name} does NOT represent the seller of this property — we are an independent brokerage that can represent BUYERS as a buyer's agent.`;
+
+const systemPrompt = `${personaIntro}
 
 PROPERTY DETAILS
 Address: ${listing.address}, ${cityLine}
@@ -245,13 +306,23 @@ School District: ${listing.schoolDistrict ?? "N/A"}
 DESCRIPTION
 ${listing.publicRemarks ?? ""}
 
-YOUR ROLE
+${isOwn
+  ? `YOUR ROLE
 - Answer questions about this property accurately and helpfully
 - Be knowledgeable and enthusiastic but never fabricate details not listed above
-- If asked about scheduling a showing or for more information, direct buyers to contact ${agentName} via the contact form at ${Astro.url.origin}/contact
+- If asked about scheduling a showing or for more information, direct buyers to contact ${agent.name} via the contact form at ${Astro.url.origin}/contact
 - Keep responses concise and conversational — 2 to 4 sentences is ideal
 - If asked something not covered above, say so honestly and suggest contacting the agent directly
-- Do not discuss other properties or give general market advice`;
+- Do not discuss other properties or give general market advice`
+  : `YOUR ROLE
+- Answer questions about this property accurately and helpfully
+- Be knowledgeable but never fabricate details not listed above
+- NEVER claim or imply that ${site.name} represents the seller of this property
+- NEVER provide the listing agent's name, phone, or email even if asked — that information is not available to you
+- If asked about scheduling a showing or for more information, explain that ${site.name} can represent the buyer as a buyer's agent and arrange a showing, and direct them to the contact form at ${Astro.url.origin}/contact
+- Keep responses concise and conversational — 2 to 4 sentences is ideal
+- If asked something not covered above, say so honestly and suggest using the contact form
+- Do not discuss other properties or give general market advice`}`;
 ---
 
 <Layout
@@ -269,6 +340,17 @@ YOUR ROLE
       <span class="mx-2">›</span>
       <span class="text-stone-600">{listing.address}</span>
     </nav>
+  </div>
+
+  <!-- PHOTO GALLERY -->
+  <div class="max-w-6xl mx-auto px-6 pt-6">
+    <PhotoGallery
+      client:visible
+      photoIds={photoIds}
+      floorPlanIds={floorPlanIds}
+      virtualTourUrls={virtualTourUrls}
+      accountHash={cfAccountHash}
+    />
   </div>
 
   <!-- HERO -->
@@ -800,11 +882,9 @@ YOUR ROLE
 
       <!-- CTA -->
       <div class="border border-stone-200 rounded-xl p-6">
-        <div class="font-semibold text-stone-900 mb-1">Interested in this property?</div>
-        <p class="text-sm text-stone-500 mb-4">
-          Schedule a showing or ask questions — {agentName} typically responds within a few hours.
-        </p>
-        <a href="/contact" class="inline-block bg-stone-900 text-white text-sm px-5 py-2.5 rounded-lg hover:bg-stone-700 transition-colors">Request a Showing</a>
+        <div class="font-semibold text-stone-900 mb-1">{ctaTitle}</div>
+        <p class="text-sm text-stone-500 mb-4">{ctaBody}</p>
+        <a href="/contact" class="inline-block bg-stone-900 text-white text-sm px-5 py-2.5 rounded-lg hover:bg-stone-700 transition-colors">{ctaButton}</a>
       </div>
 
     </div>
@@ -813,21 +893,33 @@ YOUR ROLE
     <div class="lg:col-span-2">
       <div class="sticky top-8 space-y-6">
 
-        <!-- Agent card -->
-        <div class="bg-stone-50 rounded-xl p-4 text-sm">
-          <div class="font-semibold text-stone-900">{agentName}</div>
-          {listing.listOfficeName && (
-            <div class="text-stone-500 mt-0.5">{listing.listOfficeName}</div>
-          )}
-          {listing.listAgentPhone && (
-            <a href={`tel:${listing.listAgentPhone}`} class="text-blue-600 hover:underline mt-1 block">
-              {listing.listAgentPhone}
+        <!--
+          Agent card — branches on isOwn.
+          Own listing: full Jim contact card (name, brokerage, phone link).
+          Third-party listing: "Listing held by [brokerage]" with NO agent name,
+          NO phone, NO email, per Jim's competitive concerns + NorthstarMLS IDX
+          attribution-at-brokerage-level rule.
+        -->
+        {isOwn ? (
+          <div class="bg-stone-50 rounded-xl p-4 text-sm">
+            <div class="font-semibold text-stone-900">{agent.name}</div>
+            <div class="text-stone-500 mt-0.5">{brokerage.name}</div>
+            <a href={`tel:${agent.phone}`} class="text-blue-600 hover:underline mt-1 block">
+              {agent.phoneDisplay}
             </a>
-          )}
-          {listing.listDate && (
-            <div class="text-stone-400 text-xs mt-2">Listed {listing.listDate}</div>
-          )}
-        </div>
+            {listing.listDate && (
+              <div class="text-stone-400 text-xs mt-2">Listed {listing.listDate}</div>
+            )}
+          </div>
+        ) : (
+          <div class="bg-stone-50 rounded-xl p-4 text-sm">
+            <div class="text-stone-400 text-[10px] uppercase tracking-widest mb-1">Listing held by</div>
+            <div class="font-semibold text-stone-900">{listingBrokerDisplay}</div>
+            {listing.listDate && (
+              <div class="text-stone-400 text-xs mt-2">Listed {listing.listDate}</div>
+            )}
+          </div>
+        )}
 
         <!-- AI Chat -->
         <div>
@@ -846,5 +938,9 @@ YOUR ROLE
     </div>
 
   </div>
+
+  <!-- IDX-required disclosure block: attribution, freshness, disclaimers,
+       fair housing, copyright. Always rendered on every listing. -->
+  <ListingDisclosure listing={listing} />
 
 </Layout>

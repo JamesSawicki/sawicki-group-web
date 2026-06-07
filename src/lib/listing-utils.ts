@@ -1,5 +1,6 @@
 import type { Listing, Room } from "../types/listing";
 import type { AmenityScores } from "../types/listing";
+import { brokerage } from "./site.config";
 /**
  * listing-utils.ts — pure functions for formatting and deriving listing values.
  *
@@ -209,6 +210,47 @@ export function categoryLabel(jsonKey: string): string {
 export function formatMlsId(mlsId: string | null | undefined): string {
   if (!mlsId) return '';
   return mlsId.replace(/^[A-Z]+/, '');
+}
+
+// -------------------------------------------------------------------
+// IDX OWNERSHIP CHECK
+//
+// Returns true when the listing's office is The Sawicki Group's brokerage.
+// Used to branch display: own listings show full contact/CTA; third-party
+// listings must hide brokerage contact info per IDX rules and frame the
+// CTA as a buyer's-agent offer rather than a listing-agent offer.
+//
+// Match logic: case-insensitive substring on the configured brokerage name.
+// This handles variants like "Coldwell Banker Realty", "COLDWELL BANKER REALTY",
+// "Coldwell Banker Realty - Edina", etc.
+// -------------------------------------------------------------------
+
+export function isOwnListing(listing: Listing): boolean {
+  const officeName = listing.listOfficeName;
+  if (!officeName) return false;
+  const ours = brokerage.name.toLowerCase().trim();
+  return officeName.toLowerCase().trim().includes(ours);
+}
+
+/**
+ * Format an ISO timestamp as a short human-readable "data freshness" line.
+ * Used in the IDX disclosure block. "2026-06-04T16:12:47Z" -> "Jun 4, 2026 at 4:12 PM"
+ */
+export function formatDataFreshness(iso: string | null | undefined): string {
+  if (!iso) return "—";
+  try {
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return "—";
+    return d.toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  } catch {
+    return "—";
+  }
 }
 
 export function subtypeLabel(subtype: string): string {

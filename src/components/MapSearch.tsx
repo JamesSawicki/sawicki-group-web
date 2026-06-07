@@ -67,9 +67,9 @@ interface MarkerProperties {
 }
 
 /**
- * MapboxDraw fires custom events on the map instance. mapbox-gl's type system
- * doesn't know about them so the event parameter comes through as the generic
- * map event type. We cast to DrawEvent where we need to access .features.
+ * Shape of the payload MapboxDraw attaches to draw.create / draw.update events.
+ * Used only inside the onDrawPolygon / onDrawModeChange helpers below — never
+ * referenced directly in component code.
  */
 interface DrawEvent {
   features: GeoJSON.Feature<GeoJSON.Polygon>[];
@@ -151,6 +151,34 @@ function listingInPolygon(
   }
 }
 
+// ─── Draw event helpers ───────────────────────────────────────────────────────
+
+/**
+ * Registers a typed handler for MapboxDraw polygon events (create / update).
+ *
+ * Why this exists: mapbox-gl's MapEvents is a `type` alias, not an `interface`,
+ * so module augmentation is impossible — there is no way to teach the map's
+ * type system about draw events without patching the library itself. This
+ * function is the single cast site. All component code calls it with clean types.
+ */
+function onDrawPolygon(
+  map: mapboxgl.Map,
+  type: "draw.create" | "draw.update",
+  handler: (polygon: GeoJSON.Feature<GeoJSON.Polygon>) => void
+): void {
+  map.on(type as string, (e: unknown) => {
+    const feature = (e as DrawEvent).features?.[0];
+    if (feature) handler(feature);
+  });
+}
+
+/** Same boundary isolation for draw.modechange events. */
+function onDrawModeChange(map: mapboxgl.Map, handler: (mode: string) => void): void {
+  map.on("draw.modechange" as string, (e: unknown) => {
+    handler((e as DrawEvent).mode ?? "");
+  });
+}
+
 // ─── Sidebar card ─────────────────────────────────────────────────────────────
 
 interface SidebarCardProps {
@@ -212,6 +240,9 @@ export default function MapSearch({
   const drawRef          = useRef<MapboxDraw | null>(null);
   const debounceRef      = useRef<number | null>(null);
   const popupRef         = useRef<mapboxgl.Popup | null>(null);
+  // Captured once in the load handler so all subsequent .setData() and
+  // .getClusterExpansionZoom() calls are fully typed — no per-call cast needed.
+  const sourceRef        = useRef<mapboxgl.GeoJSONSource | null>(null);
 
   // Keep polygon in a ref so the moveend closure always sees the latest value
   // without needing to re-register the event listener on each state change.
@@ -236,9 +267,7 @@ export default function MapSearch({
   // Fires whenever displayedListings changes — covers both viewport fetches
   // (listings state updates) and polygon draw/clear (activePolygon changes).
   useEffect(() => {
-    const source = mapRef.current?.getSource("listings") as mapboxgl.GeoJSONSource | undefined;
-    if (!source) return;
-    source.setData(listingsToGeoJSON(displayedListings));
+    sourceRef.current?.setData(listingsToGeoJSON(displayedListings));
   }, [displayedListings]);
 
   // ── Fetch listings for current viewport ───────────────────────────────────
@@ -339,10 +368,7 @@ export default function MapSearch({
     map.addControl(draw);
     drawRef.current = draw;
 
-    // MapboxDraw fires custom events on the map instance. mapbox-gl's type
-    // system doesn't include them, so we cast the event to our DrawEvent type.
-    map.on("draw.create", (e) => {
-      const polygon = (e as unknown as DrawEvent).features[0];
+    onDrawPolygon(map, "draw.create", (polygon) => {
       activePolygonRef.current = polygon;
       setActivePolygon(polygon);
       setIsDrawing(false);
@@ -354,15 +380,14 @@ export default function MapSearch({
       setIsDrawing(false);
     });
 
-    map.on("draw.update", (e) => {
-      const polygon = (e as unknown as DrawEvent).features[0];
+    onDrawPolygon(map, "draw.update", (polygon) => {
       activePolygonRef.current = polygon;
       setActivePolygon(polygon);
     });
 
     // draw.modechange handles Escape (user cancels mid-draw)
-    map.on("draw.modechange", (e) => {
-      if ((e as unknown as { mode: string }).mode === "simple_select") setIsDrawing(false);
+    onDrawModeChange(map, (mode) => {
+      if (mode === "simple_select") setIsDrawing(false);
     });
 
     map.on("load", () => {
@@ -373,6 +398,9 @@ export default function MapSearch({
         clusterRadius:  50,
         clusterMaxZoom: 14,
       });
+      // Capture the typed source once. getSource() returns AnySourceImpl;
+      // this is the only cast in the file that touches GeoJSONSource.
+      sourceRef.current = map.getSource("listings") as mapboxgl.GeoJSONSource;
 
       map.addLayer({
         id: "clusters", type: "circle", source: "listings",
@@ -422,16 +450,13 @@ export default function MapSearch({
 
       map.on("click", "clusters", (e) => {
         const [feature] = map.queryRenderedFeatures(e.point, { layers: ["clusters"] });
-        // Cast required: getSource returns AnySourceImpl; GeoJSONSource has getClusterExpansionZoom.
-        const source = map.getSource("listings") as mapboxgl.GeoJSONSource;
-        source.getClusterExpansionZoom(
+        if (!sourceRef.current) return;
+        sourceRef.current.getClusterExpansionZoom(
           feature.properties!["cluster_id"] as number,
           (err: Error | null, zoom: number | null) => {
             if (!err && zoom !== null) {
-              map.easeTo({
-                center: feature.geometry.coordinates as [number, number],
-                zoom,
-              });
+              const coords = feature.geometry.coordinates;
+              map.easeTo({ center: [coords[0], coords[1]], zoom });
             }
           }
         );
@@ -440,8 +465,9 @@ export default function MapSearch({
       map.on("click", "unclustered-point", (e) => {
         const [feature] = e.features!;
         if (popupRef.current) popupRef.current.remove();
+        const coords = feature.geometry.coordinates;
         popupRef.current = new mapboxgl.Popup({ offset: 15 })
-          .setLngLat(feature.geometry.coordinates.slice() as [number, number])
+          .setLngLat([coords[0], coords[1]])
           .setHTML(buildPopupHTML(feature.properties as MarkerProperties))
           .addTo(map);
       });

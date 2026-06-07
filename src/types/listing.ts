@@ -127,6 +127,19 @@ export interface Listing {
   photosCount?: number;
   directions?: string;
   amenityScores?: string;
+
+  // MLS Grid sync metadata (Spring entity emits Instant as ISO 8601 string)
+  modificationTimestamp?: string;
+
+  // Hosted media (populated by MediaIngestionService after MLS Grid ingest).
+  // photoIds and floorPlanIds are JSON arrays of Cloudflare Image IDs:
+  //   '["abc123","def456",...]'
+  // virtualTourUrls is a JSON array of {provider, url, label} objects.
+  // mediaIngestionStatus: PENDING | IN_PROGRESS | COMPLETE | FAILED | null.
+  photoIds?: string;
+  floorPlanIds?: string;
+  virtualTourUrls?: string;
+  mediaIngestionStatus?: string;
 }
 
 /**

@@ -1,0 +1,95 @@
+---
+/**
+ * ListingDisclosure.astro — IDX-required attribution + disclosure block.
+ *
+ * Renders below the main content on every listing detail page. Includes:
+ *   1. "Listed by" attribution (agent name + brokerage name, no contact info)
+ *   2. Data freshness timestamp from modificationTimestamp
+ *   3. Reliability disclaimer (industry-standard wording, see VERIFY-IDX)
+ *   4. Fair Housing statement + Equal Housing Opportunity badge
+ *   5. MLS copyright notice
+ *
+ * COMPLIANCE NOTES — read before shipping to production:
+ * - All wording strings live in `site.config.ts` under `mls.*` and are marked
+ *   with // VERIFY-IDX comments. Swap each for exact NorthstarMLS wording
+ *   from their IDX Display Manual before flipping real MLS data to production.
+ * - The Equal Housing Opportunity logo here is a TEXT PLACEHOLDER. The
+ *   official EHO logo (raster or SVG) should replace it before production.
+ *   Source: https://www.hud.gov/library/bookshelf11/hudgraphics/fheologo
+ * - The NorthstarMLS logo is similarly a text placeholder. Request the
+ *   official logo file from NorthstarMLS IDX support and host at
+ *   /public/mls/northstar-logo.svg, then replace the text node here.
+ * - On third-party listings we display BROKERAGE NAME ONLY. No listing agent
+ *   name, no phone, no email, no tel: links. Per Jim's research, NorthstarMLS
+ *   requires brokerage-level attribution only — individual listing agent
+ *   identification is not mandated. This is the maximal competitive posture
+ *   that still meets IDX disclosure.
+ */
+import type { Listing } from "../types/listing";
+import { mls, brokerage } from "../lib/site.config";
+import { isOwnListing, formatDataFreshness } from "../lib/listing-utils";
+
+interface Props {
+  listing: Listing;
+}
+
+const { listing } = Astro.props;
+const isOwn = isOwnListing(listing);
+
+const listingOfficeDisplay = listing.listOfficeName ?? "Not provided";
+const dataFreshness = formatDataFreshness(listing.modificationTimestamp);
+---
+
+<section class="max-w-6xl mx-auto px-6 py-8 mt-8 border-t border-stone-200 text-xs text-stone-500 leading-relaxed">
+
+  <!-- LISTING SOURCE + DATA FRESHNESS -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+    <div>
+      <div class="uppercase tracking-widest text-[10px] text-stone-400 mb-1">Listing Source</div>
+      <div class="text-stone-700">
+        {isOwn ? (
+          <span>Listed by {brokerage.name}</span>
+        ) : (
+          <span>Listed by {listingOfficeDisplay}</span>
+        )}
+      </div>
+    </div>
+    <div class="sm:text-right">
+      <div class="uppercase tracking-widest text-[10px] text-stone-400 mb-1">Data Updated</div>
+      <div class="text-stone-700">{dataFreshness}</div>
+    </div>
+  </div>
+
+  <!-- RELIABILITY DISCLAIMER -->
+  <p class="mb-4">{mls.reliabilityDisclaimer}</p>
+
+  <!-- FAIR HOUSING + EHO BADGE -->
+  <div class="flex items-start gap-3 mb-4">
+    <!--
+      EHO PLACEHOLDER — replace with official Equal Housing Opportunity logo
+      before production. See header comment for source.
+    -->
+    <div
+      aria-label="Equal Housing Opportunity"
+      class="shrink-0 w-8 h-8 border border-stone-400 rounded-sm flex items-center justify-center text-[8px] font-semibold text-stone-600 text-center leading-tight"
+    >
+      EHO
+    </div>
+    <p class="pt-0.5">{mls.fairHousingStatement}</p>
+  </div>
+
+  <!-- MLS ATTRIBUTION + COPYRIGHT -->
+  <div class="flex items-start gap-3 pt-4 border-t border-stone-100">
+    <!--
+      NORTHSTARMLS LOGO PLACEHOLDER — replace with official logo before production.
+    -->
+    <div
+      aria-label="NorthstarMLS"
+      class="shrink-0 px-2 py-1 border border-stone-400 rounded-sm text-[10px] font-semibold text-stone-600"
+    >
+      {mls.shortName}
+    </div>
+    <p class="pt-0.5">{mls.copyrightNotice}</p>
+  </div>
+
+</section>

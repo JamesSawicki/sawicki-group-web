@@ -21,11 +21,13 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "astro": "^6.3.1",
+    "embla-carousel-react": "^8.6.0",
     "mapbox-gl": "^3.24.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "resend": "^6.12.3",
-    "tailwindcss": "^4.2.4"
+    "tailwindcss": "^4.2.4",
+    "yet-another-react-lightbox": "^3.32.0"
   },
   "devDependencies": {
     "@types/node": "^25.9.1"
