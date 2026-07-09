@@ -1,0 +1,140 @@
+---
+/**
+ * ListingCard.astro — Single listing card for grid views.
+ *
+ * Used by the search page (and eventually the listings index page).
+ * One file, no JavaScript — pure server-rendered HTML and Tailwind.
+ *
+ * Design choices:
+ *   - Photo area uses a CSS gradient placeholder for now since we don't have
+ *     real photo URLs yet. When the RESO feed populates a Media resource,
+ *     we'll swap this for an <img> tag.
+ *   - Status badge overlays the photo top-left.
+ *   - Price reduction badge (if applicable) overlays top-right.
+ *   - Card is fully clickable via the anchor wrapping the whole thing.
+ *
+ * Accessibility:
+ *   - The whole card is one anchor — keyboard focus goes to the address link.
+ *   - Stats use semantic markup (definition lists would be more semantic but
+ *     overkill for visual cards; spans with sr-only labels would be a possible
+ *     upgrade).
+ */
+import type { Listing } from "../types/listing";
+import {
+  formatPrice,
+  formatBathTotal,
+  formatSqft,
+  formatLot,
+  statusBadgeClasses,
+  statusLabel,
+  hasPriceReduction,
+} from "../lib/listing-utils";
+
+interface Props {
+  listing: Listing;
+}
+
+const { listing } = Astro.props;
+
+// Build the detail page URL — Astro convention is /listings/[id]
+const detailUrl = `/listings/${listing.id}`;
+
+// Photo placeholder gradient — deterministic from id so each card looks distinct.
+// When real photos arrive: <img src={listing.photoUrl} alt={listing.address} />
+const gradients = [
+  "from-slate-400 to-slate-600",
+  "from-blue-400 to-blue-700",
+  "from-emerald-400 to-emerald-700",
+  "from-amber-400 to-amber-700",
+  "from-purple-400 to-purple-700",
+  "from-rose-400 to-rose-700",
+];
+const gradient = gradients[listing.id % gradients.length];
+
+const showPriceReduction = hasPriceReduction(listing);
+---
+
+<a href={detailUrl} class="group block bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+
+  {/* Photo placeholder — replace with real <img> when MLS feed provides URLs */}
+  <div class={`relative h-48 bg-gradient-to-br ${gradient} flex items-center justify-center`}>
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-white/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+    </svg>
+
+    {/* Status badge overlay */}
+    {listing.status && listing.status !== "Active" && (
+      <span class={`absolute top-3 left-3 ${statusBadgeClasses(listing.status)}`}>
+        {statusLabel(listing.status)}
+      </span>
+    )}
+
+    {/* Price reduction badge overlay */}
+    {showPriceReduction && (
+      <span class="absolute top-3 right-3 inline-block px-2 py-1 text-xs font-semibold rounded bg-red-500 text-white">
+        Price Reduced
+      </span>
+    )}
+
+    {/* Photo count indicator (bottom right) */}
+    {listing.photosCount != null && listing.photosCount > 0 && (
+      <span class="absolute bottom-3 right-3 inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded bg-black/50 text-white">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+        {listing.photosCount}
+      </span>
+    )}
+  </div>
+
+  {/* Card body */}
+  <div class="p-4">
+
+    {/* Price — large, prominent */}
+    <div class="flex items-baseline gap-2 mb-2">
+      <span class="text-2xl font-bold text-slate-900">{formatPrice(listing.listPrice)}</span>
+      {showPriceReduction && (
+        <span class="text-sm text-slate-500 line-through">{formatPrice(listing.originalListPrice)}</span>
+      )}
+    </div>
+
+    {/* Address line */}
+    <h3 class="text-base font-semibold text-slate-800 group-hover:text-blue-700 transition-colors">
+      {listing.address}
+    </h3>
+
+    {/* City, zip */}
+    <p class="text-sm text-slate-600 mb-3">
+      {listing.city}{listing.zipCode ? `, MN ${listing.zipCode}` : ""}
+      {listing.neighborhood && <span class="text-slate-500"> · {listing.neighborhood}</span>}
+    </p>
+
+    {/* Stats bar — beds / baths / sqft / lot */}
+    <div class="grid grid-cols-4 gap-2 text-sm border-t border-slate-100 pt-3">
+      <div>
+        <div class="font-semibold text-slate-900">{listing.beds ?? "—"}</div>
+        <div class="text-xs text-slate-500">{listing.beds === 1 ? "bed" : "beds"}</div>
+      </div>
+      <div>
+        <div class="font-semibold text-slate-900">{formatBathTotal(listing)}</div>
+        <div class="text-xs text-slate-500">baths</div>
+      </div>
+      <div>
+        <div class="font-semibold text-slate-900">{formatSqft(listing.sqftTotal)}</div>
+        <div class="text-xs text-slate-500">sqft</div>
+      </div>
+      <div>
+        <div class="font-semibold text-slate-900 text-xs">{formatLot(listing.lotSqft)}</div>
+        <div class="text-xs text-slate-500">lot</div>
+      </div>
+    </div>
+
+    {/* Footer line — DOM and MLS# */}
+    <div class="flex justify-between mt-3 text-xs text-slate-500">
+      {listing.daysOnMarket != null && <span>{listing.daysOnMarket} days on market</span>}
+      {listing.mlsId && <span>MLS #{listing.mlsId}</span>}
+    </div>
+
+  </div>
+</a>

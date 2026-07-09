@@ -1,0 +1,30 @@
+# The Sawicki Group — llms.txt
+# Twin Cities real estate — Minneapolis, Saint Paul, and surrounding communities.
+# https://sawicki-group-web-43343667811.us-central1.run.app
+
+> The Sawicki Group is a licensed real estate team in the Twin Cities area of Minnesota,
+> specializing in Minneapolis and Saint Paul neighborhoods. Jim Sawicki is a licensed
+> Minnesota real estate agent with Coldwell Banker Realty.
+
+## Active Listings
+
+Buyer-facing property detail pages with full specifications and AI-powered Q&A.
+
+- /listings — All current listings index
+- /listings/{id} — Individual property detail page
+
+## Market Updates (Blog)
+
+Weekly mortgage rate updates and Twin Cities market commentary, generated with live
+Federal Reserve FRED data.
+
+- /blog — All posts index
+- /blog/{id} — Individual post
+
+## Site Pages
+
+- / — Homepage
+- /about — About Jim Sawicki and The Sawicki Group
+- /contact — Contact form and showing requests
+- /search — Home search (MLS integration coming soon)
+- /privacy — Privacy policy

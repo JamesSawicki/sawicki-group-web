@@ -1,15 +1,16 @@
 ---
 import Layout from '../layouts/Layout.astro'
+import { agent, brokerage, site } from '../lib/site.config'
 ---
 
-<Layout title="About" description="Meet Jim Sawicki, Twin Cities real estate agent with The Sawicki Group at Coldwell Banker Realty.">
+<Layout title="About" description={`Meet ${agent.name}, Twin Cities real estate agent with ${site.name} at ${brokerage.name}.`}>
 
   <section class="max-w-3xl mx-auto px-6 py-20">
 
     <p class="text-sm font-semibold text-amber-700 uppercase tracking-widest mb-4">About</p>
-    <h1 class="text-4xl font-semibold text-stone-900 mb-6">Jim Sawicki</h1>
+    <h1 class="text-4xl font-semibold text-stone-900 mb-6">{agent.name}</h1>
     <p class="text-stone-500 text-lg leading-relaxed mb-6">
-      The Sawicki Group · Coldwell Banker Realty · Twin Cities, Minnesota
+      {site.name} · {brokerage.name} · {brokerage.serviceArea}
     </p>
 
     <div class="prose prose-stone max-w-none text-stone-600 leading-relaxed space-y-5">
@@ -38,7 +39,7 @@ import Layout from '../layouts/Layout.astro'
       {[
         { label: 'Experience', value: '15+ years' },
         { label: 'Focus Area', value: 'Minneapolis & Saint Paul' },
-        { label: 'Brokerage', value: 'Coldwell Banker Realty' },
+        { label: 'Brokerage', value: brokerage.name },
       ].map(s => (
         <div>
           <div class="text-stone-400 mb-1">{s.label}</div>
