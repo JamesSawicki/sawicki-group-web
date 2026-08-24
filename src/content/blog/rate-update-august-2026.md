@@ -1,48 +1,40 @@
 ---
-title: "Twin Cities Real Estate Market Update - August 17, 2026"
-date: 2026-08-17
+title: "Twin Cities Market Update: Mortgage Rates Dip to 6.65% - August 24, 2026"
+date: 2026-08-24
 tag: Rates
-excerpt: "30-year fixed rates at 6.67% this week. Here is what the latest mortgage rate data means for Twin Cities buyers and sellers."
+excerpt: "30-year fixed rates at 6.65% this week. Here is what the latest mortgage rate data means for Twin Cities buyers and sellers."
 author: AI
 draft: true
 ---
 
-## Mortgage Rates Tick Down Slightly This Week
+## Rates Edge Lower This Week
 
-As of August 13th, the 30-year fixed mortgage rate stands at 6.67%, down a modest 2 basis points from last week's 6.69%. The 15-year fixed rate is currently at 5.96%. While this isn't a dramatic shift, it continues a pattern we've been watching closely in our Twin Cities market.
+Mortgage rates ticked down slightly this week, with the 30-year fixed rate dropping to 6.65% as of August 20th - a modest 0.02% decrease from the previous week's 6.67%. The 15-year fixed rate now sits at 5.95%. While this isn't a dramatic shift, any downward movement catches our attention in today's market.
 
 ## What This Means for Your Monthly Payment
 
-Let's talk real numbers. On a $450,000 home (right around the median price point we're seeing in many Twin Cities suburbs), here's what that 6.67% rate means:
+Let's put real numbers to this. On a $500,000 home with 20% down (a $400,000 loan), the difference between last week's 6.67% rate and this week's 6.65% saves you about $5 per month. That's roughly $60 annually, or about $1,800 over the life of a 30-year loan.
 
-With 20% down ($90,000), you're looking at a principal and interest payment of roughly $2,320 per month. If rates were to drop a full percentage point to 5.67%, that same loan would cost about $2,080 per month - a savings of $240 monthly or nearly $2,900 annually.
+Not earth-shattering, admittedly. But if you've been watching rates closely, this continued downward trend - even if gradual - is worth noting. We're seeing rates stabilize rather than climb, which changes the conversation for buyers who've been sitting on the sidelines.
 
-The math works the other way too. Every quarter-point increase adds about $60 to your monthly payment on this loan size. These aren't trivial numbers when you're budgeting for a home purchase.
+For context, that same $400,000 loan at today's 6.65% rate means a principal and interest payment of about $2,550 monthly. Add in property taxes, insurance, and HOA fees where applicable, and you're looking at realistic total housing costs in our market.
 
 ## Historical Context: Where Do We Stand?
 
-Here's the perspective we share with our clients: these rates are elevated compared to the historic lows of 2020-2021 (when we saw rates briefly dip below 3%), but they're actually close to historical averages. Through much of the 1990s and 2000s, rates in the 6-7% range were completely normal.
+Here's the perspective we share with clients: these rates are elevated compared to the 2020-2021 period when we saw historic lows in the 3% range. But zoom out further, and today's rates look much more normal. Throughout the 1990s and 2000s, rates regularly ran between 6-8%. Our parents and grandparents often dealt with rates in the double digits.
 
-The challenge isn't the rate itself - it's the adjustment. Many buyers and sellers got accustomed to 3% money, and that reset has been psychologically difficult. But if you're waiting for rates to return to those pandemic-era lows, we'd caution against putting your life plans on hold indefinitely. Most economists we follow don't anticipate that happening in the near term.
+The challenge isn't that 6.65% is historically outrageous - it's that many of us became accustomed to artificially low rates during the pandemic era. We're now returning to a more typical rate environment, and the adjustment feels significant.
 
-## Tactical Advice for Buyers
+## Tactical Advice for Right Now
 
-If you're in the market to buy, here's what we're telling clients:
+**For buyers:** Don't try to time the market perfectly. If you find the right home and the numbers work for your budget, move forward. You can always refinance later if rates drop significantly - but you can't go back and buy that perfect house once someone else does. We're also seeing slightly less competition than peak spring market, which gives you more negotiating room.
 
-**Focus on the home, not timing the rate.** You can refinance later if rates drop significantly, but you can't go back and buy the right house if you miss it. We're seeing less competition than we did a year ago, which means better negotiating position for buyers.
+**For sellers:** Pricing strategy matters more than ever. Buyers are running careful calculations on affordability, so overpricing will leave your home sitting. Work with your agent to price competitively from day one. The homes that show well and hit the market at the right price are still moving - we're seeing that firsthand across the Twin Cities.
 
-**Get creative with financing.** Some sellers are offering rate buydowns or concessions toward closing costs. In this environment, everything is negotiable. We've had success helping buyers structure offers that work within their monthly budget constraints.
-
-**Strengthen your position.** With fewer bidding wars, taking time for thorough inspections and reasonable contingencies is back on the table.
-
-## Advice for Sellers
-
-For sellers, this rate environment means being realistic about pricing and condition. Buyers are more payment-sensitive than they were two years ago, so overpricing will cost you time on market. The homes that are selling - and selling well - are the ones that show great and are priced right from day one.
-
-We're also seeing value in offering incentives. A $5,000 credit toward a rate buydown can make your listing stand out and might cost less than a price reduction while having more psychological impact.
+**For everyone:** Remember that rate and price work together. Sometimes a lower purchase price with a higher rate beats a higher price with a marginally lower rate. Run the numbers both ways.
 
 ## Let's Talk About Your Situation
 
-Every real estate decision is personal, and the right move depends on your specific circumstances, timeline, and goals. Whether you're wondering if now is the time to buy, curious about what your home might sell for in this market, or just want to understand your options, we're here to help.
+Every buyer and seller has unique circumstances, timelines, and goals. Whether you're trying to decide if now is your time to buy, wondering how to position your home for sale, or just want to talk through the numbers for your specific situation, we're here to help.
 
-Reach out to our team at The Sawicki Group - we'd be happy to run the numbers specific to your situation and talk through what makes sense for you.
+Reach out to our team at The Sawicki Group. We'll walk through your scenario, run the calculations, and give you straight answers about what makes sense for your situation in today's market.
