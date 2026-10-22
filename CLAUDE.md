@@ -143,6 +143,11 @@ Many visitors browse on phones, and map search is the primary way people look fo
 - **Map colors:** the search map uses Mapbox `light-v11`, tinted in `MapSearch.tsx`
   (`tintBaseMap` / `BASE_MAP_TINT`): pale blue water, green parks, tan schools. Keep tints
   pale so the blue listing pins stay the strongest color; it's style-only (no extra cost).
+- **Listing page photos & summary:** `PhotoGallery.tsx` (mosaic on desktop, swipe carousel
+  on phones) owns the one lightbox, with our own all-photos thumbnail strip; other islands
+  open it with `openListingPhoto(i)` (`lib/photo-utils.ts`). `listing/ListingSummary.tsx`
+  is the sticky summary/CTA card (desktop: a photo carousel slides open once the gallery
+  scrolls past `#listing-hero-end`) and the phones' slide-down mini header.
 - **Listing AI chat** (`ListingChat.tsx`) is a floating widget placed by the listing page:
   an "AI" bubble bottom-right on phones (opens a bottom sheet) and an "AI chat" bar docked
   bottom-right on desktop (opens a panel). Both labels are placeholders for the logo.

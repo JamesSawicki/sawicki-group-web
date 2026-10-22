@@ -9,7 +9,10 @@
  *     position dots.
  *
  * Click any photo (either layout) → opens fullscreen LIGHTBOX with
- * pinch-zoom, swipe, thumbnail strip, fullscreen toggle, and counter.
+ * pinch-zoom, swipe, arrows, fullscreen toggle, counter, and a strip of ALL the
+ * thumbnails underneath (our own ThumbnailStrip: the library's Thumbnails plugin only
+ * renders the ~5 nearest thumbnails and loads them at full 2048px size). Other islands
+ * open the lightbox at a given photo via openListingPhoto() (lib/photo-utils.ts).
  *
  * Floor plans render as a separate filter inside the lightbox, reachable via
  * an action chip below the gallery. Virtual tours render as external-link
@@ -21,26 +24,23 @@
  *
  * ── Required CSS (import in [id].astro frontmatter, NOT here) ─────────────
  *   yet-another-react-lightbox/styles.css
- *   yet-another-react-lightbox/plugins/thumbnails.css
  *   yet-another-react-lightbox/plugins/counter.css
  * Astro's pattern for island CSS is to import in the page that mounts the
  * island. Importing CSS inside the island TSX works in some bundlers but is
  * unreliable across Vite/Astro builds.
  *
  * ── Hydration directive ───────────────────────────────────────────────────
- * Mount as `client:visible` on [id].astro — only hydrates when scrolled into
- * view, which keeps JS off pages that don't need it. (The gallery is the
- * hero so it hydrates almost immediately, but client:visible still defers
- * by one paint frame vs client:load.)
+ * Mount as `client:load` on [id].astro: the lightbox must be ready to open from the
+ * summary card / mini header even when the page loads already scrolled past the gallery.
  */
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import Lightbox from "yet-another-react-lightbox";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
-import Thumbnails from "yet-another-react-lightbox/plugins/thumbnails";
 import Counter from "yet-another-react-lightbox/plugins/counter";
 import Fullscreen from "yet-another-react-lightbox/plugins/fullscreen";
+import { OPEN_PHOTO_EVENT } from "../lib/photo-utils";
 
 interface VirtualTourLink {
   provider: string;
@@ -62,6 +62,64 @@ function url(hash: string, id: string, variant: Variant): string {
   return `https://imagedelivery.net/${hash}/${id}/${variant}`;
 }
 
+// Height reserved under the lightbox photo for the thumbnail strip (px).
+const STRIP_HEIGHT = 96;
+
+interface ThumbnailStripProps {
+  ids: string[];
+  hash: string;
+  current: number;
+  onSelect: (index: number) => void;
+}
+
+/** Every photo as a small thumbnail under the lightbox; the current one is highlighted and kept in view. */
+function ThumbnailStrip({ ids, hash, current, onSelect }: ThumbnailStripProps) {
+  const stripRef = useRef<HTMLDivElement>(null);
+
+  // Scroll the strip (not the page) so the current thumbnail sits in the middle.
+  useEffect(() => {
+    const strip = stripRef.current;
+    const active = strip?.querySelector<HTMLElement>(`[data-index="${current}"]`);
+    if (!strip || !active) return;
+    strip.scrollTo({
+      left: active.offsetLeft - strip.clientWidth / 2 + active.offsetWidth / 2,
+      behavior: "smooth",
+    });
+  }, [current]);
+
+  if (ids.length < 2) return null;
+  return (
+    <div
+      className="absolute inset-x-0 bottom-0 flex items-center bg-black/70"
+      style={{ height: STRIP_HEIGHT }}
+    >
+      <div ref={stripRef} className="relative w-full overflow-x-auto px-4 [scrollbar-width:thin]">
+        <div className="flex gap-2 w-max mx-auto">
+          {ids.map((id, i) => (
+            <button
+              key={id}
+              type="button"
+              data-index={i}
+              onClick={() => onSelect(i)}
+              aria-label={`Show photo ${i + 1}`}
+              aria-current={i === current}
+              className={`relative w-24 h-16 shrink-0 overflow-hidden rounded-md transition
+                ${i === current ? "ring-2 ring-white opacity-100" : "opacity-50 hover:opacity-90"}`}
+            >
+              <img
+                src={url(hash, id, "thumb")}
+                alt=""
+                loading="lazy"
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function PhotoGallery({
   photoIds = [],
   floorPlanIds = [],
@@ -73,6 +131,17 @@ export default function PhotoGallery({
   const [lightboxSet, setLightboxSet] = useState<"photos" | "floorPlans">("photos");
 
   const [emblaRef] = useEmblaCarousel({ loop: false });
+
+  // Other islands open the lightbox at a photo (see openListingPhoto).
+  useEffect(() => {
+    const onOpen = (e: Event) => {
+      setLightboxSet("photos");
+      setLightboxIndex((e as CustomEvent<{ index?: number }>).detail?.index ?? 0);
+      setLightboxOpen(true);
+    };
+    window.addEventListener(OPEN_PHOTO_EVENT, onOpen);
+    return () => window.removeEventListener(OPEN_PHOTO_EVENT, onOpen);
+  }, []);
 
   // ── Empty state ──────────────────────────────────────────────────────────
   if (!accountHash) {
@@ -115,14 +184,15 @@ export default function PhotoGallery({
           <button
             type="button"
             onClick={() => openLightbox("photos", 0)}
-            className="row-span-2 bg-stone-200 overflow-hidden group"
+            className="row-span-2 relative bg-stone-200 overflow-hidden group"
             aria-label="Open photo 1 in lightbox"
           >
+            {/* Absolutely positioned so it fills the tile (h-full alone left gaps). */}
             <img
               src={url(accountHash, mosaicPhotos[0], "heroDesktop")}
               alt="Listing photo 1"
               loading="eager"
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
           </button>
         ) : (
@@ -143,7 +213,7 @@ export default function PhotoGallery({
                 src={url(accountHash, mosaicPhotos[i], "mosaic")}
                 alt={`Listing photo ${i + 1}`}
                 loading="lazy"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
               {/* "+N more" overlay on the last visible tile when more photos exist */}
               {i === 4 && extraCount > 0 && (
@@ -264,19 +334,27 @@ export default function PhotoGallery({
         close={() => setLightboxOpen(false)}
         index={lightboxIndex}
         slides={slides}
-        plugins={[Zoom, Thumbnails, Counter, Fullscreen]}
+        plugins={[Zoom, Counter, Fullscreen]}
         zoom={{
           maxZoomPixelRatio: 3,
           scrollToZoom: true,
         }}
-        thumbnails={{
-          position: "bottom",
-          width: 80,
-          height: 60,
-          gap: 8,
-        }}
         carousel={{
           finite: true,
+        }}
+        // Keep our index in step with swipes/arrows, so the strip highlights the right photo.
+        on={{ view: ({ index }) => setLightboxIndex(index) }}
+        // Leave room under the photo for the strip.
+        styles={{ slide: { paddingBottom: STRIP_HEIGHT + 16 } }}
+        render={{
+          controls: () => (
+            <ThumbnailStrip
+              ids={activeIds}
+              hash={accountHash}
+              current={lightboxIndex}
+              onSelect={setLightboxIndex}
+            />
+          ),
         }}
       />
     </div>

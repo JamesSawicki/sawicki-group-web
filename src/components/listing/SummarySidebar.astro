@@ -1,0 +1,59 @@
+---
+/**
+ * Right-hand column on desktop (after the main content on phones): the sticky summary
+ * card and call to action, plus the phones' slide-down mini header — both rendered by
+ * the ListingSummary island (see there for the scroll behaviour).
+ *
+ * Every listing gets the same CTA — Jim acts as a buyer's agent on all listings,
+ * including ones held by his own brokerage.
+ */
+// ─── Imports ─────────────────────────────────────────────────────────────────
+import ListingSummary from "./ListingSummary.tsx";
+import type { Listing } from "../../types/listing";
+import { formatBathTotal, formatPrice, formatSqft, isPositive } from "../../lib/listing-utils";
+import { agent, site } from "../../lib/site.config";
+
+// ─── Props ───────────────────────────────────────────────────────────────────
+interface Props {
+  /** The listing being displayed. */
+  listing: Listing;
+  /** Cloudflare photo ids, in display order. */
+  photoIds: string[];
+  /** Cloudflare Images account hash. */
+  accountHash?: string;
+}
+
+const { listing, photoIds, accountHash } = Astro.props;
+
+// ─── Derived values ──────────────────────────────────────────────────────────
+const cityLine = listing.city
+  ? `${listing.city}, MN${listing.zipCode ? ` ${listing.zipCode}` : ""}`
+  : "";
+const stats = [
+  isPositive(listing.beds) ? `${listing.beds} bd` : null,
+  `${formatBathTotal(listing)} ba`,
+  isPositive(listing.sqftTotal) ? `${formatSqft(listing.sqftTotal)} sqft` : null,
+]
+  .filter(Boolean)
+  .join(" · ");
+const ctaBody = `${site.name} can represent you as a buyer's agent to view and make an offer on this property. ${agent.name} typically responds within a few hours.`;
+---
+
+<div class="lg:col-span-2">
+  <div class="lg:sticky lg:top-8">
+    <ListingSummary
+      client:load
+      photoIds={photoIds}
+      accountHash={accountHash}
+      price={formatPrice(listing.listPrice)}
+      address={listing.address ?? ""}
+      cityLine={cityLine}
+      stats={stats}
+      ctaTitle="Interested in this property?"
+      ctaBody={ctaBody}
+      ctaButton="Contact us about this listing"
+      contactHref="/contact"
+      phone={{ tel: agent.phone, display: agent.phoneDisplay }}
+    />
+  </div>
+</div>

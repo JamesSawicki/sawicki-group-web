@@ -20,6 +20,18 @@
 export type PhotoVariant = "thumb" | "card" | "heroMobile" | "heroDesktop" | "mosaic" | "lightbox";
 
 /**
+ * Window event that opens the listing page's photo lightbox (owned by PhotoGallery) at a
+ * photo: other islands (the sticky summary card, the mobile mini header) dispatch it via
+ * openListingPhoto() instead of rendering a second lightbox.
+ */
+export const OPEN_PHOTO_EVENT = "listing:open-photo";
+
+/** Opens the listing page's lightbox at photo `index` (0-based). */
+export function openListingPhoto(index: number): void {
+  window.dispatchEvent(new CustomEvent(OPEN_PHOTO_EVENT, { detail: { index } }));
+}
+
+/**
  * Builds a Cloudflare Images delivery URL.
  * Returns empty string when accountHash is missing — caller should guard.
  *

@@ -16,7 +16,7 @@ import BackToSearch from "../../components/listing/BackToSearch.astro";
 import BathroomDetail from "../../components/listing/BathroomDetail.astro";
 import Breadcrumb from "../../components/listing/Breadcrumb.astro";
 import ChecklistSection from "../../components/listing/ChecklistSection.astro";
-import ContactSidebar from "../../components/listing/ContactSidebar.astro";
+import SummarySidebar from "../../components/listing/SummarySidebar.astro";
 import Description from "../../components/listing/Description.astro";
 import Directions from "../../components/listing/Directions.astro";
 import ExteriorFeatures from "../../components/listing/ExteriorFeatures.astro";
@@ -46,7 +46,6 @@ import { fetchWithTimeout, serviceUnavailableResponse } from "../../lib/api";
 // CSS for React islands is imported here in the .astro frontmatter, not inside the island,
 // so Vite resolves and bundles it through Astro's build (same pattern as Mapbox's CSS).
 import "yet-another-react-lightbox/styles.css";
-import "yet-another-react-lightbox/plugins/thumbnails.css";
 import "yet-another-react-lightbox/plugins/counter.css";
 
 // ─── Route param → listing id ────────────────────────────────────────────────
@@ -148,7 +147,7 @@ const amenitiesList = parseList(listing.amenities);
   {/* ── Photo gallery ── */}
   <div class="max-w-6xl mx-auto px-6 pt-6">
     <PhotoGallery
-      client:visible
+      client:load
       photoIds={photoIds}
       floorPlanIds={floorPlanIds}
       virtualTourUrls={virtualTourUrls}
@@ -157,6 +156,8 @@ const amenitiesList = parseList(listing.amenities);
   </div>
 
   <Hero listing={listing} />
+  {/* Marker: once it scrolls above the viewport, the summary card / mini header show photos. */}
+  <div id="listing-hero-end" aria-hidden="true"></div>
 
   {/* ── Main content (left) + contact sidebar (right) ── */}
   <div class="max-w-6xl mx-auto px-6 py-10 grid grid-cols-1 lg:grid-cols-5 gap-12">
@@ -178,7 +179,7 @@ const amenitiesList = parseList(listing.amenities);
       <ListedBy brokerName={listingBrokerDisplay} listDate={listing.listDate} />
     </div>
 
-    <ContactSidebar />
+    <SummarySidebar listing={listing} photoIds={photoIds} accountHash={cfAccountHash} />
   </div>
 
   {/* IDX-required disclosure block: attribution, freshness, disclaimers, fair housing,
