@@ -44,6 +44,7 @@ import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
 import type { Listing } from "../types/listing";
 import FilterDrawer from "./search/FilterDrawer";
 import ListingPreview from "./search/ListingPreview";
+import { saveLastSearchUrl } from "../lib/search-return";
 import { parsePhotoIds, photoUrl } from "../lib/photo-utils";
 import {
   applyFiltersToParams,
@@ -318,6 +319,8 @@ export default function MapSearch({
         pageUrl.searchParams.set("minLng", bounds.getWest().toFixed(4));
         pageUrl.searchParams.set("maxLng", bounds.getEast().toFixed(4));
         window.history.replaceState({}, "", pageUrl);
+        // Remember this search so listing pages can offer "Back to map" to it.
+        saveLastSearchUrl(pageUrl.pathname + pageUrl.search);
 
         const res = await fetch(url.toString());
         if (!res.ok) return;
@@ -580,6 +583,9 @@ export default function MapSearch({
       map.remove();
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Remember the search as first loaded, too (the URL already holds its state).
+  useEffect(() => saveLastSearchUrl(window.location.pathname + window.location.search), []);
 
   // ── Apply new search criteria → refetch the current viewport ──────────────
   const applyFilters = useCallback(

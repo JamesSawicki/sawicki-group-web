@@ -1,0 +1,59 @@
+---
+/**
+ * "← Back to map" link at the top of a listing page. Returns to the visitor's last map
+ * search in this tab — same location and filters (see lib/search-return.ts). If they came
+ * straight from the map, it uses the browser's back navigation instead, which also
+ * restores where they'd scrolled. With no saved search it reads "Search on the map".
+ *
+ * Server-rendered with the fallback; a small script upgrades it once the page loads.
+ */
+---
+
+<div class="max-w-6xl mx-auto px-6 pt-4">
+  <a
+    href="/search"
+    id="back-to-search"
+    class="inline-flex items-center gap-1.5 h-11 px-3 -ml-3 rounded-lg text-sm font-medium text-stone-700 hover:bg-stone-100 transition-colors"
+  >
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      aria-hidden="true"
+    >
+      <path d="M15 18l-6-6 6-6"></path>
+    </svg>
+    <span data-label>Search on the map</span>
+  </a>
+</div>
+
+<script>
+  import { readLastSearchUrl } from "../../lib/search-return";
+
+  const link = document.getElementById("back-to-search") as HTMLAnchorElement | null;
+  const saved = readLastSearchUrl();
+  if (link && saved) {
+    link.href = saved;
+    const label = link.querySelector("[data-label]");
+    if (label) label.textContent = "Back to map";
+
+    // Came straight from the map in this tab? Going back in history restores the page
+    // as it was, including the results list's scroll position.
+    let cameFromSearch = false;
+    try {
+      const ref = new URL(document.referrer);
+      cameFromSearch = ref.origin === location.origin && ref.pathname === "/search";
+    } catch {
+      // No or unparseable referrer — use the saved link.
+    }
+    if (cameFromSearch && history.length > 1) {
+      link.addEventListener("click", (e) => {
+        e.preventDefault();
+        history.back();
+      });
+    }
+  }
+</script>

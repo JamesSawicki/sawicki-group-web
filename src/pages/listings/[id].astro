@@ -11,6 +11,7 @@ import Layout from "../../layouts/Layout.astro";
 import ListingDisclosure from "../../components/ListingDisclosure.astro";
 import PhotoGallery from "../../components/PhotoGallery.tsx";
 import AmenityScorecard from "../../components/listing/AmenityScorecard.astro";
+import BackToSearch from "../../components/listing/BackToSearch.astro";
 import BathroomDetail from "../../components/listing/BathroomDetail.astro";
 import Breadcrumb from "../../components/listing/Breadcrumb.astro";
 import ChecklistSection from "../../components/listing/ChecklistSection.astro";
@@ -166,6 +167,7 @@ const amenitiesList = parseList(listing.amenities);
   jsonLd={jsonLd}
   canonical={canonicalUrl}
 >
+  <BackToSearch />
   <Breadcrumb address={listing.address} />
 
   {/* ── Photo gallery ── */}
