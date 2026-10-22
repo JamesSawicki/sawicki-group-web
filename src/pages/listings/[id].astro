@@ -1,45 +1,55 @@
 ---
+/**
+ * Listing detail page: /listings/{address-slug}-{id}.
+ *
+ * This file does routing and data only — resolve the slug, fetch the listing, redirect to
+ * the canonical URL, build <head> data — then lays out the section components from
+ * src/components/listing/, which own their own display logic.
+ */
+// ─── Imports ─────────────────────────────────────────────────────────────────
 import Layout from "../../layouts/Layout.astro";
-import ListingChat from "../../components/ListingChat.tsx";
 import ListingDisclosure from "../../components/ListingDisclosure.astro";
 import PhotoGallery from "../../components/PhotoGallery.tsx";
+import AmenityScorecard from "../../components/listing/AmenityScorecard.astro";
+import BathroomDetail from "../../components/listing/BathroomDetail.astro";
+import Breadcrumb from "../../components/listing/Breadcrumb.astro";
+import ChecklistSection from "../../components/listing/ChecklistSection.astro";
+import ContactSidebar from "../../components/listing/ContactSidebar.astro";
+import Description from "../../components/listing/Description.astro";
+import Directions from "../../components/listing/Directions.astro";
+import ExteriorFeatures from "../../components/listing/ExteriorFeatures.astro";
+import FinancialDetails from "../../components/listing/FinancialDetails.astro";
+import Hero from "../../components/listing/Hero.astro";
+import HoaDetails from "../../components/listing/HoaDetails.astro";
+import InteriorFeatures from "../../components/listing/InteriorFeatures.astro";
+import ListedBy from "../../components/listing/ListedBy.astro";
+import RoomDimensions from "../../components/listing/RoomDimensions.astro";
+import Schools from "../../components/listing/Schools.astro";
+import SquareFootage from "../../components/listing/SquareFootage.astro";
+import Waterfront from "../../components/listing/Waterfront.astro";
 import type { Listing } from "../../types/listing";
 import {
-  formatPrice,
   formatBathTotal,
-  bathTotal,
-  formatMoneyString,
+  formatPrice,
   formatSqft,
-  formatLot,
-  parseRooms,
-  hasPriceReduction,
-  statusBadgeClasses,
-  statusLabel,
-  parseAmenityScores,
-  formatDistance,
-  categoryLabel,
-  subtypeLabel,
-  formatMlsId,
-  parseListingId,
   listingPath,
+  parseListingId,
 } from "../../lib/listing-utils";
 import { parsePhotoIds, parseVirtualTourUrls } from "../../lib/photo-utils";
-import { agent, site } from "../../lib/site.config";
+import { site } from "../../lib/site.config";
 import { fetchWithTimeout, serviceUnavailableResponse } from "../../lib/api";
 
-// Cloudflare Images + yet-another-react-lightbox CSS.
-// Per the project's island-CSS pattern (see Mapbox precedent), CSS for React
-// islands gets imported in the .astro frontmatter — not inside the island —
-// so Vite can resolve and bundle it correctly through Astro's build.
+// CSS for React islands is imported here in the .astro frontmatter, not inside the island,
+// so Vite resolves and bundles it through Astro's build (same pattern as Mapbox's CSS).
 import "yet-another-react-lightbox/styles.css";
 import "yet-another-react-lightbox/plugins/thumbnails.css";
 import "yet-another-react-lightbox/plugins/counter.css";
 
-// This route file is named [id].astro for historical reasons, but the param is
-// now a full SEO slug, e.g. "3901-w-50th-st-unit-101-edina-mn-55424-4021".
-// We read both `slug` and `id` (via a loose cast) so the file can be renamed to
-// [slug].astro later with ZERO code change. The numeric listing id is the final
-// hyphen-delimited token of the slug and is the actual API resolution key.
+// ─── Route param → listing id ────────────────────────────────────────────────
+// The file is named [id].astro for historical reasons, but the param is a full SEO slug,
+// e.g. "3901-w-50th-st-unit-101-edina-mn-55424-4021". Reading both `slug` and `id` lets
+// the file be renamed to [slug].astro later with zero code change. The numeric id is the
+// last hyphen-delimited token and is what the API resolves.
 const params = Astro.params as Record<string, string | undefined>;
 const slugParam = params.slug ?? params.id ?? "";
 const listingId = parseListingId(slugParam);
@@ -47,9 +57,10 @@ if (listingId == null) {
   // No trailing integer => not a real listing URL. Render the branded 404.
   return Astro.rewrite("/404");
 }
-// Production: Cloud Run sets process.env at runtime.
-// Dev: Vite populates import.meta.env from .env.local but NOT process.env.
-// Use both with || so either source works.
+
+// ─── Data fetching ───────────────────────────────────────────────────────────
+// Production: Cloud Run sets process.env at runtime. Dev: Vite populates import.meta.env
+// from .env.local but NOT process.env. Use both with || so either source works.
 const apiBase = process.env.PUBLIC_API_BASE_URL || import.meta.env.PUBLIC_API_BASE_URL;
 
 if (!apiBase) {
@@ -60,10 +71,9 @@ if (!apiBase) {
   );
 }
 
-// Reliability: bound the call with a timeout and handle every failure mode.
+// Bound the call with a timeout and handle every failure mode:
 //   - 404 from the API  → render the branded 404 page (real 404 status)
-//   - any other failure → render a branded 503 (transient) instead of a 500
-//     stack trace or a blank page.
+//   - any other failure → branded 503 (transient) instead of a 500 stack trace or blank page
 let listing: Listing;
 try {
   const res = await fetchWithTimeout(`${apiBase}/api/listings/${listingId}`);
@@ -80,79 +90,33 @@ try {
 }
 
 // ─── Canonical URL + 301 redirect ────────────────────────────────────────────
-// The slug is derived from the (mutable) address; the id is stable. If the
-// visitor arrived on a bare-id URL (/listings/4021) or a stale/wrong slug,
-// permanently redirect to the canonical address slug so link equity and Google
-// ranking consolidate on ONE URL per property. 301 = permanent (transfers rank).
-// No redirect loop: listingPath() is deterministic, so a request that already
-// hit the canonical path matches below and falls through without redirecting.
+// The slug comes from the (mutable) address; the id is stable. A visitor on a bare-id URL
+// (/listings/4021) or a stale slug is permanently redirected to the canonical address slug,
+// so search ranking consolidates on ONE URL per property. No loop: listingPath() is
+// deterministic, so a request already on the canonical path falls through.
 const canonicalPath = listingPath(listing);
 const canonicalUrl = new URL(canonicalPath, Astro.url.origin).toString();
 if (Astro.url.pathname !== canonicalPath) {
   return Astro.redirect(canonicalUrl, 301);
 }
 
-// ─── Derived display values ──────────────────────────────────────────────────
-// Compute once here; reference throughout the template.
-// Never call utility functions multiple times for the same value.
+// ─── Head data: title, description, JSON-LD ──────────────────────────────────
 const priceDisplay = formatPrice(listing.listPrice);
 const bathDisplay = formatBathTotal(listing);
 const sqftDisplay = formatSqft(listing.sqftTotal);
-const lotDisplay = formatLot(listing.lotSqft);
-const priceReduced = hasPriceReduction(listing);
-const rooms = parseRooms(listing.roomInfo);
-const mlsID = formatMlsId(listing.mlsId);
 
-// ─── IDX brokerage attribution ──────────────────────────────────────────────
-// Every listing shows the listing brokerage. No branching — Jim acts as a
-// buyer's agent for all listings, including those held by his own brokerage.
+// IDX: every listing shows its listing brokerage (also used by the "Listed by" card).
 const listingBrokerDisplay =
   listing.listOfficeName ?? "Listing brokerage on file with NorthstarMLS";
 
-// Single CTA for all listings — buyer inquiry to contact page.
-const ctaTitle = "Interested in this property?";
-const ctaBody = `${site.name} can represent you as a buyer's agent to view and make an offer on this property. ${agent.name} typically responds within a few hours.`;
-const ctaButton = "Contact us about this listing";
-
-// ─── Photo gallery data ────────────────────────────────────────────────────
-// Cloudflare Images delivery URLs are built browser-side from these IDs +
-// the account hash. PUBLIC_ prefix makes the hash safely exposed to the
-// client (the hash is already visible in every imagedelivery.net URL).
-const cfAccountHash =
-  process.env.PUBLIC_CF_IMAGES_ACCOUNT_HASH || import.meta.env.PUBLIC_CF_IMAGES_ACCOUNT_HASH;
-
-const photoIds = parsePhotoIds(listing.photoIds);
-const floorPlanIds = parsePhotoIds(listing.floorPlanIds);
-const virtualTourUrls = parseVirtualTourUrls(listing.virtualTourUrls);
-
-// cityLine for display: "Edina, MN 55436"
-const cityLine = listing.city
-  ? `${listing.city}, MN${listing.zipCode ? ` ${listing.zipCode}` : ""}`
-  : "";
-
-// Amenities: stored as comma-separated string → display as grid items
-const amenitiesList: string[] = listing.amenities
-  ? listing.amenities.split(", ").filter(Boolean)
-  : [];
-
-// Appliances: same pattern
-const appliancesList: string[] = listing.appliances
-  ? listing.appliances.split(", ").filter(Boolean)
-  : [];
-
-// ─── JSON-LD: RealEstateListing ──────────────────────────────────────────────
-// city, zipCode now come directly from the model — no string parsing needed.
-// listPrice is already a number — no "$" stripping needed.
-// sqftTotal is already a number — no comma stripping needed.
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "RealEstateListing",
   name: `${listing.beds} BD / ${bathDisplay} BA ${listing.style ?? "Home"} — ${listing.address}`,
   description: listing.publicRemarks ?? "",
   url: canonicalUrl,
-  // Only assert datePosted when we actually have it. Previously this fell back
-  // to `new Date()`, fabricating "today" as the post date on every render —
-  // misleading structured data and non-deterministic output.
+  // Only assert datePosted when we have it — falling back to "today" would fabricate
+  // structured data and make output non-deterministic.
   ...(listing.listDate && { datePosted: listing.listDate }),
   price: listing.listPrice,
   priceCurrency: "USD",
@@ -178,55 +142,20 @@ const jsonLd = {
     name: listingBrokerDisplay,
   },
 };
-// amenityScores are fetched server-side with the listing, so we parse and
-// render them without any client-side API call.
-const amenityScores = parseAmenityScores(listing.amenityScores);
 
-// Pre-compute the scorecard to avoid complex JSX expressions in the template.
-// Astro's parser handles single-expression arrows cleanly; block-body arrows
-// with multi-line JSX returning class attributes break it.
-const SCORECARD_CATEGORIES = ["grocery", "restaurants", "pharmacy", "hardware"] as const;
-const SCORECARD_MODES = [
-  { key: "walk", label: "Walking", icon: "🚶" },
-  { key: "bike", label: "Cycling", icon: "🚴" },
-  { key: "drive", label: "Driving", icon: "🚗" },
-] as const;
+// ─── Photo gallery data ──────────────────────────────────────────────────────
+// Cloudflare delivery URLs are built in the browser from these ids + the account hash.
+// The hash is PUBLIC_ on purpose: it's visible in every imagedelivery.net URL anyway.
+const cfAccountHash =
+  process.env.PUBLIC_CF_IMAGES_ACCOUNT_HASH || import.meta.env.PUBLIC_CF_IMAGES_ACCOUNT_HASH;
+const photoIds = parsePhotoIds(listing.photoIds);
+const floorPlanIds = parsePhotoIds(listing.floorPlanIds);
+const virtualTourUrls = parseVirtualTourUrls(listing.virtualTourUrls);
 
-const scorecardData = amenityScores
-  ? SCORECARD_MODES.map((mode) => {
-      const rows = SCORECARD_CATEGORIES.map((catKey) => {
-        const c5 = amenityScores.scores[`${mode.key}_5min`]?.[catKey];
-        const c10 = amenityScores.scores[`${mode.key}_10min`]?.[catKey];
-        const c15 = amenityScores.scores[`${mode.key}_15min`]?.[catKey];
-        const closest = c5 ?? c10 ?? c15;
-        const subtypeEntries = closest?.subtypes ? Object.entries(closest.subtypes) : [];
-        return {
-          catLabel: categoryLabel(catKey),
-          c5Count: c5?.count,
-          c10Count: c10?.count,
-          c15Count: c15?.count,
-          closestName: closest?.nearestName,
-          closestMeters: closest?.nearestMeters,
-          subtypeEntries,
-          showBreakdown: subtypeEntries.length > 1,
-        };
-      });
-      return { ...mode, rows };
-    })
-  : [];
-
-const generatedAtFormatted = amenityScores
-  ? new Date(amenityScores.generatedAt).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    })
-  : "";
-
-// The AI chat system prompt is built SERVER-SIDE by the listing API from the
-// listingId (see ChatController / ListingChatPromptBuilder). The browser sends
-// only the listingId + messages, so the prompt and its guardrails can't be
-// tampered with by the client. This page no longer constructs or ships it.
+// ─── Checklist sections ──────────────────────────────────────────────────────
+// MLS sends these as one comma-separated string; shown as ✓ lists.
+const appliancesList = listing.appliances ? listing.appliances.split(", ").filter(Boolean) : [];
+const amenitiesList = listing.amenities ? listing.amenities.split(", ").filter(Boolean) : [];
 ---
 
 <Layout
@@ -235,22 +164,9 @@ const generatedAtFormatted = amenityScores
   jsonLd={jsonLd}
   canonical={canonicalUrl}
 >
-  <!-- BREADCRUMB -->
-  <div class="max-w-6xl mx-auto px-6 pt-8">
-    <nav class="text-sm text-stone-400">
-      <a href="/" class="hover:text-stone-600 transition-colors">
-        Home
-      </a>
-      <span class="mx-2">›</span>
-      <a href="/listings" class="hover:text-stone-600 transition-colors">
-        Listings
-      </a>
-      <span class="mx-2">›</span>
-      <span class="text-stone-600">{listing.address}</span>
-    </nav>
-  </div>
+  <Breadcrumb address={listing.address} />
 
-  <!-- PHOTO GALLERY -->
+  {/* ── Photo gallery ── */}
   <div class="max-w-6xl mx-auto px-6 pt-6">
     <PhotoGallery
       client:visible
@@ -261,617 +177,32 @@ const generatedAtFormatted = amenityScores
     />
   </div>
 
-  <!-- HERO -->
-  <div class="max-w-6xl mx-auto px-6 pt-6 pb-8 border-b border-stone-100">
-    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-      <div>
-        <div class="flex items-center gap-2 mb-2">
-          {listing.status && (
-            <span class={statusBadgeClasses(listing.status)}>{statusLabel(listing.status)}</span>
-          )}
-          {priceReduced && (
-            <span class="inline-block px-2 py-1 text-xs font-semibold rounded bg-red-100 text-red-700">
-              Price Reduced
-            </span>
-          )}
-        </div>
-        <h1 class="text-3xl font-semibold text-stone-900">{listing.address}</h1>
-        <div class="text-stone-500 mt-1">{cityLine}</div>
-        {listing.neighborhood && (
-          <div class="text-xs text-stone-400 uppercase tracking-widest mt-1">
-            {listing.neighborhood}
-          </div>
-        )}
-      </div>
-      <div class="text-right shrink-0">
-        <div class="text-3xl font-semibold text-stone-900">{priceDisplay}</div>
-        {priceReduced && (
-          <div class="text-sm text-stone-400 line-through mt-0.5">
-            {formatPrice(listing.originalListPrice)}
-          </div>
-        )}
-        {mlsID && <div class="text-xs text-stone-400 mt-1">MLS #{mlsID}</div>}
-      </div>
-    </div>
+  <Hero listing={listing} />
 
-    <!-- KEY STATS BAR -->
-    <div class="flex flex-wrap gap-6 mt-6 text-sm text-stone-700">
-      {listing.beds && (
-        <div>
-          <span class="font-semibold text-stone-900">{listing.beds}</span> Beds
-        </div>
-      )}
-      {bathTotal(listing) > 0 && (
-        <div>
-          <span class="font-semibold text-stone-900">{bathDisplay}</span> Baths
-        </div>
-      )}
-      {listing.sqftTotal && (
-        <div>
-          <span class="font-semibold text-stone-900">{sqftDisplay}</span> Sqft
-        </div>
-      )}
-      {listing.lotSqft && (
-        <div>
-          <span class="font-semibold text-stone-900">{lotDisplay}</span> Lot
-        </div>
-      )}
-      {listing.style && (
-        <div>
-          <span class="font-semibold text-stone-900">{listing.style}</span>
-        </div>
-      )}
-      {listing.yearBuilt && (
-        <div>
-          Built <span class="font-semibold text-stone-900">{listing.yearBuilt}</span>
-        </div>
-      )}
-      {listing.garageStalls != null && (
-        <div>
-          <span class="font-semibold text-stone-900">{listing.garageStalls}</span> Car Garage
-        </div>
-      )}
-      {listing.daysOnMarket != null && (
-        <div>
-          <span class="font-semibold text-stone-900">{listing.daysOnMarket}</span> Days on Market
-        </div>
-      )}
-    </div>
-  </div>
-
-  <!-- MAIN CONTENT + CHAT -->
+  {/* ── Main content (left) + contact sidebar (right) ── */}
   <div class="max-w-6xl mx-auto px-6 py-10 grid grid-cols-1 lg:grid-cols-5 gap-12">
-    <!-- LEFT: LISTING DETAILS -->
     <div class="lg:col-span-3 space-y-10">
-      <!-- Description -->
-      {listing.publicRemarks && (
-        <div>
-          <h2 class="text-lg font-semibold text-stone-900 mb-3">About This Home</h2>
-          <p class="text-stone-600 leading-relaxed">{listing.publicRemarks}</p>
-        </div>
-      )}
-      {amenityScores && (
-        <section class="my-12">
-          <h2 class="text-2xl font-semibold mb-2">What's nearby</h2>
-          <p class="text-sm text-gray-500 mb-8">
-            Travel times computed from real road and path networks, not radius circles.
-          </p>
-
-          <div class="space-y-10">
-            {scorecardData.map((mode) => (
-              <div>
-                <h3 class="text-lg font-semibold mb-3 flex items-center gap-2">
-                  <span aria-hidden="true">{mode.icon}</span> {mode.label}
-                </h3>
-
-                <div class="overflow-x-auto">
-                  <table class="w-full text-sm border-collapse">
-                    <thead>
-                      <tr class="border-b border-gray-200 text-gray-600">
-                        <th class="text-left py-2 pr-4 font-medium">Category</th>
-                        <th class="text-center px-3 font-medium">5 min</th>
-                        <th class="text-center px-3 font-medium">10 min</th>
-                        <th class="text-center px-3 font-medium">15 min</th>
-                        <th class="text-left pl-4 font-medium">Closest</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {mode.rows.map((row) => (
-                        <tr class="border-b border-gray-100">
-                          <td class="py-2 pr-4">{row.catLabel}</td>
-                          <td class="text-center px-3">{row.c5Count ?? "—"}</td>
-                          <td class="text-center px-3">{row.c10Count ?? "—"}</td>
-                          <td class="text-center px-3">{row.c15Count ?? "—"}</td>
-                          <td class="pl-4 text-gray-700">
-                            {row.closestName ? (
-                              <span>
-                                <span>
-                                  {row.closestName} · {formatDistance(row.closestMeters)}
-                                </span>
-                                {row.showBreakdown && (
-                                  <details class="inline-block ml-2 align-middle">
-                                    <summary class="text-xs text-blue-600 cursor-pointer hover:underline list-none">
-                                      breakdown
-                                    </summary>
-                                    <ul class="text-xs mt-1 ml-4 text-gray-600 space-y-0.5">
-                                      {row.subtypeEntries.map(([type, n]) => (
-                                        <li>
-                                          {subtypeLabel(type)}: {n}
-                                        </li>
-                                      ))}
-                                    </ul>
-                                  </details>
-                                )}
-                              </span>
-                            ) : (
-                              "—"
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <p class="text-xs text-gray-400 mt-8">
-            Data via Mapbox isochrones and OpenStreetMap. Updated {generatedAtFormatted}.
-          </p>
-        </section>
-      )}
-      <!-- Room Dimensions -->
-      {rooms.length !== 0 && (
-        <div>
-          <h2 class="text-lg font-semibold text-stone-900 mb-3">Room Dimensions</h2>
-          <div class="overflow-x-auto">
-            <table class="w-full text-sm">
-              <thead>
-                <tr class="border-b border-stone-200 text-left text-stone-500 text-xs uppercase tracking-wide">
-                  <th class="pb-2 font-medium">Room</th>
-                  <th class="pb-2 font-medium">Level</th>
-                  <th class="pb-2 font-medium">Dimensions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rooms.map((room) => (
-                  <tr class="border-b border-stone-100">
-                    <td class="py-2 text-stone-800 font-medium">{room.room}</td>
-                    <td class="py-2 text-stone-600">{room.level}</td>
-                    <td class="py-2 text-stone-600">{room.dim}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      <!-- Square Footage Breakdown -->
-      {(listing.sqftAboveGrade || listing.sqftBelowGrade) && (
-        <div>
-          <h2 class="text-lg font-semibold text-stone-900 mb-3">Square Footage</h2>
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
-            {listing.sqftAboveGrade && (
-              <div>
-                <div class="text-stone-400 mb-0.5 text-xs">Above Grade</div>
-                <div class="font-semibold text-stone-800">{formatSqft(listing.sqftAboveGrade)}</div>
-              </div>
-            )}
-            {listing.sqftBelowGrade != null && (
-              <div>
-                <div class="text-stone-400 mb-0.5 text-xs">Below Grade</div>
-                <div class="font-semibold text-stone-800">{formatSqft(listing.sqftBelowGrade)}</div>
-              </div>
-            )}
-            {listing.sqftMainLevel && (
-              <div>
-                <div class="text-stone-400 mb-0.5 text-xs">Main Level</div>
-                <div class="font-semibold text-stone-800">{formatSqft(listing.sqftMainLevel)}</div>
-              </div>
-            )}
-            {listing.sqftTotal && (
-              <div>
-                <div class="text-stone-400 mb-0.5 text-xs">Total Finished</div>
-                <div class="font-semibold text-stone-800">{sqftDisplay}</div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      <!-- Bath Detail -->
-      <div>
-        <h2 class="text-lg font-semibold text-stone-900 mb-3">Bathroom Detail</h2>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
-          <div>
-            <div class="text-stone-400 mb-0.5 text-xs">Full</div>
-            <div class="font-semibold text-stone-800">{listing.bathsFull ?? 0}</div>
-          </div>
-          <div>
-            <div class="text-stone-400 mb-0.5 text-xs">Three-Quarter</div>
-            <div class="font-semibold text-stone-800">{listing.bathsThreeQuarter ?? 0}</div>
-          </div>
-          <div>
-            <div class="text-stone-400 mb-0.5 text-xs">Half</div>
-            <div class="font-semibold text-stone-800">{listing.bathsHalf ?? 0}</div>
-          </div>
-          <div>
-            <div class="text-stone-400 mb-0.5 text-xs">Quarter</div>
-            <div class="font-semibold text-stone-800">{listing.bathsQuarter ?? 0}</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Interior Features -->
-      <div>
-        <h2 class="text-lg font-semibold text-stone-900 mb-3">Interior Features</h2>
-        <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-sm">
-          {listing.heating && (
-            <div class="flex justify-between border-b border-stone-100 pb-2">
-              <dt class="text-stone-500">Heating</dt>
-              <dd class="text-stone-800 font-medium text-right max-w-[60%]">{listing.heating}</dd>
-            </div>
-          )}
-          {listing.airConditioning && (
-            <div class="flex justify-between border-b border-stone-100 pb-2">
-              <dt class="text-stone-500">Cooling</dt>
-              <dd class="text-stone-800 font-medium text-right max-w-[60%]">
-                {listing.airConditioning}
-              </dd>
-            </div>
-          )}
-          {listing.fuelType && (
-            <div class="flex justify-between border-b border-stone-100 pb-2">
-              <dt class="text-stone-500">Fuel</dt>
-              <dd class="text-stone-800 font-medium text-right max-w-[60%]">{listing.fuelType}</dd>
-            </div>
-          )}
-          {listing.basement && (
-            <div class="flex justify-between border-b border-stone-100 pb-2">
-              <dt class="text-stone-500">Basement</dt>
-              <dd class="text-stone-800 font-medium text-right max-w-[60%]">{listing.basement}</dd>
-            </div>
-          )}
-          {listing.fireplaces && listing.fireplaces !== "0" && (
-            <div class="flex justify-between border-b border-stone-100 pb-2">
-              <dt class="text-stone-500">Fireplaces</dt>
-              <dd class="text-stone-800 font-medium text-right max-w-[60%]">
-                {listing.fireplaces} — {listing.fireplaceFeatures}
-              </dd>
-            </div>
-          )}
-          {listing.laundryFeatures && (
-            <div class="flex justify-between border-b border-stone-100 pb-2">
-              <dt class="text-stone-500">Laundry</dt>
-              <dd class="text-stone-800 font-medium text-right max-w-[60%]">
-                {listing.laundryFeatures}
-              </dd>
-            </div>
-          )}
-          {listing.parkingFeatures && (
-            <div class="flex justify-between border-b border-stone-100 pb-2">
-              <dt class="text-stone-500">Parking</dt>
-              <dd class="text-stone-800 font-medium text-right max-w-[60%]">
-                {listing.parkingFeatures}
-              </dd>
-            </div>
-          )}
-          {listing.garageSqft && (
-            <div class="flex justify-between border-b border-stone-100 pb-2">
-              <dt class="text-stone-500">Garage Sqft</dt>
-              <dd class="text-stone-800 font-medium">{formatSqft(listing.garageSqft)}</dd>
-            </div>
-          )}
-          {listing.electric && (
-            <div class="flex justify-between border-b border-stone-100 pb-2">
-              <dt class="text-stone-500">Electric</dt>
-              <dd class="text-stone-800 font-medium text-right max-w-[60%]">{listing.electric}</dd>
-            </div>
-          )}
-          {listing.sewer && (
-            <div class="flex justify-between border-b border-stone-100 pb-2">
-              <dt class="text-stone-500">Sewer</dt>
-              <dd class="text-stone-800 font-medium text-right max-w-[60%]">{listing.sewer}</dd>
-            </div>
-          )}
-          {listing.waterSource && (
-            <div class="flex justify-between border-b border-stone-100 pb-2">
-              <dt class="text-stone-500">Water</dt>
-              <dd class="text-stone-800 font-medium text-right max-w-[60%]">
-                {listing.waterSource}
-              </dd>
-            </div>
-          )}
-        </dl>
-      </div>
-
-      <!-- Appliances -->
-      {appliancesList.length !== 0 && (
-        <div>
-          <h2 class="text-lg font-semibold text-stone-900 mb-3">Appliances</h2>
-          <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {appliancesList.map((item) => (
-              <li class="flex items-start gap-2 text-sm text-stone-600">
-                <span class="text-stone-400 mt-0.5 shrink-0">✓</span>
-                {item}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      <!-- Exterior & Construction -->
-      <div>
-        <h2 class="text-lg font-semibold text-stone-900 mb-3">Exterior & Construction</h2>
-        <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-sm">
-          {listing.constructionMaterials && (
-            <div class="flex justify-between border-b border-stone-100 pb-2">
-              <dt class="text-stone-500">Construction</dt>
-              <dd class="text-stone-800 font-medium text-right max-w-[60%]">
-                {listing.constructionMaterials}
-              </dd>
-            </div>
-          )}
-          {listing.roof && (
-            <div class="flex justify-between border-b border-stone-100 pb-2">
-              <dt class="text-stone-500">Roof</dt>
-              <dd class="text-stone-800 font-medium text-right max-w-[60%]">{listing.roof}</dd>
-            </div>
-          )}
-          {listing.exteriorFeatures && (
-            <div class="flex justify-between border-b border-stone-100 pb-2">
-              <dt class="text-stone-500">Exterior Features</dt>
-              <dd class="text-stone-800 font-medium text-right max-w-[60%]">
-                {listing.exteriorFeatures}
-              </dd>
-            </div>
-          )}
-          {listing.lotFeatures && (
-            <div class="flex justify-between border-b border-stone-100 pb-2">
-              <dt class="text-stone-500">Lot Features</dt>
-              <dd class="text-stone-800 font-medium text-right max-w-[60%]">
-                {listing.lotFeatures}
-              </dd>
-            </div>
-          )}
-          {listing.lotDimensions && (
-            <div class="flex justify-between border-b border-stone-100 pb-2">
-              <dt class="text-stone-500">Lot Dimensions</dt>
-              <dd class="text-stone-800 font-medium">{listing.lotDimensions}</dd>
-            </div>
-          )}
-          {listing.fencing && (
-            <div class="flex justify-between border-b border-stone-100 pb-2">
-              <dt class="text-stone-500">Fencing</dt>
-              <dd class="text-stone-800 font-medium text-right max-w-[60%]">{listing.fencing}</dd>
-            </div>
-          )}
-          {listing.pool && listing.pool !== "None" && (
-            <div class="flex justify-between border-b border-stone-100 pb-2">
-              <dt class="text-stone-500">Pool</dt>
-              <dd class="text-stone-800 font-medium text-right max-w-[60%]">{listing.pool}</dd>
-            </div>
-          )}
-        </dl>
-      </div>
-
-      <!-- Amenities -->
-      {amenitiesList.length !== 0 && (
-        <div>
-          <h2 class="text-lg font-semibold text-stone-900 mb-3">Amenities</h2>
-          <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {amenitiesList.map((item) => (
-              <li class="flex items-start gap-2 text-sm text-stone-600">
-                <span class="text-stone-400 mt-0.5 shrink-0">✓</span>
-                {item}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      <!-- Waterfront -->
-      {listing.waterfrontFeet !== 0 && listing.waterfrontFeet != null && (
-        <div>
-          <h2 class="text-lg font-semibold text-stone-900 mb-3">Waterfront / Lake</h2>
-          <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-sm">
-            {listing.waterBodyName && (
-              <div class="flex justify-between border-b border-stone-100 pb-2">
-                <dt class="text-stone-500">Body of Water</dt>
-                <dd class="text-stone-800 font-medium">{listing.waterBodyName}</dd>
-              </div>
-            )}
-            <div class="flex justify-between border-b border-stone-100 pb-2">
-              <dt class="text-stone-500">Frontage</dt>
-              <dd class="text-stone-800 font-medium">{listing.waterfrontFeet} ft</dd>
-            </div>
-            {listing.waterfrontView && (
-              <div class="flex justify-between border-b border-stone-100 pb-2">
-                <dt class="text-stone-500">View</dt>
-                <dd class="text-stone-800 font-medium">{listing.waterfrontView}</dd>
-              </div>
-            )}
-            {listing.surfaceWaterType && (
-              <div class="flex justify-between border-b border-stone-100 pb-2">
-                <dt class="text-stone-500">Water Type</dt>
-                <dd class="text-stone-800 font-medium">{listing.surfaceWaterType}</dd>
-              </div>
-            )}
-            {listing.dnrLakeClass && listing.dnrLakeClass !== "Not Applicable" && (
-              <div class="flex justify-between border-b border-stone-100 pb-2">
-                <dt class="text-stone-500">DNR Lake Class</dt>
-                <dd class="text-stone-800 font-medium">{listing.dnrLakeClass}</dd>
-              </div>
-            )}
-            {listing.lakeAcres && listing.lakeAcres !== "0.000" && (
-              <div class="flex justify-between border-b border-stone-100 pb-2">
-                <dt class="text-stone-500">Lake Acres</dt>
-                <dd class="text-stone-800 font-medium">{listing.lakeAcres}</dd>
-              </div>
-            )}
-            {listing.lakeDepth && listing.lakeDepth !== "0" && (
-              <div class="flex justify-between border-b border-stone-100 pb-2">
-                <dt class="text-stone-500">Lake Depth (ft)</dt>
-                <dd class="text-stone-800 font-medium">{listing.lakeDepth}</dd>
-              </div>
-            )}
-            {listing.lakeBottomType && (
-              <div class="flex justify-between border-b border-stone-100 pb-2">
-                <dt class="text-stone-500">Lake Bottom</dt>
-                <dd class="text-stone-800 font-medium">{listing.lakeBottomType}</dd>
-              </div>
-            )}
-          </dl>
-        </div>
-      )}
-
-      <!-- HOA -->
-      {listing.associationFee && listing.associationFee !== "0" && (
-        <div>
-          <h2 class="text-lg font-semibold text-stone-900 mb-3">HOA / Association</h2>
-          <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-sm">
-            <div class="flex justify-between border-b border-stone-100 pb-2">
-              <dt class="text-stone-500">Fee</dt>
-              <dd class="text-stone-800 font-medium">
-                {formatMoneyString(listing.associationFee)}/
-                {listing.associationFeeFrequency ?? "month"}
-              </dd>
-            </div>
-            {listing.associationFeeIncludes && (
-              <div class="flex justify-between border-b border-stone-100 pb-2 col-span-2">
-                <dt class="text-stone-500 shrink-0 mr-4">Includes</dt>
-                <dd class="text-stone-800 font-medium text-right">
-                  {listing.associationFeeIncludes}
-                </dd>
-              </div>
-            )}
-            {listing.associationMgmtName && (
-              <div class="flex justify-between border-b border-stone-100 pb-2">
-                <dt class="text-stone-500">Management</dt>
-                <dd class="text-stone-800 font-medium">{listing.associationMgmtName}</dd>
-              </div>
-            )}
-          </dl>
-        </div>
-      )}
-
-      <!-- Financial Details -->
-      <div>
-        <h2 class="text-lg font-semibold text-stone-900 mb-3">Financial Details</h2>
-        <div class="grid grid-cols-2 gap-4 text-sm">
-          {listing.taxAmount && (
-            <div>
-              <div class="text-stone-400 mb-0.5">Annual Taxes ({listing.taxYear})</div>
-              <div class="font-medium text-stone-800">{formatMoneyString(listing.taxAmount)}</div>
-            </div>
-          )}
-          {listing.taxWithAssessments && listing.taxWithAssessments !== listing.taxAmount && (
-            <div>
-              <div class="text-stone-400 mb-0.5">Tax w/ Assessments</div>
-              <div class="font-medium text-stone-800">
-                {formatMoneyString(listing.taxWithAssessments)}
-              </div>
-            </div>
-          )}
-          {listing.lotSqft && (
-            <div>
-              <div class="text-stone-400 mb-0.5">Lot Size</div>
-              <div class="font-medium text-stone-800">{lotDisplay}</div>
-            </div>
-          )}
-          {listing.financing && (
-            <div>
-              <div class="text-stone-400 mb-0.5">Financing Terms</div>
-              <div class="font-medium text-stone-800">{listing.financing}</div>
-            </div>
-          )}
-        </div>
-      </div>
-
-      <!-- Schools -->
-      {(listing.elementarySchool ||
-        listing.middleSchool ||
-        listing.highSchool ||
-        listing.schoolDistrict) && (
-        <div>
-          <h2 class="text-lg font-semibold text-stone-900 mb-3">Schools</h2>
-          <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-sm">
-            {listing.schoolDistrict && (
-              <div class="flex justify-between border-b border-stone-100 pb-2">
-                <dt class="text-stone-500">District</dt>
-                <dd class="text-stone-800 font-medium">{listing.schoolDistrict}</dd>
-              </div>
-            )}
-            {listing.elementarySchool && (
-              <div class="flex justify-between border-b border-stone-100 pb-2">
-                <dt class="text-stone-500">Elementary</dt>
-                <dd class="text-stone-800 font-medium">{listing.elementarySchool}</dd>
-              </div>
-            )}
-            {listing.middleSchool && (
-              <div class="flex justify-between border-b border-stone-100 pb-2">
-                <dt class="text-stone-500">Middle</dt>
-                <dd class="text-stone-800 font-medium">{listing.middleSchool}</dd>
-              </div>
-            )}
-            {listing.highSchool && (
-              <div class="flex justify-between border-b border-stone-100 pb-2">
-                <dt class="text-stone-500">High School</dt>
-                <dd class="text-stone-800 font-medium">{listing.highSchool}</dd>
-              </div>
-            )}
-          </dl>
-        </div>
-      )}
-
-      <!-- Directions -->
-      {listing.directions && (
-        <div>
-          <h2 class="text-lg font-semibold text-stone-900 mb-3">Directions</h2>
-          <p class="text-sm text-stone-600">{listing.directions}</p>
-        </div>
-      )}
-
-      <!-- Listing attribution card — always shows the listing brokerage. -->
-      <div class="bg-stone-50 rounded-xl p-4 text-sm">
-        <div class="text-stone-400 text-[10px] uppercase tracking-widest mb-1">Listed by</div>
-        <div class="font-semibold text-stone-900">{listingBrokerDisplay}</div>
-        {listing.listDate && (
-          <div class="text-stone-400 text-xs mt-2">Listed {listing.listDate}</div>
-        )}
-      </div>
+      <Description listing={listing} />
+      <AmenityScorecard listing={listing} />
+      <RoomDimensions listing={listing} />
+      <SquareFootage listing={listing} />
+      <BathroomDetail listing={listing} />
+      <InteriorFeatures listing={listing} />
+      <ChecklistSection title="Appliances" items={appliancesList} />
+      <ExteriorFeatures listing={listing} />
+      <ChecklistSection title="Amenities" items={amenitiesList} />
+      <Waterfront listing={listing} />
+      <HoaDetails listing={listing} />
+      <FinancialDetails listing={listing} />
+      <Schools listing={listing} />
+      <Directions listing={listing} />
+      <ListedBy brokerName={listingBrokerDisplay} listDate={listing.listDate} />
     </div>
 
-    <!-- RIGHT: CTA + AI CHAT -->
-    <div class="lg:col-span-2">
-      <div class="sticky top-8 space-y-6">
-        <!-- CTA -->
-        <div class="border border-stone-200 rounded-xl p-6">
-          <div class="font-semibold text-stone-900 mb-1">{ctaTitle}</div>
-          <p class="text-sm text-stone-500 mb-4">{ctaBody}</p>
-          <a
-            href="/contact"
-            class="inline-block bg-stone-900 text-white text-sm px-5 py-2.5 rounded-lg hover:bg-stone-700 transition-colors"
-          >
-            {ctaButton}
-          </a>
-        </div>
-
-        <!-- AI Chat -->
-        <div>
-          <h2 class="text-lg font-semibold text-stone-900 mb-1">Ask About This Property</h2>
-          <p class="text-sm text-stone-500 mb-4">
-            Get instant answers about features, the neighborhood, financials, or anything else.
-          </p>
-          <ListingChat client:load listingId={listing.id} apiBaseUrl={apiBase} />
-        </div>
-      </div>
-    </div>
+    <ContactSidebar listingId={listing.id} apiBase={apiBase} />
   </div>
 
-  <!-- IDX-required disclosure block: attribution, freshness, disclaimers,
-       fair housing, copyright. Always rendered on every listing. -->
+  {/* IDX-required disclosure block: attribution, freshness, disclaimers, fair housing,
+      copyright. Always rendered on every listing. */}
   <ListingDisclosure listing={listing} />
 </Layout>

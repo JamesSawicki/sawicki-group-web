@@ -1,0 +1,49 @@
+---
+/**
+ * Square footage breakdown: above grade, below grade, main level, total finished.
+ * Shown when above- or below-grade footage is known.
+ */
+// ─── Imports ─────────────────────────────────────────────────────────────────
+import type { Listing } from "../../types/listing";
+import { formatSqft } from "../../lib/listing-utils";
+
+// ─── Props ───────────────────────────────────────────────────────────────────
+interface Props {
+  /** The listing being displayed. */
+  listing: Listing;
+}
+
+const { listing } = Astro.props;
+---
+
+{(listing.sqftAboveGrade || listing.sqftBelowGrade) && (
+  <div>
+    <h2 class="text-lg font-semibold text-stone-900 mb-3">Square Footage</h2>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+      {listing.sqftAboveGrade && (
+        <div>
+          <div class="text-stone-400 mb-0.5 text-xs">Above Grade</div>
+          <div class="font-semibold text-stone-800">{formatSqft(listing.sqftAboveGrade)}</div>
+        </div>
+      )}
+      {listing.sqftBelowGrade != null && (
+        <div>
+          <div class="text-stone-400 mb-0.5 text-xs">Below Grade</div>
+          <div class="font-semibold text-stone-800">{formatSqft(listing.sqftBelowGrade)}</div>
+        </div>
+      )}
+      {listing.sqftMainLevel && (
+        <div>
+          <div class="text-stone-400 mb-0.5 text-xs">Main Level</div>
+          <div class="font-semibold text-stone-800">{formatSqft(listing.sqftMainLevel)}</div>
+        </div>
+      )}
+      {listing.sqftTotal && (
+        <div>
+          <div class="text-stone-400 mb-0.5 text-xs">Total Finished</div>
+          <div class="font-semibold text-stone-800">{formatSqft(listing.sqftTotal)}</div>
+        </div>
+      )}
+    </div>
+  </div>
+)}

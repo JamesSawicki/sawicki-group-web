@@ -1,0 +1,120 @@
+---
+/**
+ * Listing hero: status/price-reduced badges, address and city line, price (with the
+ * struck-through original when reduced), MLS number, and the key stats bar.
+ */
+// ─── Imports ─────────────────────────────────────────────────────────────────
+import type { Listing } from "../../types/listing";
+import {
+  bathTotal,
+  formatBathTotal,
+  formatLot,
+  formatMlsId,
+  formatPrice,
+  formatSqft,
+  hasPriceReduction,
+  statusBadgeClasses,
+  statusLabel,
+} from "../../lib/listing-utils";
+
+// ─── Props ───────────────────────────────────────────────────────────────────
+interface Props {
+  /** The listing being displayed. */
+  listing: Listing;
+}
+
+const { listing } = Astro.props;
+
+// ─── Derived values ──────────────────────────────────────────────────────────
+const priceDisplay = formatPrice(listing.listPrice);
+const bathDisplay = formatBathTotal(listing);
+const sqftDisplay = formatSqft(listing.sqftTotal);
+const lotDisplay = formatLot(listing.lotSqft);
+const priceReduced = hasPriceReduction(listing);
+const mlsID = formatMlsId(listing.mlsId);
+
+// "Edina, MN 55436"; empty when the city is unknown.
+const cityLine = listing.city
+  ? `${listing.city}, MN${listing.zipCode ? ` ${listing.zipCode}` : ""}`
+  : "";
+---
+
+<div class="max-w-6xl mx-auto px-6 pt-6 pb-8 border-b border-stone-100">
+  {/* ── Badges, address, price ── */}
+  <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-2 mb-2">
+        {listing.status && (
+          <span class={statusBadgeClasses(listing.status)}>{statusLabel(listing.status)}</span>
+        )}
+        {priceReduced && (
+          <span class="inline-block px-2 py-1 text-xs font-semibold rounded bg-red-100 text-red-700">
+            Price Reduced
+          </span>
+        )}
+      </div>
+      <h1 class="text-3xl font-semibold text-stone-900">{listing.address}</h1>
+      <div class="text-stone-500 mt-1">{cityLine}</div>
+      {listing.neighborhood && (
+        <div class="text-xs text-stone-400 uppercase tracking-widest mt-1">
+          {listing.neighborhood}
+        </div>
+      )}
+    </div>
+    <div class="text-right shrink-0">
+      <div class="text-3xl font-semibold text-stone-900">{priceDisplay}</div>
+      {priceReduced && (
+        <div class="text-sm text-stone-400 line-through mt-0.5">
+          {formatPrice(listing.originalListPrice)}
+        </div>
+      )}
+      {mlsID && <div class="text-xs text-stone-400 mt-1">MLS #{mlsID}</div>}
+    </div>
+  </div>
+
+  {/* ── Key stats bar ── */}
+  {/* Note: `listing.beds && ...` (and sqft/lot/year) renders a literal "0" when the value
+      is 0 — known quirk, kept as-is in the component split. */}
+  <div class="flex flex-wrap gap-6 mt-6 text-sm text-stone-700">
+    {listing.beds && (
+      <div>
+        <span class="font-semibold text-stone-900">{listing.beds}</span> Beds
+      </div>
+    )}
+    {bathTotal(listing) > 0 && (
+      <div>
+        <span class="font-semibold text-stone-900">{bathDisplay}</span> Baths
+      </div>
+    )}
+    {listing.sqftTotal && (
+      <div>
+        <span class="font-semibold text-stone-900">{sqftDisplay}</span> Sqft
+      </div>
+    )}
+    {listing.lotSqft && (
+      <div>
+        <span class="font-semibold text-stone-900">{lotDisplay}</span> Lot
+      </div>
+    )}
+    {listing.style && (
+      <div>
+        <span class="font-semibold text-stone-900">{listing.style}</span>
+      </div>
+    )}
+    {listing.yearBuilt && (
+      <div>
+        Built <span class="font-semibold text-stone-900">{listing.yearBuilt}</span>
+      </div>
+    )}
+    {listing.garageStalls != null && (
+      <div>
+        <span class="font-semibold text-stone-900">{listing.garageStalls}</span> Car Garage
+      </div>
+    )}
+    {listing.daysOnMarket != null && (
+      <div>
+        <span class="font-semibold text-stone-900">{listing.daysOnMarket}</span> Days on Market
+      </div>
+    )}
+  </div>
+</div>

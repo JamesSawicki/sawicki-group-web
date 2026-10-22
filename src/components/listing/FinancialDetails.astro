@@ -1,0 +1,47 @@
+---
+/** Annual taxes (with and without assessments), lot size, and financing terms. */
+// ─── Imports ─────────────────────────────────────────────────────────────────
+import type { Listing } from "../../types/listing";
+import { formatLot, formatMoneyString } from "../../lib/listing-utils";
+
+// ─── Props ───────────────────────────────────────────────────────────────────
+interface Props {
+  /** The listing being displayed. */
+  listing: Listing;
+}
+
+const { listing } = Astro.props;
+---
+
+<div>
+  <h2 class="text-lg font-semibold text-stone-900 mb-3">Financial Details</h2>
+  <div class="grid grid-cols-2 gap-4 text-sm">
+    {listing.taxAmount && (
+      <div>
+        <div class="text-stone-400 mb-0.5">Annual Taxes ({listing.taxYear})</div>
+        <div class="font-medium text-stone-800">{formatMoneyString(listing.taxAmount)}</div>
+      </div>
+    )}
+    {/* Only worth a second line when assessments change the number. */}
+    {listing.taxWithAssessments && listing.taxWithAssessments !== listing.taxAmount && (
+      <div>
+        <div class="text-stone-400 mb-0.5">Tax w/ Assessments</div>
+        <div class="font-medium text-stone-800">
+          {formatMoneyString(listing.taxWithAssessments)}
+        </div>
+      </div>
+    )}
+    {listing.lotSqft && (
+      <div>
+        <div class="text-stone-400 mb-0.5">Lot Size</div>
+        <div class="font-medium text-stone-800">{formatLot(listing.lotSqft)}</div>
+      </div>
+    )}
+    {listing.financing && (
+      <div>
+        <div class="text-stone-400 mb-0.5">Financing Terms</div>
+        <div class="font-medium text-stone-800">{listing.financing}</div>
+      </div>
+    )}
+  </div>
+</div>

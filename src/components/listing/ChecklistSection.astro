@@ -1,0 +1,28 @@
+---
+/**
+ * A titled two-column ✓ checklist (Appliances, Amenities). Renders nothing when
+ * `items` is empty.
+ */
+interface Props {
+  /** Section heading, e.g. "Appliances". */
+  title: string;
+  /** One entry per checklist line. */
+  items: string[];
+}
+
+const { title, items } = Astro.props;
+---
+
+{items.length !== 0 && (
+  <div>
+    <h2 class="text-lg font-semibold text-stone-900 mb-3">{title}</h2>
+    <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+      {items.map((item) => (
+        <li class="flex items-start gap-2 text-sm text-stone-600">
+          <span class="text-stone-400 mt-0.5 shrink-0">✓</span>
+          {item}
+        </li>
+      ))}
+    </ul>
+  </div>
+)}

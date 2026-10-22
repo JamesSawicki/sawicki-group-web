@@ -1,0 +1,45 @@
+---
+/**
+ * Interior systems and features (heating, cooling, fuel, basement, fireplaces, laundry,
+ * parking, garage, utilities) as a two-column detail list. Rows with no data are skipped.
+ */
+// ─── Imports ─────────────────────────────────────────────────────────────────
+import type { Listing } from "../../types/listing";
+import { formatSqft } from "../../lib/listing-utils";
+import DetailRow from "./DetailRow.astro";
+
+// ─── Props ───────────────────────────────────────────────────────────────────
+interface Props {
+  /** The listing being displayed. */
+  listing: Listing;
+}
+
+const { listing } = Astro.props;
+---
+
+<div>
+  <h2 class="text-lg font-semibold text-stone-900 mb-3">Interior Features</h2>
+  <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-sm">
+    {listing.heating && <DetailRow label="Heating">{listing.heating}</DetailRow>}
+    {listing.airConditioning && <DetailRow label="Cooling">{listing.airConditioning}</DetailRow>}
+    {listing.fuelType && <DetailRow label="Fuel">{listing.fuelType}</DetailRow>}
+    {listing.basement && <DetailRow label="Basement">{listing.basement}</DetailRow>}
+    {/* Known quirk: the API sends `fireplaces` as a number but the type says string, so the
+        `!== "0"` check never filters anything and a 0 renders as "0". Kept as-is for now. */}
+    {listing.fireplaces && listing.fireplaces !== "0" && (
+      <DetailRow label="Fireplaces">
+        {`${listing.fireplaces} — ${listing.fireplaceFeatures ?? ""}`}
+      </DetailRow>
+    )}
+    {listing.laundryFeatures && <DetailRow label="Laundry">{listing.laundryFeatures}</DetailRow>}
+    {listing.parkingFeatures && <DetailRow label="Parking">{listing.parkingFeatures}</DetailRow>}
+    {listing.garageSqft && (
+      <DetailRow label="Garage Sqft" longValue={false}>
+        {formatSqft(listing.garageSqft)}
+      </DetailRow>
+    )}
+    {listing.electric && <DetailRow label="Electric">{listing.electric}</DetailRow>}
+    {listing.sewer && <DetailRow label="Sewer">{listing.sewer}</DetailRow>}
+    {listing.waterSource && <DetailRow label="Water">{listing.waterSource}</DetailRow>}
+  </dl>
+</div>

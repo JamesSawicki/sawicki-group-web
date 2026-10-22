@@ -1,0 +1,18 @@
+---
+/** "About This Home": the listing agent's public remarks. Renders nothing when empty. */
+import type { Listing } from "../../types/listing";
+
+interface Props {
+  /** The listing being displayed; only `publicRemarks` is read. */
+  listing: Listing;
+}
+
+const { listing } = Astro.props;
+---
+
+{listing.publicRemarks && (
+  <div>
+    <h2 class="text-lg font-semibold text-stone-900 mb-3">About This Home</h2>
+    <p class="text-stone-600 leading-relaxed">{listing.publicRemarks}</p>
+  </div>
+)}

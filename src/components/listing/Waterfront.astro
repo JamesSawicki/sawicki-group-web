@@ -1,0 +1,64 @@
+---
+/**
+ * Waterfront / lake details. Shown only when the listing has non-zero water frontage.
+ * MLS fills unused lake fields with placeholder values ("Not Applicable", "0.000", "0"),
+ * which are filtered out here.
+ */
+// ─── Imports ─────────────────────────────────────────────────────────────────
+import type { Listing } from "../../types/listing";
+import DetailRow from "./DetailRow.astro";
+
+// ─── Props ───────────────────────────────────────────────────────────────────
+interface Props {
+  /** The listing being displayed. */
+  listing: Listing;
+}
+
+const { listing } = Astro.props;
+---
+
+{listing.waterfrontFeet !== 0 && listing.waterfrontFeet != null && (
+  <div>
+    <h2 class="text-lg font-semibold text-stone-900 mb-3">Waterfront / Lake</h2>
+    <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-sm">
+      {listing.waterBodyName && (
+        <DetailRow label="Body of Water" longValue={false}>
+          {listing.waterBodyName}
+        </DetailRow>
+      )}
+      <DetailRow label="Frontage" longValue={false}>
+        {`${listing.waterfrontFeet} ft`}
+      </DetailRow>
+      {listing.waterfrontView && (
+        <DetailRow label="View" longValue={false}>
+          {listing.waterfrontView}
+        </DetailRow>
+      )}
+      {listing.surfaceWaterType && (
+        <DetailRow label="Water Type" longValue={false}>
+          {listing.surfaceWaterType}
+        </DetailRow>
+      )}
+      {listing.dnrLakeClass && listing.dnrLakeClass !== "Not Applicable" && (
+        <DetailRow label="DNR Lake Class" longValue={false}>
+          {listing.dnrLakeClass}
+        </DetailRow>
+      )}
+      {listing.lakeAcres && listing.lakeAcres !== "0.000" && (
+        <DetailRow label="Lake Acres" longValue={false}>
+          {listing.lakeAcres}
+        </DetailRow>
+      )}
+      {listing.lakeDepth && listing.lakeDepth !== "0" && (
+        <DetailRow label="Lake Depth (ft)" longValue={false}>
+          {listing.lakeDepth}
+        </DetailRow>
+      )}
+      {listing.lakeBottomType && (
+        <DetailRow label="Lake Bottom" longValue={false}>
+          {listing.lakeBottomType}
+        </DetailRow>
+      )}
+    </dl>
+  </div>
+)}

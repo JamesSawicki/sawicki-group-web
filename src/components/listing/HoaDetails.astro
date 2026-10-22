@@ -1,0 +1,43 @@
+---
+/**
+ * HOA / association: fee and frequency, what the fee includes, management company.
+ * Shown when the listing has a non-zero association fee.
+ */
+// ─── Imports ─────────────────────────────────────────────────────────────────
+import type { Listing } from "../../types/listing";
+import { formatMoneyString } from "../../lib/listing-utils";
+import DetailRow from "./DetailRow.astro";
+
+// ─── Props ───────────────────────────────────────────────────────────────────
+interface Props {
+  /** The listing being displayed. */
+  listing: Listing;
+}
+
+const { listing } = Astro.props;
+---
+
+{/* Known quirk: the API sends `associationFee` as a number but the type says string, so
+    the `!== "0"` check never filters anything. Kept as-is for now. */}
+{listing.associationFee && listing.associationFee !== "0" && (
+  <div>
+    <h2 class="text-lg font-semibold text-stone-900 mb-3">HOA / Association</h2>
+    <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-sm">
+      <DetailRow label="Fee" longValue={false}>
+        {`${formatMoneyString(listing.associationFee)}/${listing.associationFeeFrequency ?? "month"}`}
+      </DetailRow>
+      {/* "Includes" is often a long list, so it spans both columns (not a DetailRow). */}
+      {listing.associationFeeIncludes && (
+        <div class="flex justify-between border-b border-stone-100 pb-2 col-span-2">
+          <dt class="text-stone-500 shrink-0 mr-4">Includes</dt>
+          <dd class="text-stone-800 font-medium text-right">{listing.associationFeeIncludes}</dd>
+        </div>
+      )}
+      {listing.associationMgmtName && (
+        <DetailRow label="Management" longValue={false}>
+          {listing.associationMgmtName}
+        </DetailRow>
+      )}
+    </dl>
+  </div>
+)}

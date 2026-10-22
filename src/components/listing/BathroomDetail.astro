@@ -1,0 +1,36 @@
+---
+/**
+ * Bathroom counts by MLS type (full, three-quarter, half, quarter). Always shown;
+ * missing counts display as 0.
+ */
+import type { Listing } from "../../types/listing";
+
+interface Props {
+  /** The listing being displayed. */
+  listing: Listing;
+}
+
+const { listing } = Astro.props;
+---
+
+<div>
+  <h2 class="text-lg font-semibold text-stone-900 mb-3">Bathroom Detail</h2>
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+    <div>
+      <div class="text-stone-400 mb-0.5 text-xs">Full</div>
+      <div class="font-semibold text-stone-800">{listing.bathsFull ?? 0}</div>
+    </div>
+    <div>
+      <div class="text-stone-400 mb-0.5 text-xs">Three-Quarter</div>
+      <div class="font-semibold text-stone-800">{listing.bathsThreeQuarter ?? 0}</div>
+    </div>
+    <div>
+      <div class="text-stone-400 mb-0.5 text-xs">Half</div>
+      <div class="font-semibold text-stone-800">{listing.bathsHalf ?? 0}</div>
+    </div>
+    <div>
+      <div class="text-stone-400 mb-0.5 text-xs">Quarter</div>
+      <div class="font-semibold text-stone-800">{listing.bathsQuarter ?? 0}</div>
+    </div>
+  </div>
+</div>

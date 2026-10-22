@@ -1,0 +1,45 @@
+---
+/** Assigned school district and schools. Shown when any school field is known. */
+// ─── Imports ─────────────────────────────────────────────────────────────────
+import type { Listing } from "../../types/listing";
+import DetailRow from "./DetailRow.astro";
+
+// ─── Props ───────────────────────────────────────────────────────────────────
+interface Props {
+  /** The listing being displayed. */
+  listing: Listing;
+}
+
+const { listing } = Astro.props;
+---
+
+{(listing.elementarySchool ||
+  listing.middleSchool ||
+  listing.highSchool ||
+  listing.schoolDistrict) && (
+  <div>
+    <h2 class="text-lg font-semibold text-stone-900 mb-3">Schools</h2>
+    <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-sm">
+      {listing.schoolDistrict && (
+        <DetailRow label="District" longValue={false}>
+          {listing.schoolDistrict}
+        </DetailRow>
+      )}
+      {listing.elementarySchool && (
+        <DetailRow label="Elementary" longValue={false}>
+          {listing.elementarySchool}
+        </DetailRow>
+      )}
+      {listing.middleSchool && (
+        <DetailRow label="Middle" longValue={false}>
+          {listing.middleSchool}
+        </DetailRow>
+      )}
+      {listing.highSchool && (
+        <DetailRow label="High School" longValue={false}>
+          {listing.highSchool}
+        </DetailRow>
+      )}
+    </dl>
+  </div>
+)}

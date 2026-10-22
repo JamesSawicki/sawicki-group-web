@@ -1,0 +1,18 @@
+---
+/** Driving directions from the MLS record. Renders nothing when empty. */
+import type { Listing } from "../../types/listing";
+
+interface Props {
+  /** The listing being displayed; only `directions` is read. */
+  listing: Listing;
+}
+
+const { listing } = Astro.props;
+---
+
+{listing.directions && (
+  <div>
+    <h2 class="text-lg font-semibold text-stone-900 mb-3">Directions</h2>
+    <p class="text-sm text-stone-600">{listing.directions}</p>
+  </div>
+)}

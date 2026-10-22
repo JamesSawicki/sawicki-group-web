@@ -1,0 +1,31 @@
+---
+/**
+ * One label/value row inside a two-column `<dl>` detail grid (Interior Features,
+ * Schools, HOA, ...). The value is the default slot.
+ *
+ * Callers keep their own "should this row show?" condition around the component, so a
+ * section reads as a plain list of rows.
+ */
+interface Props {
+  /** Text shown on the left, e.g. "Heating". */
+  label: string;
+  /**
+   * Right-align the value and cap it at 60% width so long multi-item strings
+   * ("Forced Air, Radiant Floor") wrap instead of crowding the label. Default true;
+   * pass false for short values (numbers, names).
+   */
+  longValue?: boolean;
+}
+
+const { label, longValue = true } = Astro.props;
+const valueClass = longValue
+  ? "text-stone-800 font-medium text-right max-w-[60%]"
+  : "text-stone-800 font-medium";
+---
+
+<div class="flex justify-between border-b border-stone-100 pb-2">
+  <dt class="text-stone-500">{label}</dt>
+  <dd class={valueClass}>
+    <slot />
+  </dd>
+</div>
