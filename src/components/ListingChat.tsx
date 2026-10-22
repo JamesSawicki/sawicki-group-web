@@ -27,12 +27,15 @@ export default function ListingChat({ listingId, apiBaseUrl }: Props) {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Typed as HTMLDivElement because we call .scrollIntoView() on it.
-  const bottomRef = useRef<HTMLDivElement>(null);
+  // The scrollable message panel. Only this panel scrolls to the newest message —
+  // never the page (scrollIntoView() scrolled the whole listing page down to the chat
+  // on load), and nothing happens until there's a conversation.
+  const messagesRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to latest message
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    const panel = messagesRef.current;
+    if (!panel || (messages.length === 0 && !isLoading)) return;
+    panel.scrollTo({ top: panel.scrollHeight, behavior: "smooth" });
   }, [messages, isLoading]);
 
   const sendMessage = async (): Promise<void> => {
@@ -88,7 +91,7 @@ export default function ListingChat({ listingId, apiBaseUrl }: Props) {
   return (
     <div className="border border-stone-200 rounded-xl flex flex-col" style={{ height: "520px" }}>
       {/* Message thread */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div ref={messagesRef} className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 && (
           <div className="text-sm text-stone-400 text-center mt-8 px-4">
             Ask anything about this property — features, the neighborhood, estimated costs, or next
@@ -134,8 +137,6 @@ export default function ListingChat({ listingId, apiBaseUrl }: Props) {
 
         {/* Error */}
         {error && <div className="text-xs text-red-500 text-center px-4">{error}</div>}
-
-        <div ref={bottomRef} />
       </div>
 
       {/* Input row */}
