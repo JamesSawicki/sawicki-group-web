@@ -1,7 +1,14 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import type { Listing, Page } from "../../types/listing";
-import { formatPrice, formatBathTotal, formatSqft, statusBadgeClasses, statusLabel, formatMlsId } from "../../lib/listing-utils";
+import { formatPrice, formatBathTotal, formatSqft, statusBadgeClasses, statusLabel, formatMlsId, listingPath } from "../../lib/listing-utils";
+import { fetchWithTimeout } from "../../lib/api";
+import { mls } from "../../lib/site.config";
+
+// Single source of truth for the page size — used in the API call AND the
+// "showing N of M" overflow logic below. Previously 24 was hardcoded in three
+// places; changing one and not the others silently broke the overflow prompt.
+const PAGE_SIZE = 24;
 
 // Production: Cloud Run sets process.env at runtime.
 // Dev: Vite populates import.meta.env from .env.local but NOT process.env.
@@ -27,9 +34,9 @@ try {
   const url = new URL(`${apiBase}/api/listings/search`);
   url.searchParams.set("status",  "Active,Pending,TNAS,Coming Soon");
   url.searchParams.set("sortBy",  "newest");
-  url.searchParams.set("size",    "24");
+  url.searchParams.set("size",    String(PAGE_SIZE));
 
-  const res = await fetch(url.toString());
+  const res = await fetchWithTimeout(url.toString());
   if (res.ok) {
     const data = await res.json() as Page<Listing>;
     listings      = data.content;
@@ -37,14 +44,17 @@ try {
   } else {
     error = true;
   }
-} catch (_) {
+} catch (e) {
+  // Surface the real cause in the server console instead of swallowing it —
+  // a silent catch here is what made "listings aren't loading" hard to diagnose.
+  console.error("[listings/index] failed to load listings from", apiBase, "-", e);
   error = true;
 }
 ---
 
 <Layout
   title="Current Listings | The Sawicki Group"
-  description="Browse current Twin Cities home listings from The Sawicki Group. Minneapolis, Saint Paul, and surrounding communities."
+  description="Browse current Twin Cities homes for sale via NorthstarMLS. Minneapolis, Saint Paul, and surrounding communities, presented by The Sawicki Group."
 >
   <div class="max-w-6xl mx-auto px-6 py-16">
 
@@ -53,7 +63,10 @@ try {
       <div>
         <h1 class="text-3xl font-semibold text-stone-900 mb-2">Current Listings</h1>
         <p class="text-stone-500">
-          Homes represented by The Sawicki Group.
+          {/* IDX compliance: this grid shows homes from the broader MLS via
+              broker reciprocity, NOT only Sawicki Group listings. Do not imply
+              representation of every home shown. */}
+          Twin Cities homes for sale.
           {totalListings > 0 && <span> {totalListings} {totalListings === 1 ? "property" : "properties"} available.</span>}
         </p>
       </div>
@@ -84,7 +97,7 @@ try {
     {/* Listing grid */}
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
       {listings.map((listing) => (
-        <a href={`/listings/${listing.id}`} class="group border border-stone-200 rounded-xl p-6 hover:border-stone-400 hover:shadow-sm transition-all">
+        <a href={listingPath(listing)} class="group border border-stone-200 rounded-xl p-6 hover:border-stone-400 hover:shadow-sm transition-all">
 
           {/* Header row: address + price */}
           <div class="flex items-start justify-between mb-3">
@@ -135,16 +148,24 @@ try {
       ))}
     </div>
 
-    {/* Overflow prompt — if more than 24 listings exist, point to search */}
-    {totalListings > 24 && (
+    {/* Overflow prompt — if more listings exist than one page, point to search */}
+    {totalListings > PAGE_SIZE && (
       <div class="mt-12 text-center">
         <p class="text-stone-500 text-sm mb-3">
-          Showing 24 of {totalListings} listings.
+          Showing {PAGE_SIZE} of {totalListings} listings.
         </p>
         <a href="/search" class="inline-block px-6 py-2.5 bg-stone-900 text-white rounded-lg text-sm hover:bg-stone-700 transition-colors">
           View All Listings
         </a>
       </div>
+    )}
+
+    {/* IDX broker-reciprocity attribution — required wherever aggregated MLS
+        listings are displayed. */}
+    {!error && listings.length > 0 && (
+      <p class="mt-16 text-xs text-stone-400 leading-relaxed border-t border-stone-100 pt-6">
+        {mls.copyrightNotice}
+      </p>
     )}
 
   </div>

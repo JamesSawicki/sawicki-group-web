@@ -26,15 +26,14 @@
  *   that still meets IDX disclosure.
  */
 import type { Listing } from "../types/listing";
-import { mls, brokerage } from "../lib/site.config";
-import { isOwnListing, formatDataFreshness } from "../lib/listing-utils";
+import { mls } from "../lib/site.config";
+import { formatDataFreshness } from "../lib/listing-utils";
 
 interface Props {
   listing: Listing;
 }
 
 const { listing } = Astro.props;
-const isOwn = isOwnListing(listing);
 
 const listingOfficeDisplay = listing.listOfficeName ?? "Not provided";
 const dataFreshness = formatDataFreshness(listing.modificationTimestamp);
@@ -47,11 +46,7 @@ const dataFreshness = formatDataFreshness(listing.modificationTimestamp);
     <div>
       <div class="uppercase tracking-widest text-[10px] text-stone-400 mb-1">Listing Source</div>
       <div class="text-stone-700">
-        {isOwn ? (
-          <span>Listed by {brokerage.name}</span>
-        ) : (
-          <span>Listed by {listingOfficeDisplay}</span>
-        )}
+        <span>Listed by {listingOfficeDisplay}</span>
       </div>
     </div>
     <div class="sm:text-right">

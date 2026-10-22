@@ -3,7 +3,9 @@ import { useState, useRef, useEffect } from "react";
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface Props {
-  systemPrompt: string;
+  /** The server builds the system prompt from this id — the client never
+   *  sends prompt text (see ChatController on the API for the why). */
+  listingId: number;
   apiBaseUrl: string;
 }
 
@@ -19,7 +21,7 @@ interface Message {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export default function ListingChat({ systemPrompt, apiBaseUrl }: Props) {
+export default function ListingChat({ listingId, apiBaseUrl }: Props) {
   const [messages,  setMessages]  = useState<Message[]>([]);
   const [input,     setInput]     = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -50,7 +52,7 @@ export default function ListingChat({ systemPrompt, apiBaseUrl }: Props) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          systemPrompt,
+          listingId,
           messages: updatedMessages,
         }),
       });

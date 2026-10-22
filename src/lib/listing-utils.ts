@@ -110,7 +110,34 @@ export function formatSqft(sqft: number | undefined): string {
 
 export function statusLabel(status: string | undefined): string {
   if (!status) return "Unknown";
-  return status;
+  // Map raw MLS status codes to buyer-friendly wording. "TNAS" (Temporarily
+  // Not Available for Showing) is internal MLS jargon that means nothing to a
+  // consumer, so it must be translated. Unknown/other codes fall through to
+  // the raw value rather than being hidden.
+  const labels: Record<string, string> = {
+    TNAS: "Temporarily off-market",
+    "Coming Soon": "Coming soon",
+    Pending: "Sale pending",
+  };
+  return labels[status] ?? status;
+}
+
+/**
+ * Format a money value that arrives from the API as a numeric STRING
+ * (e.g. taxAmount, associationFee are String columns on the entity).
+ * "5432.00" -> "$5,432", "1200" -> "$1,200". Non-numeric input is returned
+ * with a leading "$" untouched; null/empty -> "—".
+ *
+ * Cents are dropped: property taxes and HOA fees read cleaner as whole dollars,
+ * and MLS data frequently carries a spurious ".00".
+ */
+export function formatMoneyString(value: string | number | null | undefined): string {
+  if (value == null || value === "") return "—";
+  const n = typeof value === "number"
+    ? value
+    : parseFloat(value.replace(/[^0-9.\-]/g, ""));
+  if (Number.isNaN(n)) return `$${value}`;
+  return `$${n.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
 }
 
 /**
@@ -212,26 +239,6 @@ export function formatMlsId(mlsId: string | null | undefined): string {
   return mlsId.replace(/^[A-Z]+/, '');
 }
 
-// -------------------------------------------------------------------
-// IDX OWNERSHIP CHECK
-//
-// Returns true when the listing's office is The Sawicki Group's brokerage.
-// Used to branch display: own listings show full contact/CTA; third-party
-// listings must hide brokerage contact info per IDX rules and frame the
-// CTA as a buyer's-agent offer rather than a listing-agent offer.
-//
-// Match logic: case-insensitive substring on the configured brokerage name.
-// This handles variants like "Coldwell Banker Realty", "COLDWELL BANKER REALTY",
-// "Coldwell Banker Realty - Edina", etc.
-// -------------------------------------------------------------------
-
-export function isOwnListing(listing: Listing): boolean {
-  const officeName = listing.listOfficeName;
-  if (!officeName) return false;
-  const ours = brokerage.name.toLowerCase().trim();
-  return officeName.toLowerCase().trim().includes(ours);
-}
-
 /**
  * Format an ISO timestamp as a short human-readable "data freshness" line.
  * Used in the IDX disclosure block. "2026-06-04T16:12:47Z" -> "Jun 4, 2026 at 4:12 PM"
@@ -267,4 +274,81 @@ export function subtypeLabel(subtype: string): string {
     doityourself: "Home center",
   };
   return labels[subtype] ?? subtype;
+}
+
+// -------------------------------------------------------------------
+// URL SLUGS — SEO-friendly, collision-proof listing paths
+//
+// URL shape:  /listings/{address}-{postalCity}-mn-{zip}-{id}
+//   e.g.       /listings/3901-w-50th-st-unit-101-edina-mn-55424-4021
+//
+// The human-readable part is cosmetic — it exists for SEO and shareability.
+// The TRAILING id is the resolution key: the [slug].astro route parses it and
+// calls GET /api/listings/{id}. This is the Zillow/Redfin pattern
+// (.../{slug}/{zpid}_zpid/) and it buys two things:
+//   1. Collision-proofing — two condos sharing a street address still get
+//      distinct URLs because their ids differ. No de-duplication logic needed.
+//   2. Self-healing 301s — a bare-id URL (/listings/4021) or a stale slug (the
+//      address changed) can be permanently redirected to the canonical slug,
+//      so Google consolidates ranking on ONE URL per property.
+// -------------------------------------------------------------------
+
+/**
+ * Turn arbitrary text into a URL-safe slug segment.
+ *   "St. Louis Park"  -> "st-louis-park"
+ *   "Saint Paul"      -> "st-paul"     (NorthstarMLS also has St. Paul / St. Cloud)
+ *   "3901 W 50th St"  -> "3901-w-50th-st"
+ *
+ * Steps, in order:
+ *   normalize("NFKD") + strip marks  — decompose accented chars, drop the accent
+ *   toLowerCase                       — URLs are case-insensitive; keep them lower
+ *   \bsaint\b -> st                   — canonicalize the MN "Saint" spelling so
+ *                                       "Saint Paul" and "St. Paul" collapse to one
+ *   & -> " and "                      — cheap safety for the rare "A & B" street
+ *   strip ' " .                       — kills apostrophes and the period in "St."
+ *   [^a-z0-9]+ -> "-"                 — every other non-alphanumeric run -> hyphen
+ *   trim leading/trailing hyphens     — no "-foo-" edges
+ */
+export function slugify(input: string): string {
+  return input
+    .normalize("NFKD")
+    .replace(/[̀-ͯ]/g, "")   // strip combining diacritical marks
+    .toLowerCase()
+    .replace(/\bsaint\b/g, "st")
+    .replace(/&/g, " and ")
+    .replace(/['".]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+/**
+ * Build the canonical slug (WITH trailing id) for a listing.
+ * Uses postalCity (the mailing city — cleaner in rural MN where `city` can be a
+ * township like "Buckman Twp"), falling back to `city` when postalCity is empty.
+ * The unit marker "#101" is rewritten to "unit 101" first so it slugs to
+ * "unit-101" rather than a bare "-101".
+ */
+export function listingSlug(l: Listing): string {
+  const cityForUrl = l.postalCity?.trim() || l.city?.trim() || "";
+  const addr = (l.address ?? "").replace(/#\s*/g, "unit ");
+  const base = slugify([addr, cityForUrl, "MN", l.zipCode ?? ""].filter(Boolean).join(" "));
+  // Guard: if base is somehow empty, the id alone still resolves.
+  return base ? `${base}-${l.id}` : String(l.id);
+}
+
+/** Full site path for a listing detail page: "/listings/{slug}". */
+export function listingPath(l: Listing): string {
+  return `/listings/${listingSlug(l)}`;
+}
+
+/**
+ * Extract the numeric listing id from a slug URL segment.
+ * The id is always the final hyphen-delimited integer:
+ *   "3901-w-50th-st-unit-101-edina-mn-55424-4021" -> 4021
+ *   "4021"                                          -> 4021   (bare-id URL)
+ * Returns null when there's no trailing integer (=> treat as 404).
+ */
+export function parseListingId(param: string): number | null {
+  const m = param.match(/(?:^|-)(\d+)$/);
+  return m ? Number(m[1]) : null;
 }

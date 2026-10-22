@@ -7,6 +7,8 @@ import type { Listing } from "../../types/listing";
 import {
   formatPrice,
   formatBathTotal,
+  bathTotal,
+  formatMoneyString,
   formatSqft,
   formatLot,
   parseRooms,
@@ -18,10 +20,12 @@ import {
   categoryLabel,
   subtypeLabel,
   formatMlsId,
-  isOwnListing,
+  parseListingId,
+  listingPath,
 } from "../../lib/listing-utils";
 import { parsePhotoIds, parseVirtualTourUrls } from "../../lib/photo-utils";
-import { agent, brokerage, site } from "../../lib/site.config";
+import { agent, site } from "../../lib/site.config";
+import { fetchWithTimeout, serviceUnavailableResponse } from "../../lib/api";
 
 // Cloudflare Images + yet-another-react-lightbox CSS.
 // Per the project's island-CSS pattern (see Mapbox precedent), CSS for React
@@ -31,7 +35,18 @@ import "yet-another-react-lightbox/styles.css";
 import "yet-another-react-lightbox/plugins/thumbnails.css";
 import "yet-another-react-lightbox/plugins/counter.css";
 
-const { id } = Astro.params;
+// This route file is named [id].astro for historical reasons, but the param is
+// now a full SEO slug, e.g. "3901-w-50th-st-unit-101-edina-mn-55424-4021".
+// We read both `slug` and `id` (via a loose cast) so the file can be renamed to
+// [slug].astro later with ZERO code change. The numeric listing id is the final
+// hyphen-delimited token of the slug and is the actual API resolution key.
+const params = Astro.params as Record<string, string | undefined>;
+const slugParam = params.slug ?? params.id ?? "";
+const listingId = parseListingId(slugParam);
+if (listingId == null) {
+  // No trailing integer => not a real listing URL. Render the branded 404.
+  return Astro.rewrite("/404");
+}
 // Production: Cloud Run sets process.env at runtime.
 // Dev: Vite populates import.meta.env from .env.local but NOT process.env.
 // Use both with || so either source works.
@@ -45,12 +60,37 @@ if (!apiBase) {
   );
 }
 
-const res = await fetch(`${apiBase}/api/listings/${id}`);
-if (!res.ok) {
-  return new Response(null, { status: 404, statusText: "Not Found" });
+// Reliability: bound the call with a timeout and handle every failure mode.
+//   - 404 from the API  → render the branded 404 page (real 404 status)
+//   - any other failure → render a branded 503 (transient) instead of a 500
+//     stack trace or a blank page.
+let listing: Listing;
+try {
+  const res = await fetchWithTimeout(`${apiBase}/api/listings/${listingId}`);
+  if (res.status === 404) {
+    return Astro.rewrite("/404");
+  }
+  if (!res.ok) {
+    return serviceUnavailableResponse();
+  }
+  listing = (await res.json()) as Listing;
+} catch {
+  // Network error, DNS failure, or timeout (AbortError).
+  return serviceUnavailableResponse();
 }
 
-const listing = await res.json() as Listing;
+// ─── Canonical URL + 301 redirect ────────────────────────────────────────────
+// The slug is derived from the (mutable) address; the id is stable. If the
+// visitor arrived on a bare-id URL (/listings/4021) or a stale/wrong slug,
+// permanently redirect to the canonical address slug so link equity and Google
+// ranking consolidate on ONE URL per property. 301 = permanent (transfers rank).
+// No redirect loop: listingPath() is deterministic, so a request that already
+// hit the canonical path matches below and falls through without redirecting.
+const canonicalPath = listingPath(listing);
+const canonicalUrl  = new URL(canonicalPath, Astro.url.origin).toString();
+if (Astro.url.pathname !== canonicalPath) {
+  return Astro.redirect(canonicalUrl, 301);
+}
 
 // ─── Derived display values ──────────────────────────────────────────────────
 // Compute once here; reference throughout the template.
@@ -63,27 +103,15 @@ const priceReduced   = hasPriceReduction(listing);
 const rooms          = parseRooms(listing.roomInfo);
 const mlsID          = formatMlsId(listing.mlsId);
 
-// ─── IDX ownership branching ────────────────────────────────────────────────
-// `isOwn` drives every place where we used to fall back to Jim's name on
-// third-party listings. On other-broker listings we MUST NOT imply Sawicki
-// represents the seller, MUST NOT display competing agent/office contact
-// info, and the JSON-LD broker must reflect the real listing broker.
-const isOwn = isOwnListing(listing);
+// ─── IDX brokerage attribution ──────────────────────────────────────────────
+// Every listing shows the listing brokerage. No branching — Jim acts as a
+// buyer's agent for all listings, including those held by his own brokerage.
+const listingBrokerDisplay = listing.listOfficeName ?? "Listing brokerage on file with NorthstarMLS";
 
-// Listing-source display name for the disclosure + agent card:
-// - Own listing: our brokerage
-// - Third-party: the listing's brokerage (NEVER the individual agent name)
-const listingBrokerDisplay = isOwn
-  ? brokerage.name
-  : (listing.listOfficeName ?? "Listing brokerage on file with NorthstarMLS");
-
-// CTA copy — branch keeps Jim's intent explicit: capture buyer-side leads
-// on every listing, but never imply we hold the listing.
+// Single CTA for all listings — buyer inquiry to contact page.
 const ctaTitle = "Interested in this property?";
-const ctaBody = isOwn
-  ? `Schedule a showing or ask questions — ${agent.name} typically responds within a few hours.`
-  : `${site.name} can represent you as a buyer's agent to view and make an offer on this property. ${agent.name} typically responds within a few hours.`;
-const ctaButton = isOwn ? "Request a Showing" : "Contact us about this listing";
+const ctaBody = `${site.name} can represent you as a buyer's agent to view and make an offer on this property. ${agent.name} typically responds within a few hours.`;
+const ctaButton = "Contact us about this listing";
 
 // ─── Photo gallery data ────────────────────────────────────────────────────
 // Cloudflare Images delivery URLs are built browser-side from these IDs +
@@ -97,12 +125,7 @@ const photoIds        = parsePhotoIds(listing.photoIds);
 const floorPlanIds    = parsePhotoIds(listing.floorPlanIds);
 const virtualTourUrls = parseVirtualTourUrls(listing.virtualTourUrls);
 
-// cityState for display: "Edina, MN 55436"
-const cityStateZip = [listing.city, "MN", listing.zipCode]
-  .filter(Boolean)
-  .join(" ")
-  .replace(/MN /, "MN ");  // "Edina MN 55436" → fix spacing
-// Cleaner approach:
+// cityLine for display: "Edina, MN 55436"
 const cityLine = listing.city
   ? `${listing.city}, MN${listing.zipCode ? ` ${listing.zipCode}` : ""}`
   : "";
@@ -117,31 +140,6 @@ const appliancesList: string[] = listing.appliances
   ? listing.appliances.split(", ").filter(Boolean)
   : [];
 
-// Pre-compute dynamic sections of the system prompt using plain string
-// concatenation — no nested template literals. Astro's language server
-// fails to parse template literals nested 3 levels deep (a template literal
-// inside ${...} inside another template literal), which causes it to
-// misidentify the frontmatter closing --- and produce cascading parse errors.
-const amenitiesSection = amenitiesList.length !== 0
-  ? "AMENITIES\n" + amenitiesList.map(a => "• " + a).join("\n")
-  : "";
-
-const waterfrontSection = listing.waterfrontFeet
-  ? "WATERFRONT\n" +
-    "Body of Water: " + (listing.waterBodyName ?? "N/A") + "\n" +
-    "Frontage: " + listing.waterfrontFeet + " ft\n" +
-    "View: " + (listing.waterfrontView ?? "N/A") + "\n" +
-    "DNR Lake Class: " + (listing.dnrLakeClass ?? "N/A")
-  : "";
-
-const hoaSection = listing.associationFee && listing.associationFee !== "0"
-  ? "HOA\n" +
-    "Fee: $" + listing.associationFee + "/" + (listing.associationFeeFrequency ?? "month") + "\n" +
-    "Includes: " + (listing.associationFeeIncludes ?? "N/A")
-  : "No HOA";
-
-
-
 // ─── JSON-LD: RealEstateListing ──────────────────────────────────────────────
 // city, zipCode now come directly from the model — no string parsing needed.
 // listPrice is already a number — no "$" stripping needed.
@@ -151,8 +149,11 @@ const jsonLd = {
   "@type": "RealEstateListing",
   "name": `${listing.beds} BD / ${bathDisplay} BA ${listing.style ?? "Home"} — ${listing.address}`,
   "description": listing.publicRemarks ?? "",
-  "url": `${Astro.url.origin}/listings/${listing.id}`,
-  "datePosted": listing.listDate ?? new Date().toISOString().split("T")[0],
+  "url": canonicalUrl,
+  // Only assert datePosted when we actually have it. Previously this fell back
+  // to `new Date()`, fabricating "today" as the post date on every render —
+  // misleading structured data and non-deterministic output.
+  ...(listing.listDate && { "datePosted": listing.listDate }),
   "price": listing.listPrice,
   "priceCurrency": "USD",
   "address": {
@@ -170,22 +171,15 @@ const jsonLd = {
       "unitCode": "FTK"
     }
   }),
-  "numberOfRooms": listing.beds,
-  // IDX-aware broker block. On own listings, surface Jim as the agent and link
-  // back to our site. On third-party listings, identify the actual listing
-  // brokerage — never imply Sawicki holds the listing in structured data.
-  "broker": isOwn
-    ? {
-        "@type": "RealEstateAgent",
-        "name": agent.name,
-        "url": Astro.url.origin,
-      }
-    : {
-        "@type": "RealEstateOffice",
-        "name": listingBrokerDisplay,
-      }
+  ...(listing.beds != null && { "numberOfBedrooms": listing.beds }),
+  // Always surface the listing brokerage — never imply Sawicki holds the listing.
+  "broker": {
+    "@type": "RealEstateOffice",
+    "name": listingBrokerDisplay,
+  }
 };
-// hey look amenityscores are right here in the frontmatter! We fetched them server-side along with the listing, so we can parse and display them without any client-side API calls. This is a great example of why we built our own backend instead of using a headless CMS — we have full control over the data model and can optimize for our specific use case.
+// amenityScores are fetched server-side with the listing, so we parse and
+// render them without any client-side API call.
 const amenityScores = parseAmenityScores(listing.amenityScores);
 
 // Pre-compute the scorecard to avoid complex JSX expressions in the template.
@@ -224,111 +218,17 @@ const generatedAtFormatted = amenityScores
   : "";
 
 
-// ─── System prompt for AI chat island ───────────────────────────────────────
-// Built server-side from listing data. Sent client-side with every chat
-// request. The AI has full context without the browser ever fetching the API.
-// We include every material field — the AI should be able to answer anything
-// a serious buyer would ask without fabricating details.
-//
-// On third-party listings the persona shifts: the AI is NOT representing the
-// seller, must not name the listing agent (we don't surface that data anyway),
-// and must frame any showing/info request as a buyer's-agent engagement.
-const personaIntro = isOwn
-  ? `You are a helpful real estate assistant for ${site.name}, a licensed real estate team in the ${brokerage.serviceArea} area. You are answering questions about a specific property listing on behalf of agent ${agent.name}.`
-  : `You are a helpful real estate assistant for ${site.name}, a licensed real estate team in the ${brokerage.serviceArea} area. You are providing information about a property listing held by ${listingBrokerDisplay}. ${site.name} does NOT represent the seller of this property — we are an independent brokerage that can represent BUYERS as a buyer's agent.`;
-
-const systemPrompt = `${personaIntro}
-
-PROPERTY DETAILS
-Address: ${listing.address}, ${cityLine}
-${listing.neighborhood ? `Neighborhood: ${listing.neighborhood}` : ""}
-${listing.complexSubdiv ? `Development: ${listing.complexSubdiv}` : ""}
-MLS #: ${mlsID ?? "N/A"}
-Status: ${listing.status ?? "N/A"}
-List Price: ${priceDisplay}
-${priceReduced ? `Original Price: ${formatPrice(listing.originalListPrice)} (Price reduced)` : ""}
-Listed: ${listing.listDate ?? "N/A"}
-Days on Market: ${listing.daysOnMarket ?? "N/A"}
-
-PROPERTY BASICS
-Type: ${listing.propertyType ?? "N/A"}
-Style: ${listing.style ?? "N/A"}
-Year Built: ${listing.yearBuilt ?? "N/A"}
-Stories: ${listing.stories ?? "N/A"}
-Construction Status: ${listing.constructionStatus ?? "N/A"}
-Bedrooms: ${listing.beds ?? "N/A"}
-Full Baths: ${listing.bathsFull ?? 0} | 3/4 Baths: ${listing.bathsThreeQuarter ?? 0} | Half Baths: ${listing.bathsHalf ?? 0} | Quarter Baths: ${listing.bathsQuarter ?? 0}
-Total Bath Count: ${bathDisplay}
-Above Grade Sqft: ${formatSqft(listing.sqftAboveGrade)}
-Below Grade Sqft: ${formatSqft(listing.sqftBelowGrade)}
-Total Finished Sqft: ${sqftDisplay}
-Lot Size: ${lotDisplay}
-${listing.lotDimensions ? `Lot Dimensions: ${listing.lotDimensions}` : ""}
-Garage Stalls: ${listing.garageStalls ?? "N/A"}
-${listing.pool && listing.pool !== "None" ? `Pool: ${listing.pool}` : ""}
-
-INTERIOR FEATURES
-Heating: ${listing.heating ?? "N/A"}
-Air Conditioning: ${listing.airConditioning ?? "N/A"}
-Fuel: ${listing.fuelType ?? "N/A"}
-Basement: ${listing.basement ?? "N/A"}
-Fireplaces: ${listing.fireplaces ?? "0"} — ${listing.fireplaceFeatures ?? ""}
-Appliances: ${listing.appliances ?? "N/A"}
-Laundry: ${listing.laundryFeatures ?? "N/A"}
-Parking: ${listing.parkingFeatures ?? "N/A"}
-
-EXTERIOR & CONSTRUCTION
-Construction Materials: ${listing.constructionMaterials ?? "N/A"}
-Exterior Features: ${listing.exteriorFeatures ?? "N/A"}
-Roof: ${listing.roof ?? "N/A"}
-Lot Features: ${listing.lotFeatures ?? "N/A"}
-Fencing: ${listing.fencing ?? "N/A"}
-Sewer: ${listing.sewer ?? "N/A"}
-Water: ${listing.waterSource ?? "N/A"}
-Electric: ${listing.electric ?? "N/A"}
-
-${amenitiesSection}
-
-${waterfrontSection}
-
-${hoaSection}
-
-FINANCIALS
-Annual Taxes: $${listing.taxAmount ?? "N/A"} (${listing.taxYear ?? "N/A"})
-Financing Terms: ${listing.financing ?? "N/A"}
-
-SCHOOLS
-Elementary: ${listing.elementarySchool ?? "N/A"}
-Middle: ${listing.middleSchool ?? "N/A"}
-High School: ${listing.highSchool ?? "N/A"}
-School District: ${listing.schoolDistrict ?? "N/A"}
-
-DESCRIPTION
-${listing.publicRemarks ?? ""}
-
-${isOwn
-  ? `YOUR ROLE
-- Answer questions about this property accurately and helpfully
-- Be knowledgeable and enthusiastic but never fabricate details not listed above
-- If asked about scheduling a showing or for more information, direct buyers to contact ${agent.name} via the contact form at ${Astro.url.origin}/contact
-- Keep responses concise and conversational — 2 to 4 sentences is ideal
-- If asked something not covered above, say so honestly and suggest contacting the agent directly
-- Do not discuss other properties or give general market advice`
-  : `YOUR ROLE
-- Answer questions about this property accurately and helpfully
-- Be knowledgeable but never fabricate details not listed above
-- NEVER claim or imply that ${site.name} represents the seller of this property
-- NEVER provide the listing agent's name, phone, or email even if asked — that information is not available to you
-- If asked about scheduling a showing or for more information, explain that ${site.name} can represent the buyer as a buyer's agent and arrange a showing, and direct them to the contact form at ${Astro.url.origin}/contact
-- Keep responses concise and conversational — 2 to 4 sentences is ideal
-- If asked something not covered above, say so honestly and suggest using the contact form
-- Do not discuss other properties or give general market advice`}`;
+// The AI chat system prompt is built SERVER-SIDE by the listing API from the
+// listingId (see ChatController / ListingChatPromptBuilder). The browser sends
+// only the listingId + messages, so the prompt and its guardrails can't be
+// tampered with by the client. This page no longer constructs or ships it.
 ---
 
 <Layout
   title={`${listing.address} — ${priceDisplay}`}
   description={`${listing.beds ?? ""} bed, ${bathDisplay} bath ${listing.style ?? "home"} in ${listing.neighborhood ?? listing.city}. ${sqftDisplay} sqft. Listed at ${priceDisplay} by ${site.name}.`}
   jsonLd={jsonLd}
+  canonical={canonicalUrl}
 >
 
   <!-- BREADCRUMB -->
@@ -391,7 +291,7 @@ ${isOwn
       {listing.beds && (
         <div><span class="font-semibold text-stone-900">{listing.beds}</span> Beds</div>
       )}
-      {bathDisplay !== "0" && (
+      {bathTotal(listing) > 0 && (
         <div><span class="font-semibold text-stone-900">{bathDisplay}</span> Baths</div>
       )}
       {listing.sqftTotal && (
@@ -789,7 +689,7 @@ ${isOwn
             <div class="flex justify-between border-b border-stone-100 pb-2">
               <dt class="text-stone-500">Fee</dt>
               <dd class="text-stone-800 font-medium">
-                ${listing.associationFee}/{listing.associationFeeFrequency ?? "month"}
+                {formatMoneyString(listing.associationFee)}/{listing.associationFeeFrequency ?? "month"}
               </dd>
             </div>
             {listing.associationFeeIncludes && (
@@ -815,13 +715,13 @@ ${isOwn
           {listing.taxAmount && (
             <div>
               <div class="text-stone-400 mb-0.5">Annual Taxes ({listing.taxYear})</div>
-              <div class="font-medium text-stone-800">${listing.taxAmount}</div>
+              <div class="font-medium text-stone-800">{formatMoneyString(listing.taxAmount)}</div>
             </div>
           )}
           {listing.taxWithAssessments && listing.taxWithAssessments !== listing.taxAmount && (
             <div>
               <div class="text-stone-400 mb-0.5">Tax w/ Assessments</div>
-              <div class="font-medium text-stone-800">${listing.taxWithAssessments}</div>
+              <div class="font-medium text-stone-800">{formatMoneyString(listing.taxWithAssessments)}</div>
             </div>
           )}
           {listing.lotSqft && (
@@ -880,46 +780,27 @@ ${isOwn
         </div>
       )}
 
-      <!-- CTA -->
-      <div class="border border-stone-200 rounded-xl p-6">
-        <div class="font-semibold text-stone-900 mb-1">{ctaTitle}</div>
-        <p class="text-sm text-stone-500 mb-4">{ctaBody}</p>
-        <a href="/contact" class="inline-block bg-stone-900 text-white text-sm px-5 py-2.5 rounded-lg hover:bg-stone-700 transition-colors">{ctaButton}</a>
+      <!-- Listing attribution card — always shows the listing brokerage. -->
+      <div class="bg-stone-50 rounded-xl p-4 text-sm">
+        <div class="text-stone-400 text-[10px] uppercase tracking-widest mb-1">Listed by</div>
+        <div class="font-semibold text-stone-900">{listingBrokerDisplay}</div>
+        {listing.listDate && (
+          <div class="text-stone-400 text-xs mt-2">Listed {listing.listDate}</div>
+        )}
       </div>
 
     </div>
 
-    <!-- RIGHT: AGENT INFO + AI CHAT -->
+    <!-- RIGHT: CTA + AI CHAT -->
     <div class="lg:col-span-2">
       <div class="sticky top-8 space-y-6">
 
-        <!--
-          Agent card — branches on isOwn.
-          Own listing: full Jim contact card (name, brokerage, phone link).
-          Third-party listing: "Listing held by [brokerage]" with NO agent name,
-          NO phone, NO email, per Jim's competitive concerns + NorthstarMLS IDX
-          attribution-at-brokerage-level rule.
-        -->
-        {isOwn ? (
-          <div class="bg-stone-50 rounded-xl p-4 text-sm">
-            <div class="font-semibold text-stone-900">{agent.name}</div>
-            <div class="text-stone-500 mt-0.5">{brokerage.name}</div>
-            <a href={`tel:${agent.phone}`} class="text-blue-600 hover:underline mt-1 block">
-              {agent.phoneDisplay}
-            </a>
-            {listing.listDate && (
-              <div class="text-stone-400 text-xs mt-2">Listed {listing.listDate}</div>
-            )}
-          </div>
-        ) : (
-          <div class="bg-stone-50 rounded-xl p-4 text-sm">
-            <div class="text-stone-400 text-[10px] uppercase tracking-widest mb-1">Listing held by</div>
-            <div class="font-semibold text-stone-900">{listingBrokerDisplay}</div>
-            {listing.listDate && (
-              <div class="text-stone-400 text-xs mt-2">Listed {listing.listDate}</div>
-            )}
-          </div>
-        )}
+        <!-- CTA -->
+        <div class="border border-stone-200 rounded-xl p-6">
+          <div class="font-semibold text-stone-900 mb-1">{ctaTitle}</div>
+          <p class="text-sm text-stone-500 mb-4">{ctaBody}</p>
+          <a href="/contact" class="inline-block bg-stone-900 text-white text-sm px-5 py-2.5 rounded-lg hover:bg-stone-700 transition-colors">{ctaButton}</a>
+        </div>
 
         <!-- AI Chat -->
         <div>
@@ -929,7 +810,7 @@ ${isOwn
           </p>
           <ListingChat
             client:load
-            systemPrompt={systemPrompt}
+            listingId={listing.id}
             apiBaseUrl={apiBase}
           />
         </div>

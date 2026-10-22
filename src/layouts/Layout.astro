@@ -6,12 +6,14 @@ interface Props {
   title: string;
   description?: string;
   jsonLd?: object;
+  canonical?: string;
 }
 
 const {
   title,
   description = "Twin Cities real estate expert serving Minneapolis, Saint Paul, and surrounding communities.",
   jsonLd,
+  canonical,
 } = Astro.props;
 ---
 
@@ -21,6 +23,7 @@ const {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
+    {canonical && <link rel="canonical" href={canonical} />}
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
     <title>{title} | {site.name}</title>

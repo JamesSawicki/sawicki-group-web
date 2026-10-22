@@ -31,6 +31,9 @@ export interface Listing {
   // Location
   address: string;
   city: string;
+  postalCity?: string;   // Mailing city (RESO PostalCity) — often differs from
+                         // `city` in rural MN (which can be a township). Preferred
+                         // for SEO slugs. Already serialized by the API.
   zipCode?: string;
   county?: string;
   neighborhood?: string;

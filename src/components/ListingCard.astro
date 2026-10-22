@@ -28,6 +28,7 @@ import {
   statusBadgeClasses,
   statusLabel,
   hasPriceReduction,
+  listingPath,
 } from "../lib/listing-utils";
 
 interface Props {
@@ -36,8 +37,8 @@ interface Props {
 
 const { listing } = Astro.props;
 
-// Build the detail page URL — Astro convention is /listings/[id]
-const detailUrl = `/listings/${listing.id}`;
+// Build the SEO detail-page URL: address slug + trailing id (see listingPath).
+const detailUrl = listingPath(listing);
 
 // Photo placeholder gradient — deterministic from id so each card looks distinct.
 // When real photos arrive: <img src={listing.photoUrl} alt={listing.address} />

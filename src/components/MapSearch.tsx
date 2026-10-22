@@ -24,7 +24,7 @@
  * This lets buyers say "show me everything in this neighborhood, even if I need
  * to pan around to see details."
  */
-import { formatPrice, formatBathTotal, formatSqft } from "../lib/listing-utils";
+import { formatPrice, formatBathTotal, formatSqft, listingPath } from "../lib/listing-utils";
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import mapboxgl from "mapbox-gl";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
@@ -64,6 +64,7 @@ interface MarkerProperties {
   sqftTotal: number;
   priceDisplay: string;
   sqftDisplay: string;
+  detailUrl: string;   // pre-built SEO slug path; computed where we still have the full Listing
 }
 
 /**
@@ -99,6 +100,7 @@ function listingsToGeoJSON(listings: Listing[]): GeoJSON.FeatureCollection {
           sqftTotal:    l.sqftTotal ?? 0,
           priceDisplay: formatPrice(l.listPrice),
           sqftDisplay:  formatSqft(l.sqftTotal),
+          detailUrl:    listingPath(l),
         } satisfies MarkerProperties,
       })),
   };
@@ -115,7 +117,7 @@ function buildPopupHTML(props: MarkerProperties): string {
       <div style="font-size:.8rem;color:#334155;margin-bottom:.75rem">
         ${props.beds} bd &nbsp;·&nbsp; ${props.baths} ba &nbsp;·&nbsp; ${props.sqftDisplay} sqft
       </div>
-      <a href="/listings/${props.id}"
+      <a href="${props.detailUrl}"
          style="display:inline-block;background:#1e40af;color:#fff;
                 font-size:.8rem;padding:.375rem .875rem;
                 border-radius:.375rem;text-decoration:none;">
