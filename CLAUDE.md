@@ -1,6 +1,6 @@
 # sawicki-group-web
 
-The Sawicki Group (Coldwell Banker) website: Astro 6 SSR (Node adapter) with React islands
+The Sawicki Group (Coldwell Banker) website: Astro 7 SSR (Node adapter) with React islands
 and Tailwind. Listing pages are server-rendered from `listing-agent-api`; blog posts are
 Markdown content collections, drafted weekly by `sawicki-blog-agent`.
 
