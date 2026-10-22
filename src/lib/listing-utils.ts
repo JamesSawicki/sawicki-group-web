@@ -135,7 +135,7 @@ export function formatMoneyString(value: string | number | null | undefined): st
   if (value == null || value === "") return "—";
   const n = typeof value === "number"
     ? value
-    : parseFloat(value.replace(/[^0-9.\-]/g, ""));
+    : parseFloat(value.replace(/[^0-9.-]/g, ""));
   if (Number.isNaN(n)) return `$${value}`;
   return `$${n.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
 }

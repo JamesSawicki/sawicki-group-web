@@ -1,0 +1,6 @@
+dist/
+.astro/
+node_modules/
+package-lock.json
+# Blog posts are written by the blog agent; leave their Markdown as generated.
+src/content/blog/
