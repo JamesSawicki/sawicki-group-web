@@ -30,6 +30,7 @@ import Waterfront from "../../components/listing/Waterfront.astro";
 import type { Listing } from "../../types/listing";
 import {
   formatBathTotal,
+  formatLevels,
   formatPrice,
   formatSqft,
   listingPath,
@@ -113,7 +114,7 @@ const listingBrokerDisplay =
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "RealEstateListing",
-  name: `${listing.beds} BD / ${bathDisplay} BA ${listing.style ?? "Home"} — ${listing.address}`,
+  name: `${listing.beds} BD / ${bathDisplay} BA ${formatLevels(listing.style) || "Home"} — ${listing.address}`,
   description: listing.publicRemarks ?? "",
   url: canonicalUrl,
   // Only assert datePosted when we have it — falling back to "today" would fabricate
@@ -161,7 +162,7 @@ const amenitiesList = parseList(listing.amenities);
 
 <Layout
   title={`${listing.address} — ${priceDisplay}`}
-  description={`${listing.beds ?? ""} bed, ${bathDisplay} bath ${listing.style ?? "home"} in ${listing.neighborhood ?? listing.city}. ${sqftDisplay} sqft. Listed at ${priceDisplay} by ${site.name}.`}
+  description={`${listing.beds ?? ""} bed, ${bathDisplay} bath ${formatLevels(listing.style) || "home"} in ${listing.neighborhood ?? listing.city}. ${sqftDisplay} sqft. Listed at ${priceDisplay} by ${site.name}.`}
   jsonLd={jsonLd}
   canonical={canonicalUrl}
 >

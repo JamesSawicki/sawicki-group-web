@@ -8,6 +8,7 @@ import type { Listing } from "../../types/listing";
 import {
   bathTotal,
   formatBathTotal,
+  formatLevels,
   formatLot,
   formatMlsId,
   formatPrice,
@@ -32,6 +33,7 @@ const priceDisplay = formatPrice(listing.listPrice);
 const bathDisplay = formatBathTotal(listing);
 const sqftDisplay = formatSqft(listing.sqftTotal);
 const lotDisplay = formatLot(listing.lotSqft);
+const levelsDisplay = formatLevels(listing.style);
 const priceReduced = hasPriceReduction(listing);
 const mlsID = formatMlsId(listing.mlsId);
 
@@ -98,9 +100,9 @@ const cityLine = listing.city
         <span class="font-semibold text-stone-900">{lotDisplay}</span> Lot
       </div>
     )}
-    {listing.style && (
+    {levelsDisplay && (
       <div>
-        <span class="font-semibold text-stone-900">{listing.style}</span>
+        <span class="font-semibold text-stone-900">{levelsDisplay}</span>
       </div>
     )}
     {isPositive(listing.yearBuilt) && (

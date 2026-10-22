@@ -2,14 +2,15 @@
 import Layout from "../../layouts/Layout.astro";
 import type { Listing, Page } from "../../types/listing";
 import {
-  formatPrice,
   formatBathTotal,
-  formatSqft,
-  statusBadgeClasses,
-  statusLabel,
+  formatLevels,
   formatMlsId,
+  formatPrice,
+  formatSqft,
   isPositive,
   listingPath,
+  statusBadgeClasses,
+  statusLabel,
 } from "../../lib/listing-utils";
 import { fetchWithTimeout } from "../../lib/api";
 import { mls } from "../../lib/site.config";
@@ -161,7 +162,7 @@ try {
             )}
             {listing.bathsFull != null && <span>{formatBathTotal(listing)} bath</span>}
             {isPositive(listing.sqftTotal) && <span>{formatSqft(listing.sqftTotal)} sqft</span>}
-            {listing.style && <span>· {listing.style}</span>}
+            {listing.style && <span>· {formatLevels(listing.style)}</span>}
           </div>
 
           {/* Description excerpt */}

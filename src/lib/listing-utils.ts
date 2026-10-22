@@ -69,19 +69,45 @@ export function formatPriceShort(price: number | undefined): string {
 }
 
 // -------------------------------------------------------------------
-// LOT SIZE — display sqft for small lots, acres for larger
-//
-// Real estate convention: anything under ~0.25 acres reads naturally in
-// sqft (e.g. "8,712 sqft"). Larger lots feel right in acres ("2.5 acres").
-// 0.25 acres = 10,890 sqft. We use that threshold.
-// 1 acre = 43,560 sqft (the magic real estate number).
+// LOT SIZE — always in acres (1 acre = 43,560 sqft)
 // -------------------------------------------------------------------
 
+/**
+ * Formats a lot size, stored in square feet, as acres: 5,662 sqft → "0.13 acres",
+ * 106,722 → "2.45 acres", 535,000 → "12.3 acres", 43,560 → "1 acre". Precision drops
+ * as lots get bigger, since nobody needs hundredths of an acre on a 40-acre parcel.
+ */
 export function formatLot(sqft: number | undefined): string {
   if (sqft == null) return "—";
   const acres = sqft / 43560;
-  if (acres < 0.25) return `${sqft.toLocaleString("en-US")} sqft`;
-  return `${acres.toFixed(2)} acres`;
+  if (acres > 0 && acres < 0.01) return "< 0.01 acres";
+  const digits = acres < 10 ? 2 : acres < 100 ? 1 : 0;
+  const rounded = Number(acres.toFixed(digits));
+  const text = rounded.toLocaleString("en-US", { maximumFractionDigits: digits });
+  return `${text} ${rounded === 1 ? "acre" : "acres"}`;
+}
+
+// -------------------------------------------------------------------
+// LEVELS (RESO "Levels", stored as listing.style)
+// -------------------------------------------------------------------
+
+// MLS spells out story counts ("Two"); split-level names are already descriptive.
+const LEVELS_LABELS: Record<string, string> = {
+  One: "1 Story",
+  "One and One Half": "1.5 Story",
+  Two: "2 Story",
+  "Two and One Half": "2.5 Story",
+  Three: "3 Story",
+};
+
+/**
+ * Formats the MLS Levels value for display: "Two" → "2 Story", "One and One Half" →
+ * "1.5 Story". Other values ("Split Entry (Bi-Level)", "More Than 2 Stories") pass
+ * through unchanged; returns "" when unknown.
+ */
+export function formatLevels(levels: string | null | undefined): string {
+  if (!levels) return "";
+  return LEVELS_LABELS[levels] ?? levels;
 }
 
 // -------------------------------------------------------------------
