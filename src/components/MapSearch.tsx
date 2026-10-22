@@ -24,6 +24,13 @@
  * This lets buyers say "show me everything in this neighborhood, even if I need
  * to pan around to see details."
  *
+ * Touch: Mapbox Draw's touchend handler always calls preventDefault(), which swallows
+ * the taps Mapbox turns into clicks — with Draw attached, tapping a listing dot did
+ * nothing on phones. So Draw is attached only while the visitor is drawing; once the
+ * shape is finished it's rendered by our own "drawn-area" layers and Draw is removed.
+ * Tilt and rotate gestures are disabled: for browsing homes they only disorient, and
+ * two-finger vertical drags would tilt instead of pan.
+ *
  * Search criteria: this is the site's single search page (/search). Filters live in
  * FilterDrawer; applying them refetches the current viewport, and every fetch (pan, zoom,
  * apply) sends the active filters and mirrors them into the page URL so a search can be
@@ -278,6 +285,11 @@ export default function MapSearch({
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [activePolygon, setActivePolygon] = useState<GeoJSON.Feature<GeoJSON.Polygon> | null>(null);
   const [isDrawing, setIsDrawing] = useState<boolean>(false);
+  // Touch devices get tap-based drawing instructions. Set after mount (no window in SSR).
+  const [isTouch, setIsTouch] = useState<boolean>(false);
+  useEffect(() => setIsTouch(window.matchMedia("(pointer: coarse)").matches), []);
+  // Typed handle on our own source that renders the finished drawn polygon.
+  const drawnSourceRef = useRef<mapboxgl.GeoJSONSource | null>(null);
 
   // Search criteria. The ref lets the moveend closure (registered once) read the latest.
   const [filters, setFilters] = useState<SearchFilters>(initialFilters);
@@ -341,28 +353,49 @@ export default function MapSearch({
 
   // ── Draw handlers ──────────────────────────────────────────────────────────
 
+  // Draw is only attached for the duration of a drawing session (see header comment).
+  const detachDraw = useCallback((): void => {
+    const map = mapRef.current;
+    if (map && drawRef.current) map.removeControl(drawRef.current);
+    drawRef.current = null;
+  }, []);
+
   const startDraw = useCallback((): void => {
-    if (!drawRef.current) return;
-    drawRef.current.deleteAll();
+    const map = mapRef.current;
+    if (!map) return;
     activePolygonRef.current = null;
     setActivePolygon(null);
+    if (!drawRef.current) {
+      // displayControlsDefault: false — we provide our own button, not Draw's toolbar.
+      drawRef.current = new MapboxDraw({
+        displayControlsDefault: false,
+        defaultMode: "simple_select",
+      });
+      map.addControl(drawRef.current);
+    }
     drawRef.current.changeMode("draw_polygon");
     setIsDrawing(true);
   }, []);
 
   const cancelDraw = useCallback((): void => {
-    if (!drawRef.current) return;
-    drawRef.current.changeMode("simple_select");
+    detachDraw();
     setIsDrawing(false);
-  }, []);
+  }, [detachDraw]);
 
   const clearPolygon = useCallback((): void => {
-    if (!drawRef.current) return;
-    drawRef.current.deleteAll();
+    detachDraw();
     activePolygonRef.current = null;
     setActivePolygon(null);
     setIsDrawing(false);
-  }, []);
+  }, [detachDraw]);
+
+  // Render the finished polygon with our own layers (Draw is gone by then).
+  useEffect(() => {
+    drawnSourceRef.current?.setData({
+      type: "FeatureCollection",
+      features: activePolygon ? [activePolygon] : [],
+    });
+  }, [activePolygon]);
 
   // ── Map initialization (once on mount) ────────────────────────────────────
   useEffect(() => {
@@ -383,46 +416,57 @@ export default function MapSearch({
         [initialBbox.maxLng, initialBbox.maxLat],
       ],
       fitBoundsOptions: { padding: 40 },
+      // Flat, north-up map: no rotate or tilt (by mouse or touch).
+      dragRotate: false,
+      pitchWithRotate: false,
+      touchPitch: false,
     });
+    map.touchZoomRotate.disableRotation(); // pinch still zooms; twisting no longer rotates
 
     mapRef.current = map;
 
-    // Navigation controls (top-right)
-    map.addControl(new mapboxgl.NavigationControl(), "top-right");
+    // Zoom buttons (top-right); no compass since the map can't rotate.
+    map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
 
-    // ── Mapbox Draw ──────────────────────────────────────────────────────────
-    // displayControlsDefault: false — hide the default Draw toolbar entirely.
-    // We provide our own button overlay on the map canvas.
-    const draw = new MapboxDraw({
-      displayControlsDefault: false,
-      defaultMode: "simple_select",
-    });
-    map.addControl(draw);
-    drawRef.current = draw;
-
+    // ── Mapbox Draw events ───────────────────────────────────────────────────
+    // Draw itself is attached in startDraw(); these listeners fire only while it is.
     onDrawPolygon(map, "draw.create", (polygon) => {
       activePolygonRef.current = polygon;
       setActivePolygon(polygon);
-      setIsDrawing(false);
     });
 
-    map.on("draw.delete", () => {
-      activePolygonRef.current = null;
-      setActivePolygon(null);
-      setIsDrawing(false);
-    });
-
-    onDrawPolygon(map, "draw.update", (polygon) => {
-      activePolygonRef.current = polygon;
-      setActivePolygon(polygon);
-    });
-
-    // draw.modechange handles Escape (user cancels mid-draw)
+    // Draw returns to simple_select when a shape is finished or the visitor presses
+    // Escape. Either way the session is over: detach Draw (after Draw finishes handling
+    // its own event) so taps reach the map again.
     onDrawModeChange(map, (mode) => {
-      if (mode === "simple_select") setIsDrawing(false);
+      if (mode !== "simple_select") return;
+      setIsDrawing(false);
+      window.setTimeout(() => {
+        if (drawRef.current) map.removeControl(drawRef.current);
+        drawRef.current = null;
+      }, 0);
     });
 
     map.on("load", () => {
+      // Finished drawn area, below the listing layers.
+      map.addSource("drawn-area", {
+        type: "geojson",
+        data: { type: "FeatureCollection", features: [] },
+      });
+      drawnSourceRef.current = map.getSource("drawn-area") as mapboxgl.GeoJSONSource;
+      map.addLayer({
+        id: "drawn-area-fill",
+        type: "fill",
+        source: "drawn-area",
+        paint: { "fill-color": "#2563eb", "fill-opacity": 0.08 },
+      });
+      map.addLayer({
+        id: "drawn-area-line",
+        type: "line",
+        source: "drawn-area",
+        paint: { "line-color": "#2563eb", "line-width": 2, "line-dasharray": [2, 1] },
+      });
+
       map.addSource("listings", {
         type: "geojson",
         data: listingsToGeoJSON(initialListings),
@@ -474,6 +518,15 @@ export default function MapSearch({
       });
 
       map.addLayer({
+        id: "unclustered-hit",
+        // Invisible 22px ring around each 8px dot: an easy target for a fingertip.
+        type: "circle",
+        source: "listings",
+        filter: ["!", ["has", "point_count"]],
+        paint: { "circle-radius": 22, "circle-color": "#000000", "circle-opacity": 0 },
+      });
+
+      map.addLayer({
         id: "selected-point",
         type: "circle",
         source: "listings",
@@ -500,7 +553,7 @@ export default function MapSearch({
         );
       });
 
-      map.on("click", "unclustered-point", (e) => {
+      map.on("click", "unclustered-hit", (e) => {
         const [feature] = e.features!;
         if (popupRef.current) popupRef.current.remove();
         const coords = feature.geometry.coordinates;
@@ -515,8 +568,8 @@ export default function MapSearch({
       };
       map.on("mouseenter", "clusters", setCursor("pointer"));
       map.on("mouseleave", "clusters", setCursor(""));
-      map.on("mouseenter", "unclustered-point", setCursor("pointer"));
-      map.on("mouseleave", "unclustered-point", setCursor(""));
+      map.on("mouseenter", "unclustered-hit", setCursor("pointer"));
+      map.on("mouseleave", "unclustered-hit", setCursor(""));
     });
 
     // Debounced viewport change → fetch new listings
@@ -658,9 +711,9 @@ export default function MapSearch({
           {/* Instruction pill — only visible while user is actively drawing */}
           {isDrawing && (
             <div className="bg-white/95 text-slate-600 text-xs px-2.5 py-1.5 rounded shadow border border-slate-200 leading-snug">
-              Click to place points.
+              {isTouch ? "Tap to place points." : "Click to place points."}
               <br />
-              Double-click to finish.
+              {isTouch ? "Tap the first point to finish." : "Double-click to finish."}
             </div>
           )}
         </div>
