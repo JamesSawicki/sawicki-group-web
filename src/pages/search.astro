@@ -23,6 +23,8 @@ import { applyFiltersToParams, filtersFromParams } from "../lib/search-filters";
 // Production: Cloud Run sets process.env at runtime; dev: Vite fills import.meta.env.
 const apiBase = process.env.PUBLIC_API_BASE_URL || import.meta.env.PUBLIC_API_BASE_URL;
 const mapboxToken = process.env.PUBLIC_MAPBOX_TOKEN || import.meta.env.PUBLIC_MAPBOX_TOKEN;
+const photoAccountHash =
+  process.env.PUBLIC_CF_IMAGES_ACCOUNT_HASH || import.meta.env.PUBLIC_CF_IMAGES_ACCOUNT_HASH;
 
 // ─── Viewport + filters from the URL ─────────────────────────────────────────
 // Defaults frame the Twin Cities metro.
@@ -66,5 +68,6 @@ try {
     initialFilters={filters}
     apiBaseUrl={apiBase}
     mapboxToken={mapboxToken}
+    photoAccountHash={photoAccountHash}
   />
 </Layout>

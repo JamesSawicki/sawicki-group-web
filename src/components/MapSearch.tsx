@@ -36,13 +36,15 @@
  * apply) sends the active filters and mirrors them into the page URL so a search can be
  * bookmarked or shared.
  */
-import { formatPrice, formatBathTotal, formatSqft, listingPath } from "../lib/listing-utils";
+import { formatPrice, formatBathTotal, formatSqft } from "../lib/listing-utils";
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import mapboxgl from "mapbox-gl";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
 import type { Listing } from "../types/listing";
 import FilterDrawer from "./search/FilterDrawer";
+import ListingPreview from "./search/ListingPreview";
+import { parsePhotoIds, photoUrl } from "../lib/photo-utils";
 import {
   applyFiltersToParams,
   countActiveFilters,
@@ -66,24 +68,16 @@ interface Props {
   initialFilters: SearchFilters;
   apiBaseUrl: string;
   mapboxToken: string;
+  /** Cloudflare Images account hash, for listing photos in the preview card and list. */
+  photoAccountHash?: string;
 }
 
 /**
- * The subset of GeoJSON feature properties we store on each map marker.
- * Typed separately so buildPopupHTML and the cluster click handler are
- * explicit about what they receive — no implicit `any` from feature.properties.
+ * GeoJSON properties stored on each map marker. Only the listing id: a tapped pin is
+ * looked up in the current listings, and the preview card renders from the full Listing.
  */
 interface MarkerProperties {
   id: string;
-  address: string;
-  city: string;
-  listPrice: number;
-  beds: number;
-  baths: string;
-  sqftTotal: number;
-  priceDisplay: string;
-  sqftDisplay: string;
-  detailUrl: string; // pre-built SEO slug path; computed where we still have the full Listing
 }
 
 /**
@@ -109,41 +103,9 @@ function listingsToGeoJSON(listings: Listing[]): GeoJSON.FeatureCollection {
           type: "Point" as const,
           coordinates: [l.longitude!, l.latitude!],
         },
-        properties: {
-          id: String(l.id),
-          address: l.address,
-          city: l.city ?? "",
-          listPrice: l.listPrice ?? 0,
-          beds: l.beds ?? 0,
-          baths: formatBathTotal(l),
-          sqftTotal: l.sqftTotal ?? 0,
-          priceDisplay: formatPrice(l.listPrice),
-          sqftDisplay: formatSqft(l.sqftTotal),
-          detailUrl: listingPath(l),
-        } satisfies MarkerProperties,
+        properties: { id: String(l.id) } satisfies MarkerProperties,
       })),
   };
-}
-
-function buildPopupHTML(props: MarkerProperties): string {
-  return `
-    <div style="min-width:220px;font-family:inherit;">
-      <div style="font-size:1.1rem;font-weight:700;color:#0f172a;margin-bottom:.25rem">
-        ${props.priceDisplay}
-      </div>
-      <div style="font-size:.875rem;color:#334155;margin-bottom:.125rem">${props.address}</div>
-      <div style="font-size:.8rem;color:#64748b;margin-bottom:.5rem">${props.city}, MN</div>
-      <div style="font-size:.8rem;color:#334155;margin-bottom:.75rem">
-        ${props.beds} bd &nbsp;·&nbsp; ${props.baths} ba &nbsp;·&nbsp; ${props.sqftDisplay} sqft
-      </div>
-      <a href="${props.detailUrl}"
-         style="display:inline-block;background:#1e40af;color:#fff;
-                font-size:.8rem;padding:.375rem .875rem;
-                border-radius:.375rem;text-decoration:none;">
-        View Details
-      </a>
-    </div>
-  `;
 }
 
 // ─── Point-in-polygon helper ──────────────────────────────────────────────────
@@ -203,9 +165,13 @@ interface SidebarCardProps {
   listing: Listing;
   isSelected: boolean;
   onClick: () => void;
+  /** Cloudflare account hash; with it, listings that have photos show a thumbnail. */
+  photoAccountHash?: string;
 }
 
-function SidebarCard({ listing, isSelected, onClick }: SidebarCardProps) {
+function SidebarCard({ listing, isSelected, onClick, photoAccountHash }: SidebarCardProps) {
+  const firstPhotoId = parsePhotoIds(listing.photoIds)[0];
+  const thumb = firstPhotoId ? photoUrl(photoAccountHash, firstPhotoId, "card") : "";
   const gradients = [
     "from-slate-400 to-slate-600",
     "from-blue-400 to-blue-700",
@@ -226,23 +192,33 @@ function SidebarCard({ listing, isSelected, onClick }: SidebarCardProps) {
             : "border-stone-100 hover:border-stone-300 hover:bg-stone-50"
         }`}
     >
-      <div
-        className={`w-16 h-16 rounded shrink-0 bg-gradient-to-br ${gradient} flex items-center justify-center`}
-      >
-        <svg
-          className="h-6 w-6 text-white/40"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
+      {thumb ? (
+        <img
+          src={thumb}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          className="w-16 h-16 rounded shrink-0 object-cover bg-slate-100"
+        />
+      ) : (
+        <div
+          className={`w-16 h-16 rounded shrink-0 bg-gradient-to-br ${gradient} flex items-center justify-center`}
         >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={1.5}
-            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-          />
-        </svg>
-      </div>
+          <svg
+            className="h-6 w-6 text-white/40"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.5}
+              d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+            />
+          </svg>
+        </div>
+      )}
       <div className="min-w-0 flex-1">
         <div className="font-semibold text-slate-900 text-sm">{formatPrice(listing.listPrice)}</div>
         <div className="text-xs text-slate-700 truncate mt-0.5">{listing.address}</div>
@@ -264,6 +240,7 @@ export default function MapSearch({
   initialFilters,
   apiBaseUrl,
   mapboxToken,
+  photoAccountHash,
 }: Props) {
   // Refs typed to their concrete DOM/library types so method calls type-check.
   // `| null` because useRef starts null and the map is created asynchronously.
@@ -271,7 +248,6 @@ export default function MapSearch({
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const drawRef = useRef<MapboxDraw | null>(null);
   const debounceRef = useRef<number | null>(null);
-  const popupRef = useRef<mapboxgl.Popup | null>(null);
   // Captured once in the load handler so all subsequent .setData() and
   // .getClusterExpansionZoom() calls are fully typed — no per-call cast needed.
   const sourceRef = useRef<mapboxgl.GeoJSONSource | null>(null);
@@ -281,6 +257,14 @@ export default function MapSearch({
   const activePolygonRef = useRef<GeoJSON.Feature<GeoJSON.Polygon> | null>(null);
 
   const [listings, setListings] = useState<Listing[]>(initialListings);
+  // Latest listings for map event handlers, which are registered once at load.
+  const listingsRef = useRef<Listing[]>(initialListings);
+  useEffect(() => {
+    listingsRef.current = listings;
+  }, [listings]);
+  // Listing shown in the preview card (null = no card). Kept as the object, so the card
+  // stays put even if a refetch drops that listing from the current results.
+  const [preview, setPreview] = useState<Listing | null>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [activePolygon, setActivePolygon] = useState<GeoJSON.Feature<GeoJSON.Polygon> | null>(null);
@@ -553,14 +537,25 @@ export default function MapSearch({
         );
       });
 
+      // Tap a pin → preview card (ignored while drawing, when taps place points).
       map.on("click", "unclustered-hit", (e) => {
-        const [feature] = e.features!;
-        if (popupRef.current) popupRef.current.remove();
-        const coords = feature.geometry.coordinates;
-        popupRef.current = new mapboxgl.Popup({ offset: 15 })
-          .setLngLat([coords[0], coords[1]])
-          .setHTML(buildPopupHTML(feature.properties as MarkerProperties))
-          .addTo(map);
+        if (drawRef.current) return;
+        const id = (e.features?.[0]?.properties as MarkerProperties | undefined)?.id;
+        const listing = listingsRef.current.find((l) => String(l.id) === id);
+        if (!listing) return;
+        setPreview(listing);
+        setSelectedId(listing.id);
+        map.setFilter("selected-point", ["==", ["get", "id"], String(listing.id)]);
+      });
+
+      // Tap empty map → close the preview.
+      map.on("click", (e) => {
+        if (drawRef.current) return;
+        const hit = map.queryRenderedFeatures(e.point, { layers: ["unclustered-hit", "clusters"] });
+        if (hit.length === 0) {
+          setPreview(null);
+          map.setFilter("selected-point", ["==", ["get", "id"], ""]);
+        }
       });
 
       const setCursor = (c: string) => () => {
@@ -582,7 +577,6 @@ export default function MapSearch({
 
     return () => {
       if (debounceRef.current !== null) clearTimeout(debounceRef.current);
-      if (popupRef.current) popupRef.current.remove();
       map.remove();
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -602,10 +596,16 @@ export default function MapSearch({
   const closeFilters = useCallback(() => setFiltersOpen(false), []);
   const openFilters = useCallback(() => setFiltersOpen(true), []);
 
-  // ── Sidebar card click → pan + highlight ──────────────────────────────────
+  const closePreview = useCallback((): void => {
+    setPreview(null);
+    mapRef.current?.setFilter("selected-point", ["==", ["get", "id"], ""]);
+  }, []);
+
+  // ── Sidebar card click → pan + highlight + preview ────────────────────────
   const handleSidebarClick = useCallback((listing: Listing): void => {
     if (!mapRef.current || listing.latitude == null) return;
     setSelectedId(listing.id);
+    setPreview(listing);
     mapRef.current.setFilter("selected-point", ["==", ["get", "id"], String(listing.id)]);
     mapRef.current.flyTo({
       center: [listing.longitude!, listing.latitude],
@@ -679,6 +679,7 @@ export default function MapSearch({
               listing={listing}
               isSelected={selectedId === listing.id}
               onClick={() => handleSidebarClick(listing)}
+              photoAccountHash={photoAccountHash}
             />
           ))}
         </div>
@@ -687,6 +688,10 @@ export default function MapSearch({
       {/* ── Map (first on small screens) ─────────────────────────────────── */}
       <div className="order-1 lg:order-2 relative h-[60vh] lg:h-auto lg:flex-1">
         <div ref={mapContainerRef} className="w-full h-full" />
+
+        {preview && (
+          <ListingPreview listing={preview} accountHash={photoAccountHash} onClose={closePreview} />
+        )}
 
         {/* ── Draw controls — top-left, opposite NavigationControl ───────── */}
         <div className="absolute top-3 left-3 z-10 flex flex-col items-start gap-1.5">
