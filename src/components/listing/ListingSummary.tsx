@@ -2,9 +2,12 @@
  * ListingSummary.tsx — the listing page's summary + call to action, in two forms:
  *
  *   - Card (the right-hand column on desktop; near the end of the page on phones):
- *     price, address, key stats, "Contact us" and click-to-call. On desktop, once the
- *     main photos have scrolled out of view, a single-photo carousel slides open at the
- *     top of the card.
+ *     price, address, key stats, "Contact us" and click-to-call. On desktop its top is a
+ *     media frame with Map | Photos tabs: the neighborhood map (a static image; click
+ *     opens the interactive map) while the main photos are on screen, then a photo
+ *     carousel slides down over it once they've scrolled away. Choosing a tab stops the
+ *     automatic switch. One frame rather than map + photos stacked, so the sticky card
+ *     stays shorter than a laptop screen.
  *   - Mini header (phones/tablets only): a slim bar that slides down from the top once
  *     the photos and price have scrolled away — a swipeable photo, price, address and a
  *     Contact button — and slides back up when the visitor returns to the top.
@@ -15,6 +18,7 @@
 import { useCallback, useEffect, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import { openListingPhoto, photoUrl } from "../../lib/photo-utils";
+import { openNeighborhoodMap } from "../../lib/map-utils";
 
 /** id of the marker placed right after the gallery + hero on the listing page. */
 export const HERO_END_ID = "listing-hero-end";
@@ -40,6 +44,8 @@ interface Props {
   contactHref: string;
   /** Phone for click-to-call: tel: digits and display text. */
   phone: { tel: string; display: string };
+  /** Static neighborhood map image for the card's frame (desktop); omitted without coordinates. */
+  mapImage?: string;
 }
 
 // ─── Photo carousel (used by the card and the mini header) ────────────────────
@@ -71,7 +77,7 @@ function PhotoCarousel({ photoIds, accountHash, size, address }: CarouselProps) 
   );
 
   const variant = size === "card" ? "mosaic" : "thumb";
-  const frame = size === "card" ? "aspect-[4/3] rounded-t-xl" : "w-16 h-12 rounded-md";
+  const frame = size === "card" ? "w-full h-full" : "w-16 h-12 rounded-md";
 
   return (
     <div className={`relative overflow-hidden bg-stone-200 shrink-0 ${frame}`}>
@@ -151,6 +157,7 @@ export default function ListingSummary({
   ctaButton,
   contactHref,
   phone,
+  mapImage,
 }: Props) {
   // True once the gallery + hero have scrolled out of view (above the viewport).
   const [scrolledPast, setScrolledPast] = useState<boolean>(false);
@@ -179,6 +186,11 @@ export default function ListingSummary({
   }, []);
 
   const hasPhotos = Boolean(accountHash) && photoIds.length > 0;
+
+  // Card frame tab: automatic (map while the gallery is in view, then photos) until the
+  // visitor picks one.
+  const [pickedTab, setPickedTab] = useState<"map" | "photos" | null>(null);
+  const showPhotos = hasPhotos && (pickedTab ? pickedTab === "photos" : scrolledPast || !mapImage);
 
   return (
     <>
@@ -213,23 +225,67 @@ export default function ListingSummary({
 
       {/* ── Card ── */}
       <div className="border border-stone-200 rounded-xl bg-white">
-        {/* Photo frame: desktop only, slides open once the main photos are out of view. */}
-        {hasPhotos && (
-          <div
-            className={`hidden lg:grid transition-[grid-template-rows] duration-300 ${
-              scrolledPast ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
-            }`}
-            aria-hidden={!scrolledPast}
-            inert={!scrolledPast}
-          >
-            <div className="min-h-0 overflow-hidden">
-              <PhotoCarousel
-                photoIds={photoIds}
-                accountHash={accountHash!}
-                size="card"
-                address={address}
-              />
-            </div>
+        {/* ── Media frame (desktop): map, with photos sliding down over it ── */}
+        {(hasPhotos || mapImage) && (
+          <div className="hidden lg:block relative aspect-[16/10] rounded-t-xl overflow-hidden bg-stone-200">
+            {mapImage && (
+              <button
+                type="button"
+                onClick={openNeighborhoodMap}
+                className="absolute inset-0 group"
+                aria-label={`Open the neighborhood map around ${address}`}
+              >
+                <img
+                  src={mapImage}
+                  alt=""
+                  loading="lazy"
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+                <span className="absolute bottom-8 right-2 px-2.5 py-1.5 rounded-md bg-white/95 shadow text-xs font-medium text-stone-800 group-hover:bg-white">
+                  Explore the neighborhood
+                </span>
+              </button>
+            )}
+            {hasPhotos && (
+              <div
+                className={`absolute inset-0 transition-transform duration-500 ${
+                  showPhotos ? "translate-y-0" : "-translate-y-full"
+                }`}
+                aria-hidden={!showPhotos}
+                inert={!showPhotos}
+              >
+                <PhotoCarousel
+                  photoIds={photoIds}
+                  accountHash={accountHash!}
+                  size="card"
+                  address={address}
+                />
+              </div>
+            )}
+            {mapImage && hasPhotos && (
+              <div
+                className="absolute top-2 left-2 z-10 inline-flex rounded-lg bg-white/95 shadow p-0.5"
+                role="group"
+                aria-label="Show map or photos"
+              >
+                {(["map", "photos"] as const).map((tab) => {
+                  const active = (tab === "photos") === showPhotos;
+                  return (
+                    <button
+                      key={tab}
+                      type="button"
+                      onClick={() => setPickedTab(tab)}
+                      aria-pressed={active}
+                      className={`h-8 px-3 rounded-md text-xs font-medium ${
+                        active ? "bg-stone-900 text-white" : "text-stone-700 hover:bg-stone-100"
+                      }`}
+                    >
+                      {tab === "map" ? "Map" : `Photos (${photoIds.length})`}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
 

@@ -1,0 +1,55 @@
+---
+/**
+ * Phones/tablets: a small "Neighborhood" button whose background is a static map of the
+ * blocks around the listing (pin on the property). Tapping it opens the interactive
+ * neighborhood map (NeighborhoodMap.tsx). Desktop shows the map in the summary card
+ * instead. Renders nothing without coordinates or a Mapbox token.
+ */
+// ─── Imports ─────────────────────────────────────────────────────────────────
+import { staticMapUrl } from "../../lib/map-utils";
+
+// ─── Props ───────────────────────────────────────────────────────────────────
+interface Props {
+  latitude?: number;
+  longitude?: number;
+  /** Public Mapbox token. */
+  mapboxToken?: string;
+}
+
+const { latitude, longitude, mapboxToken } = Astro.props;
+
+// ─── Derived values ──────────────────────────────────────────────────────────
+// A much wider image than the button, left-aligned: the pin (the image's center) then
+// lands at about three-quarters of the button's width, clear of the label on the left.
+const image =
+  mapboxToken && latitude != null && longitude != null
+    ? staticMapUrl(mapboxToken, longitude, latitude, 520, 96, 14.5)
+    : null;
+---
+
+{image && (
+  <button
+    type="button"
+    data-open-neighborhood-map
+    aria-label="Open the neighborhood map"
+    class="lg:hidden relative flex-1 min-w-34 max-w-40 h-11 rounded-lg overflow-hidden border border-stone-200 shadow-sm bg-stone-100"
+  >
+    <img
+      src={image}
+      alt=""
+      loading="lazy"
+      class="absolute inset-0 w-full h-full object-cover object-left"
+    />
+    <span class="absolute inset-y-0 left-0 flex items-center pl-2 pr-6 bg-gradient-to-r from-white via-white/90 to-transparent text-xs font-semibold text-stone-900">
+      Neighborhood
+    </span>
+  </button>
+)}
+
+<script>
+  import { openNeighborhoodMap } from "../../lib/map-utils";
+
+  document
+    .querySelectorAll("[data-open-neighborhood-map]")
+    .forEach((button) => button.addEventListener("click", openNeighborhoodMap));
+</script>

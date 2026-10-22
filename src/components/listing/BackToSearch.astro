@@ -6,14 +6,16 @@
  * restores where they'd scrolled. With no saved search it reads "Search on the map".
  *
  * Server-rendered with the fallback; a small script upgrades it once the page loads.
+ * Anything passed as children sits at the right end of the row (the listing page puts
+ * the phones' Neighborhood map button there).
  */
 ---
 
-<div class="max-w-6xl mx-auto px-6 pt-4">
+<div class="max-w-6xl mx-auto px-6 pt-4 flex items-center justify-between gap-3">
   <a
     href="/listings"
     id="back-to-search"
-    class="inline-flex items-center gap-1.5 h-11 px-3 -ml-3 rounded-lg text-sm font-medium text-stone-700 hover:bg-stone-100 transition-colors"
+    class="inline-flex items-center gap-1.5 h-11 px-3 -ml-3 rounded-lg text-sm font-medium whitespace-nowrap text-stone-700 hover:bg-stone-100 transition-colors"
   >
     <svg
       width="18"
@@ -28,6 +30,7 @@
     </svg>
     <span data-label>Search on the map</span>
   </a>
+  <slot />
 </div>
 
 <script>

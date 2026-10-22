@@ -10,6 +10,8 @@
 import Layout from "../../layouts/Layout.astro";
 import ListingChat from "../../components/ListingChat.tsx";
 import ListingDisclosure from "../../components/ListingDisclosure.astro";
+import NeighborhoodMap from "../../components/listing/NeighborhoodMap.tsx";
+import NeighborhoodMapButton from "../../components/listing/NeighborhoodMapButton.astro";
 import PhotoGallery from "../../components/PhotoGallery.tsx";
 import AmenityScorecard from "../../components/listing/AmenityScorecard.astro";
 import BackToSearch from "../../components/listing/BackToSearch.astro";
@@ -45,6 +47,8 @@ import { fetchWithTimeout, serviceUnavailableResponse } from "../../lib/api";
 
 // CSS for React islands is imported here in the .astro frontmatter, not inside the island,
 // so Vite resolves and bundles it through Astro's build (same pattern as Mapbox's CSS).
+// The neighborhood map's CSS (the library itself loads only when the map is opened).
+import "mapbox-gl/dist/mapbox-gl.css";
 import "yet-another-react-lightbox/styles.css";
 import "yet-another-react-lightbox/plugins/counter.css";
 
@@ -118,6 +122,8 @@ const listingBrokerDisplay =
 const cfAccountHash =
   process.env.PUBLIC_CF_IMAGES_ACCOUNT_HASH || import.meta.env.PUBLIC_CF_IMAGES_ACCOUNT_HASH;
 const photoIds = parsePhotoIds(listing.photoIds);
+// Public Mapbox token, for the neighborhood map (static image + interactive lightbox).
+const mapboxToken = process.env.PUBLIC_MAPBOX_TOKEN || import.meta.env.PUBLIC_MAPBOX_TOKEN;
 const floorPlanIds = parsePhotoIds(listing.floorPlanIds);
 const virtualTourUrls = parseVirtualTourUrls(listing.virtualTourUrls);
 
@@ -141,7 +147,13 @@ const amenitiesList = parseList(listing.amenities);
   jsonLd={jsonLd}
   ogImage={schemaImages[0]}
 >
-  <BackToSearch />
+  <BackToSearch>
+    <NeighborhoodMapButton
+      latitude={listing.latitude}
+      longitude={listing.longitude}
+      mapboxToken={mapboxToken}
+    />
+  </BackToSearch>
   <Breadcrumb address={listing.address} />
 
   {/* ── Photo gallery ── */}
@@ -179,12 +191,28 @@ const amenitiesList = parseList(listing.amenities);
       <ListedBy brokerName={listingBrokerDisplay} listDate={listing.listDate} />
     </div>
 
-    <SummarySidebar listing={listing} photoIds={photoIds} accountHash={cfAccountHash} />
+    <SummarySidebar
+      listing={listing}
+      photoIds={photoIds}
+      accountHash={cfAccountHash}
+      mapboxToken={mapboxToken}
+    />
   </div>
 
   {/* IDX-required disclosure block: attribution, freshness, disclaimers, fair housing,
       copyright. Always rendered on every listing. */}
   <ListingDisclosure listing={listing} />
+
+  {/* ── Neighborhood map lightbox (opened from the summary card / Neighborhood button) ── */}
+  {mapboxToken && listing.latitude != null && listing.longitude != null && (
+    <NeighborhoodMap
+      client:load
+      latitude={listing.latitude}
+      longitude={listing.longitude}
+      address={listing.address ?? ""}
+      mapboxToken={mapboxToken}
+    />
+  )}
 
   {/* ── AI chat: floating bubble (phones) / docked bar (desktop) ── */}
   <ListingChat client:load listingId={listing.id} apiBaseUrl={apiBase} />

@@ -12,6 +12,7 @@ import ListingSummary from "./ListingSummary.tsx";
 import type { Listing } from "../../types/listing";
 import { formatBathTotal, formatPrice, formatSqft, isPositive } from "../../lib/listing-utils";
 import { agent, site } from "../../lib/site.config";
+import { staticMapUrl } from "../../lib/map-utils";
 
 // ─── Props ───────────────────────────────────────────────────────────────────
 interface Props {
@@ -21,9 +22,11 @@ interface Props {
   photoIds: string[];
   /** Cloudflare Images account hash. */
   accountHash?: string;
+  /** Public Mapbox token, for the card's neighborhood map image. */
+  mapboxToken?: string;
 }
 
-const { listing, photoIds, accountHash } = Astro.props;
+const { listing, photoIds, accountHash, mapboxToken } = Astro.props;
 
 // ─── Derived values ──────────────────────────────────────────────────────────
 const cityLine = listing.city
@@ -36,11 +39,17 @@ const stats = [
 ]
   .filter(Boolean)
   .join(" · ");
+// Card frame map (16:10, about the column's width).
+const mapImage =
+  mapboxToken && listing.latitude != null && listing.longitude != null
+    ? staticMapUrl(mapboxToken, listing.longitude, listing.latitude, 440, 275)
+    : undefined;
 const ctaBody = `${site.name} can represent you as a buyer's agent to view and make an offer on this property. ${agent.name} typically responds within a few hours.`;
 ---
 
 <div class="lg:col-span-2">
-  <div class="lg:sticky lg:top-8">
+  {/* Sticky only when the window is tall enough to show the whole card. */}
+  <div class="lg:[@media(min-height:700px)]:sticky lg:top-8">
     <ListingSummary
       client:load
       photoIds={photoIds}
@@ -54,6 +63,7 @@ const ctaBody = `${site.name} can represent you as a buyer's agent to view and m
       ctaButton="Contact us about this listing"
       contactHref="/contact"
       phone={{ tel: agent.phone, display: agent.phoneDisplay }}
+      mapImage={mapImage}
     />
   </div>
 </div>

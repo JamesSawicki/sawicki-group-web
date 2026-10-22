@@ -148,6 +148,11 @@ Many visitors browse on phones, and map search is the primary way people look fo
   open it with `openListingPhoto(i)` (`lib/photo-utils.ts`). `listing/ListingSummary.tsx`
   is the sticky summary/CTA card (desktop: a photo carousel slides open once the gallery
   scrolls past `#listing-hero-end`) and the phones' slide-down mini header.
+- **Listing neighborhood map:** the page shows only static Mapbox images
+  (`lib/map-utils.ts`: the summary card's Map tab on desktop, the Neighborhood button by
+  "Back to map" on phones); `listing/NeighborhoodMap.tsx` loads mapbox-gl only when one
+  is clicked (streets-v12 + Satellite). Keep it that way: an interactive map on page
+  load would add ~1 MB of JS and a billable map load to every listing view.
 - **Listing AI chat** (`ListingChat.tsx`) is a floating widget placed by the listing page:
   an "AI" bubble bottom-right on phones (opens a bottom sheet) and an "AI chat" bar docked
   bottom-right on desktop (opens a panel). Both labels are placeholders for the logo.
