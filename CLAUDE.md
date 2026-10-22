@@ -58,6 +58,14 @@ npm run build    # local production build; does not deploy
 - **Blog posts** in `src/content/blog/` arrive as `draft: true`; publishing means flipping
   that to `false`.
 
+## Cost scorecard (every feature)
+
+`docs/cost-scorecard.md` tracks what each feature costs: page weight, requests, latency,
+browser memory, server work and billable third-party calls (Mapbox, Cloudflare Images,
+Anthropic, ...). **Every feature adds or updates its row** (measure on a production build;
+see the doc's header for how) and its effect on the ranked action list. Prefer designs
+that keep paid calls off page load (e.g. static map images, libraries loaded on demand).
+
 ## Machine-readable data (structured data, sitemaps, feeds)
 
 Goal: as much accurate machine-readable data as the MLS rules allow.
