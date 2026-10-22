@@ -50,6 +50,39 @@ npm run build    # local production build; does not deploy
 - **Blog posts** in `src/content/blog/` arrive as `draft: true`; publishing means flipping
   that to `false`.
 
+## Code organization and comments
+Goal: any file can be read top to bottom and understood without outside context.
+
+**Pages are thin; sections are components.** A page does routing, data fetching, redirects
+and `<head>` data, then lays out section components — the markup should read like a table
+of contents. Listing-detail sections live in `src/components/listing/` (one component per
+visible section). Extract a section into a component once it passes ~40 lines of markup or
+is reused; extract a repeated markup pattern into a small helper component (e.g.
+`DetailRow.astro`) instead of copy-pasting it.
+
+**Every `.astro` file follows the same layout:**
+1. **Header block** (TSDoc `/** ... */`, 3–6 lines): what the file renders and any
+   non-obvious decision. Don't list "used by" — it goes stale; use Find All References.
+2. **`interface Props`** with a TSDoc line on each prop.
+3. **Frontmatter in a fixed order**, each part under a divider comment
+   (`// ─── Name ───...`): imports → props → data fetching → derived values.
+4. **Markup** with section markers (`{/* ── Name ── */}`) that match the frontmatter names.
+
+**Comment the why, not the what.** Explain decisions, constraints, and gotchas ("rewrite to
+/404 so the status code is a real 404"); don't narrate code ("set the title"). Keep
+compliance tags like `VERIFY-IDX` greppable. Update or delete a comment when the code under
+it changes — a stale comment is worse than none.
+
+**TSDoc on exports.** Exported functions and types in `src/lib/` and component props get a
+`/** ... */` summary (plus `@param` when a parameter's meaning or units aren't obvious).
+VS Code shows these on hover.
+
+**Formatting and linting** (run before committing):
+```bash
+npm run format    # Prettier (incl. .astro) — rewrites files
+npm run lint      # ESLint (TypeScript, Astro, TSDoc checks) — warnings are to-dos, errors must be fixed
+```
+
 ## More context
 Cross-repo identifiers, URLs and env var details: `../cowork-context/project-identifiers_6-6-26.md`.
 Keep this file current: when a convention or workflow changes, update it in the same change.
