@@ -1,197 +1,105 @@
 ---
-import Layout from "../../layouts/Layout.astro";
-import type { Listing, Page } from "../../types/listing";
-import {
-  formatBathTotal,
-  formatLevels,
-  formatMlsId,
-  formatPrice,
-  formatSqft,
-  isPositive,
-  listingPath,
-  statusBadgeClasses,
-  statusLabel,
-} from "../../lib/listing-utils";
-import { fetchWithTimeout } from "../../lib/api";
-import { mls } from "../../lib/site.config";
+/**
+ * Search page (/search): the site's one search experience — a map with listing pins, the
+ * matching listings beside/below it, and a filter drawer (MapSearch + FilterDrawer).
+ *
+ * This file only reads the viewport and filters from the URL and fetches the first page
+ * of results on the server, so the map has pins on first paint. Everything after that
+ * (panning, zooming, changing filters) is fetched by the MapSearch island.
+ */
+// ─── Imports ─────────────────────────────────────────────────────────────────
+// Mapbox CSS must be imported here in the .astro frontmatter, not inside the React
+// island, so Vite bundles it through Astro's build.
+import "mapbox-gl/dist/mapbox-gl.css";
+import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
 
-// Single source of truth for the page size — used in the API call AND the
-// "showing N of M" overflow logic below. Previously 24 was hardcoded in three
-// places; changing one and not the others silently broke the overflow prompt.
-const PAGE_SIZE = 24;
+import Layout from "../layouts/Layout.astro";
+import MapSearch from "../components/MapSearch.tsx";
+import type { Listing, Page } from "../types/listing";
+import { fetchWithTimeout } from "../lib/api";
+import { applyFiltersToParams, filtersFromParams, MAP_API_SORT } from "../lib/search-filters";
+import { areaFromParams } from "../lib/search-area";
 
-// Production: Cloud Run sets process.env at runtime.
-// Dev: Vite populates import.meta.env from .env.local but NOT process.env.
-// Use both with || so either source works.
+// ─── Config ──────────────────────────────────────────────────────────────────
+// Production: Cloud Run sets process.env at runtime; dev: Vite fills import.meta.env.
 const apiBase = process.env.PUBLIC_API_BASE_URL || import.meta.env.PUBLIC_API_BASE_URL;
+const mapboxToken = process.env.PUBLIC_MAPBOX_TOKEN || import.meta.env.PUBLIC_MAPBOX_TOKEN;
+const photoAccountHash =
+  process.env.PUBLIC_CF_IMAGES_ACCOUNT_HASH || import.meta.env.PUBLIC_CF_IMAGES_ACCOUNT_HASH;
 
-if (!apiBase) {
-  throw new Error(
-    "PUBLIC_API_BASE_URL not set in process.env (production) or import.meta.env (dev). " +
-      "In dev: confirm sawicki-group-web/.env.local has the line and `npm run dev` was restarted. " +
-      "In production: confirm Cloud Run has the env var set via cloudbuild.yaml --update-env-vars.",
-  );
-}
+// ─── Viewport + filters from the URL ─────────────────────────────────────────
+// Defaults frame the Twin Cities metro.
+const params = Astro.url.searchParams;
+const minLat = parseFloat(params.get("minLat") ?? "44.75");
+const maxLat = parseFloat(params.get("maxLat") ?? "45.15");
+const minLng = parseFloat(params.get("minLng") ?? "-93.90");
+const maxLng = parseFloat(params.get("maxLng") ?? "-93.10");
+const filters = filtersFromParams(params);
+const initialArea = areaFromParams(params); // hand-drawn area, if the URL has one
 
-let listings: Listing[] = [];
-let totalListings = 0;
-let error = false;
-
+// ─── Data fetching ───────────────────────────────────────────────────────────
+let initialListings: Listing[] = [];
+let initialTotal = 0;
 try {
-  // Use the search endpoint — gives us status filtering, sorting, and pagination.
-  // Active + Pending + TNAS covers everything currently on market.
-  // Sorted newest first: most recently listed appears at top of the page.
   const url = new URL(`${apiBase}/api/listings/search`);
-  url.searchParams.set("status", "Active,Pending,TNAS,Coming Soon");
-  url.searchParams.set("sortBy", "newest");
-  url.searchParams.set("size", String(PAGE_SIZE));
+  url.searchParams.set("minLat", String(minLat));
+  url.searchParams.set("maxLat", String(maxLat));
+  url.searchParams.set("minLng", String(minLng));
+  url.searchParams.set("maxLng", String(maxLng));
+  applyFiltersToParams(filters, url.searchParams);
+  url.searchParams.set("sortBy", MAP_API_SORT); // nearest the center; MapSearch applies the chosen sort
+  url.searchParams.set("size", "200");
 
   const res = await fetchWithTimeout(url.toString());
   if (res.ok) {
     const data = (await res.json()) as Page<Listing>;
-    listings = data.content;
-    totalListings = data.totalElements;
-  } else {
-    error = true;
+    initialListings = data.content;
+    initialTotal = data.totalElements;
   }
-} catch (e) {
-  // Surface the real cause in the server console instead of swallowing it —
-  // a silent catch here is what made "listings aren't loading" hard to diagnose.
-  console.error("[listings/index] failed to load listings from", apiBase, "-", e);
-  error = true;
+} catch {
+  // Non-fatal: the map still renders with no pins and refetches client-side as the
+  // visitor pans. A hanging API doesn't stall the server response.
 }
 ---
 
 <Layout
-  title="Current Listings"
-  description="Browse current Twin Cities homes for sale via NorthstarMLS. Minneapolis, Saint Paul, and surrounding communities, presented by The Sawicki Group."
+  title="Search Homes"
+  description="Search Twin Cities homes for sale on an interactive map. Filter by price, beds, baths, property type and more."
 >
-  <div class="max-w-6xl mx-auto px-6 py-16">
-    {/* Header */}
-    <div class="mb-10 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-      <div>
-        <h1 class="text-3xl font-semibold text-stone-900 mb-2">Current Listings</h1>
-        <p class="text-stone-500">
-          {/* IDX compliance: this grid shows homes from the broader MLS via
-              broker reciprocity, NOT only Sawicki Group listings. Do not imply
-              representation of every home shown. */}
-          Twin Cities homes for sale.
-          {totalListings > 0 && (
-            <span>
-              {" "}
-              {totalListings} {totalListings === 1 ? "property" : "properties"} available.
-            </span>
-          )}
-        </p>
-      </div>
-      {/* Search (map + filters) lives on one page */}
-      <div class="flex gap-3 shrink-0">
-        <a
-          href="/search"
-          class="text-sm px-4 py-2.5 rounded-lg bg-stone-900 text-white hover:bg-stone-700 transition-colors"
-        >
-          Search on the map
-        </a>
-      </div>
-    </div>
-
-    {/* Error state */}
-    {error && (
-      <p class="text-stone-500">
-        Unable to load listings at this time. Please try again shortly or{" "}
-        <a href="/contact" class="underline hover:text-stone-900">
-          contact us directly
-        </a>
-        .
-      </p>
-    )}
-
-    {/* Empty state */}
-    {!error && listings.length === 0 && (
-      <p class="text-stone-500">No active listings at this time. Check back soon.</p>
-    )}
-
-    {/* Listing grid */}
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-      {listings.map((listing) => (
-        <a
-          href={listingPath(listing)}
-          class="group border border-stone-200 rounded-xl p-6 hover:border-stone-400 hover:shadow-sm transition-all"
-        >
-          {/* Header row: address + price */}
-          <div class="flex items-start justify-between mb-3">
-            <div class="min-w-0 mr-4">
-              {/* Status badge — only shown for non-Active so the active case stays clean */}
-              {listing.status && listing.status !== "Active" && (
-                <span class={`${statusBadgeClasses(listing.status)} mb-1.5 inline-block`}>
-                  {statusLabel(listing.status)}
-                </span>
-              )}
-              <div class="font-semibold text-stone-900 group-hover:underline">
-                {listing.address}
-              </div>
-              <div class="text-sm text-stone-500">
-                {listing.city}
-                {listing.zipCode ? `, MN ${listing.zipCode}` : ""}
-              </div>
-            </div>
-            <div class="text-lg font-semibold text-stone-900 shrink-0">
-              {formatPrice(listing.listPrice)}
-            </div>
-          </div>
-
-          {/* Neighborhood tag */}
-          {listing.neighborhood && (
-            <div class="text-xs text-stone-400 uppercase tracking-wide mb-3">
-              {listing.neighborhood}
-            </div>
-          )}
-
-          {/* Key stats */}
-          <div class="flex flex-wrap gap-4 text-sm text-stone-600 mb-3">
-            {isPositive(listing.beds) && (
-              <span>
-                {listing.beds} {listing.beds === 1 ? "bed" : "beds"}
-              </span>
-            )}
-            {listing.bathsFull != null && <span>{formatBathTotal(listing)} bath</span>}
-            {isPositive(listing.sqftTotal) && <span>{formatSqft(listing.sqftTotal)} sqft</span>}
-            {listing.style && <span>· {formatLevels(listing.style)}</span>}
-          </div>
-
-          {/* Description excerpt */}
-          {listing.publicRemarks && (
-            <p class="text-sm text-stone-500 line-clamp-2">{listing.publicRemarks}</p>
-          )}
-
-          <div class="mt-4 text-sm font-medium text-stone-900 group-hover:underline">
-            View property →
-          </div>
-        </a>
-      ))}
-    </div>
-
-    {/* Overflow prompt — if more listings exist than one page, point to search */}
-    {totalListings > PAGE_SIZE && (
-      <div class="mt-12 text-center">
-        <p class="text-stone-500 text-sm mb-3">
-          Showing {PAGE_SIZE} of {totalListings} listings.
-        </p>
-        <a
-          href="/search"
-          class="inline-block px-6 py-2.5 bg-stone-900 text-white rounded-lg text-sm hover:bg-stone-700 transition-colors"
-        >
-          View All Listings
-        </a>
-      </div>
-    )}
-
-    {/* IDX broker-reciprocity attribution — required wherever aggregated MLS
-        listings are displayed. */}
-    {!error && listings.length > 0 && (
-      <p class="mt-16 text-xs text-stone-400 leading-relaxed border-t border-stone-100 pt-6">
-        {mls.copyrightNotice}
-      </p>
-    )}
-  </div>
+  <MapSearch
+    client:load
+    initialListings={initialListings}
+    initialTotal={initialTotal}
+    initialBbox={{ minLat, maxLat, minLng, maxLng }}
+    initialFilters={filters}
+    initialArea={initialArea}
+    apiBaseUrl={apiBase}
+    mapboxToken={mapboxToken}
+    photoAccountHash={photoAccountHash}
+  />
 </Layout>
+
+<style is:global>
+  /* The desktop listing preview is our own card inside a Mapbox popup: drop the popup's
+     default padding/background so only the card shows, and match the tip to the card. */
+  /* Mapbox sets its own font (Helvetica, 12px/20px) inside the map; use the site's. */
+  .listing-preview-popup {
+    font-family: var(--font-sans);
+    line-height: 1.5;
+  }
+  .listing-preview-popup .mapboxgl-popup-content {
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+  .listing-preview-popup.mapboxgl-popup-anchor-top .mapboxgl-popup-tip,
+  .listing-preview-popup.mapboxgl-popup-anchor-top-left .mapboxgl-popup-tip,
+  .listing-preview-popup.mapboxgl-popup-anchor-top-right .mapboxgl-popup-tip {
+    border-bottom-color: #fff;
+  }
+  .listing-preview-popup.mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip,
+  .listing-preview-popup.mapboxgl-popup-anchor-bottom-left .mapboxgl-popup-tip,
+  .listing-preview-popup.mapboxgl-popup-anchor-bottom-right .mapboxgl-popup-tip {
+    border-top-color: #fff;
+  }
+</style>

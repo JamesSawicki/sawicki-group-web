@@ -306,13 +306,17 @@ export function parseAmenityScores(json: string | null | undefined): AmenityScor
 }
 
 /**
- * Display a distance in meters, switching to km past 1000m.
- * 580 -> "580 m", 1230 -> "1.2 km"
+ * Display a distance (given in meters, as the API stores it) in US units: miles to one
+ * decimal from 0.1 mi up, feet (to the nearest 10) below that, "next door" under 100 ft.
+ * 1230 -> "0.8 mi", 120 -> "390 ft", 20 -> "next door"
  */
-export function formatDistance(meters: number | undefined): string {
+export function formatDistance(meters: number | undefined | null): string {
   if (meters === undefined || meters === null) return "—";
-  if (meters < 1000) return `${meters} m`;
-  return `${(meters / 1000).toFixed(1)} km`;
+  const miles = meters / 1609.344;
+  if (miles >= 0.1) return `${miles.toFixed(1)} mi`;
+  const feet = meters * 3.28084;
+  if (feet < 100) return "next door";
+  return `${Math.round(feet / 10) * 10} ft`;
 }
 
 /**
@@ -323,8 +327,11 @@ export function categoryLabel(jsonKey: string): string {
   const labels: Record<string, string> = {
     grocery: "Grocery",
     restaurants: "Food & drink",
+    parks: "Parks",
     pharmacy: "Pharmacy",
     hardware: "Hardware",
+    transit_stations: "Train & BRT",
+    bus_stops: "Bus stops",
   };
   return labels[jsonKey] ?? jsonKey;
 }
