@@ -5,6 +5,8 @@ and Tailwind. Listing pages are server-rendered from `listing-agent-api`; blog p
 Markdown content collections, drafted weekly by `sawicki-blog-agent`.
 
 ## ⚠️ Deploys
+- **Work happens on `dev`** (tracks `origin/dev`); commit and push there freely. `main` is
+  the deploy branch and only moves at go-live, with Jim's explicit go-ahead.
 - **Pushing to `main` deploys to Cloud Run** (Cloud Build trigger `sawicki-group-web-main`).
   Never push `main` without Jim's explicit go-ahead. **Merging a PR into `main` deploys too**,
   including the blog agent's `drafts` → `main` PRs.

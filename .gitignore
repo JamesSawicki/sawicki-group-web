@@ -24,4 +24,5 @@ pnpm-debug.log*
 # jetbrains setting folder
 .idea/
 # other crap
-.firebase/
+.firebase/# editor settings (personal)
+.vscode/
