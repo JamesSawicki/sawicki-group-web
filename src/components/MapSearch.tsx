@@ -539,12 +539,15 @@ export default function MapSearch({
     (next: SearchFilters): void => {
       filtersRef.current = next;
       setFilters(next);
-      setFiltersOpen(false);
+      // Phones/tablets: close so the updated map is visible. Desktop has room to keep the
+      // drawer open beside the map for further tweaking.
+      if (window.matchMedia("(max-width: 1023px)").matches) setFiltersOpen(false);
       if (mapRef.current) fetchForViewport(mapRef.current.getBounds()!);
     },
     [fetchForViewport],
   );
   const closeFilters = useCallback(() => setFiltersOpen(false), []);
+  const openFilters = useCallback(() => setFiltersOpen(true), []);
 
   // ── Sidebar card click → pan + highlight ──────────────────────────────────
   const handleSidebarClick = useCallback((listing: Listing): void => {
@@ -586,6 +589,8 @@ export default function MapSearch({
     <div className="relative flex flex-col lg:flex-row lg:h-[calc(100vh-5rem)]">
       <FilterDrawer
         open={filtersOpen}
+        activeCount={activeFilterCount}
+        onOpen={openFilters}
         filters={filters}
         onApply={applyFilters}
         onClose={closeFilters}
@@ -602,15 +607,6 @@ export default function MapSearch({
                   ? `${displayedListings.length} of ${listings.length} in drawn area`
                   : `${listings.length} listing${listings.length !== 1 ? "s" : ""} in view`}
             </span>
-            <button
-              type="button"
-              onClick={() => setFiltersOpen(true)}
-              className="text-sm font-medium text-blue-600 hover:text-blue-700 py-2"
-              aria-controls="search-filters"
-              aria-expanded={filtersOpen}
-            >
-              Filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}
-            </button>
           </div>
         </div>
 
@@ -641,22 +637,6 @@ export default function MapSearch({
 
         {/* ── Draw controls — top-left, opposite NavigationControl ───────── */}
         <div className="absolute top-3 left-3 z-10 flex flex-col items-start gap-1.5">
-          {/* Search criteria drawer */}
-          <button
-            type="button"
-            onClick={() => setFiltersOpen(true)}
-            className="px-3 py-2 rounded text-sm font-medium shadow-md border bg-white text-slate-700 border-slate-300 hover:bg-slate-50 whitespace-nowrap"
-            aria-controls="search-filters"
-            aria-expanded={filtersOpen}
-          >
-            Filters
-            {activeFilterCount > 0 && (
-              <span className="ml-1.5 inline-flex items-center justify-center min-w-5 h-5 px-1 rounded-full bg-blue-600 text-white text-xs">
-                {activeFilterCount}
-              </span>
-            )}
-          </button>
-
           {/* Three-state button: idle / drawing / polygon-active */}
           <button
             onClick={isDrawing ? cancelDraw : activePolygon ? clearPolygon : startDraw}

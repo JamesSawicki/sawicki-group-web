@@ -104,7 +104,7 @@ Many visitors browse on phones, and map search is the primary way people look fo
 - **Patterns in use:** header links move into a dropdown below `md` (`Header.astro`). Search
   is one page, `/search` (`/map` redirects there): the map comes first with listings
   underneath below `lg` and beside it from `lg` up (`MapSearch.tsx`), and criteria live in a
-  slide-in drawer (`search/FilterDrawer.tsx`) whose filters are defined once in
+  drawer opened by a vertical "Filters" edge tab on the left (`search/FilterDrawer.tsx`; tap or swipe; "Show results" closes it only below `lg`) whose filters are defined once in
   `src/lib/search-filters.ts` and mirrored into the URL.
 - **Check it:** `npm run audit:mobile` (with `npm run dev` running) loads every main page at
   375 / 768 / 1280px, fails on any page wider than the screen, reports small tap targets and
