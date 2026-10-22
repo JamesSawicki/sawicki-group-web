@@ -14,6 +14,7 @@ import {
   formatSqft,
   hasPriceReduction,
   isPositive,
+  pluralize,
   statusBadgeClasses,
   statusLabel,
 } from "../../lib/listing-utils";
@@ -77,12 +78,14 @@ const cityLine = listing.city
   <div class="flex flex-wrap gap-6 mt-6 text-sm text-stone-700">
     {isPositive(listing.beds) && (
       <div>
-        <span class="font-semibold text-stone-900">{listing.beds}</span> Beds
+        <span class="font-semibold text-stone-900">{listing.beds}</span>{" "}
+        {pluralize(listing.beds, "Bed")}
       </div>
     )}
     {bathTotal(listing) > 0 && (
       <div>
-        <span class="font-semibold text-stone-900">{bathDisplay}</span> Baths
+        <span class="font-semibold text-stone-900">{bathDisplay}</span>{" "}
+        {pluralize(bathTotal(listing), "Bath")}
       </div>
     )}
     {isPositive(listing.sqftTotal) && (
@@ -112,7 +115,8 @@ const cityLine = listing.city
     )}
     {listing.daysOnMarket != null && (
       <div>
-        <span class="font-semibold text-stone-900">{listing.daysOnMarket}</span> Days on Market
+        <span class="font-semibold text-stone-900">{listing.daysOnMarket}</span>{" "}
+        {pluralize(listing.daysOnMarket, "Day")} on Market
       </div>
     )}
   </div>

@@ -21,14 +21,16 @@
  */
 import type { Listing } from "../types/listing";
 import {
-  formatPrice,
+  bathTotal,
   formatBathTotal,
-  formatSqft,
   formatLot,
-  statusBadgeClasses,
-  statusLabel,
+  formatPrice,
+  formatSqft,
   hasPriceReduction,
   listingPath,
+  pluralize,
+  statusBadgeClasses,
+  statusLabel,
 } from "../lib/listing-utils";
 
 interface Props {
@@ -146,11 +148,11 @@ const showPriceReduction = hasPriceReduction(listing);
     <div class="grid grid-cols-4 gap-2 text-sm border-t border-slate-100 pt-3">
       <div>
         <div class="font-semibold text-slate-900">{listing.beds ?? "—"}</div>
-        <div class="text-xs text-slate-500">{listing.beds === 1 ? "bed" : "beds"}</div>
+        <div class="text-xs text-slate-500">{pluralize(listing.beds ?? 0, "bed")}</div>
       </div>
       <div>
         <div class="font-semibold text-slate-900">{formatBathTotal(listing)}</div>
-        <div class="text-xs text-slate-500">baths</div>
+        <div class="text-xs text-slate-500">{pluralize(bathTotal(listing), "bath")}</div>
       </div>
       <div>
         <div class="font-semibold text-slate-900">{formatSqft(listing.sqftTotal)}</div>

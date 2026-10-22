@@ -190,6 +190,16 @@ export function isPositive(value: number | null | undefined): value is number {
   return typeof value === "number" && value > 0;
 }
 
+/**
+ * Picks the singular or plural label for a count: `pluralize(1, "Bed")` → "Bed",
+ * `pluralize(2.5, "Bath")` → "Baths". Only exactly 1 is singular.
+ *
+ * @param plural - irregular plural form; defaults to `singular + "s"`.
+ */
+export function pluralize(count: number, singular: string, plural = `${singular}s`): string {
+  return count === 1 ? singular : plural;
+}
+
 // -------------------------------------------------------------------
 // LIST-VALUED FIELDS
 //
