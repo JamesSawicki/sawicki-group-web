@@ -1,12 +1,23 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { agent, brokerage, site } from "../lib/site.config";
+import { absoluteUrl, breadcrumbList, ORGANIZATION_ID, webPage } from "../lib/structured-data";
+
+const description = `Meet ${agent.name}, Twin Cities real estate agent with ${site.name} at ${brokerage.name}.`;
+const jsonLd = [
+  webPage("AboutPage", "/about", `About ${site.name}`, description, {
+    about: { "@id": ORGANIZATION_ID },
+    mainEntity: { "@id": ORGANIZATION_ID },
+    breadcrumb: { "@id": `${absoluteUrl("/about")}#breadcrumb` },
+  }),
+  breadcrumbList(absoluteUrl("/about"), [
+    { name: "Home", path: "/" },
+    { name: "About", path: "/about" },
+  ]),
+];
 ---
 
-<Layout
-  title="About"
-  description={`Meet ${agent.name}, Twin Cities real estate agent with ${site.name} at ${brokerage.name}.`}
->
+<Layout title="About" description={description} jsonLd={jsonLd}>
   <section class="max-w-3xl mx-auto px-6 py-20">
     <p class="text-sm font-semibold text-amber-700 uppercase tracking-widest mb-4">About</p>
     <h1 class="text-4xl font-semibold text-stone-900 mb-6">{agent.name}</h1>

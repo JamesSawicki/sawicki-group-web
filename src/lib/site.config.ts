@@ -24,9 +24,47 @@ export const siteConfig = {
     stateName: "Minnesota",
   },
 
+  /**
+   * Everyone on the team, for structured data (schema.org Person, linked to the
+   * organization). `id` is the stable fragment for their @id (`{siteUrl}/#{id}`). Add
+   * title/email/phone per person only once confirmed — never invent contact details.
+   */
+  team: [
+    {
+      id: "jim-sawicki",
+      name: "Jim Sawicki",
+      jobTitle: "REALTOR®",
+      email: "jsawicki@CBRealty.com",
+      telephone: "+1-952-212-1586",
+    },
+    { id: "kathy-sawicki", name: "Kathy Sawicki" },
+  ],
+
+  /**
+   * The official office: Coldwell Banker Realty, Wayzata. VERIFY: street address not yet
+   * provided — structured data omits the address until it's filled in here.
+   */
+  office: {
+    name: "Coldwell Banker Realty – Wayzata",
+    streetAddress: "",
+    addressLocality: "Wayzata",
+    addressRegion: "MN",
+    postalCode: "",
+  },
+
+  /** Official social profiles (schema.org sameAs). Add each channel as it goes live. */
+  social: {
+    facebook: "https://www.facebook.com/TheSawickiGroup/",
+  },
+
   site: {
     /** Marketing name — appears in nav, footer, <title>, JSON-LD, system prompts. */
     name: "The Sawicki Group",
+    /** Tagline from the logo. */
+    tagline: "Exceptional Real Estate Marketing & Acquisition",
+    /** Logo (trimmed, 1200×412) and the default link-preview image (1200×630), in /public. */
+    logoPath: "/logo.png",
+    ogImagePath: "/og-default.jpg",
     /** Canonical URL — no trailing slash. Update when a custom domain is set. */
     siteUrl: "https://sawicki-group-web-43343667811.us-central1.run.app",
   },
@@ -57,4 +95,4 @@ export const siteConfig = {
 
 // Named re-exports so callers can destructure exactly what they need:
 //   import { agent, brokerage, site, mls } from "../lib/site.config";
-export const { agent, brokerage, site, mls } = siteConfig;
+export const { agent, brokerage, site, mls, team, office, social } = siteConfig;

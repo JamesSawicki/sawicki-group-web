@@ -1,17 +1,21 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { getCollection } from "astro:content";
+import { ORGANIZATION_ID, webPage } from "../lib/structured-data";
 
 const recentPosts = (await getCollection("blog"))
   .filter((post: any) => !post.data.draft)
   .sort((a: any, b: any) => b.data.date.valueOf() - a.data.date.valueOf())
   .slice(0, 3);
+
+const description =
+  "Find your next home in Minneapolis, Saint Paul, and the Twin Cities with The Sawicki Group.";
+const jsonLd = [
+  webPage("WebPage", "/", "The Sawicki Group", description, { about: { "@id": ORGANIZATION_ID } }),
+];
 ---
 
-<Layout
-  title="Home"
-  description="Find your next home in Minneapolis, Saint Paul, and the Twin Cities with The Sawicki Group."
->
+<Layout title="Home" description={description} jsonLd={jsonLd}>
   <!-- HERO -->
   <section class="bg-stone-50 border-b border-stone-200">
     <div class="max-w-6xl mx-auto px-6 py-24">

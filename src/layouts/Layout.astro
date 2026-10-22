@@ -1,21 +1,50 @@
 ---
+/**
+ * Page shell: <head> (title, description, canonical URL, link-preview tags, JSON-LD),
+ * header, footer.
+ *
+ * Machine-readable data on every page: the JSON-LD graph always includes the site-wide
+ * entities (website, agency, team, office; see lib/structured-data.ts) plus the page's
+ * own `jsonLd` nodes, and Open Graph / Twitter tags give link previews. The canonical URL
+ * defaults to this path on the canonical domain without a query string, so filtered
+ * variants (e.g. /listings?minBeds=3) point search engines at the plain page.
+ */
+// ─── Imports ─────────────────────────────────────────────────────────────────
 import "../styles/global.css";
 import Header from "../components/Header.astro";
-import { agent, brokerage, site } from "../lib/site.config";
+import { agent, brokerage, site, social } from "../lib/site.config";
+import { absoluteUrl, jsonLdDocument } from "../lib/structured-data";
 
+// ─── Props ───────────────────────────────────────────────────────────────────
 interface Props {
+  /** Page title; " | The Sawicki Group" is appended. */
   title: string;
+  /** Meta description (also the link-preview text). */
   description?: string;
-  jsonLd?: object;
+  /** This page's schema.org nodes; the site-wide entities are added automatically. */
+  jsonLd?: Record<string, unknown>[];
+  /** Absolute canonical URL; defaults to this path on the canonical domain. */
   canonical?: string;
+  /** Absolute link-preview image URL; defaults to the logo card (1200×630). */
+  ogImage?: string;
+  /** Open Graph type: "website" (default) or "article". */
+  ogType?: "website" | "article";
+  /** Keep this page out of search results (its links are still followed). */
+  noindex?: boolean;
 }
 
 const {
   title,
   description = "Twin Cities real estate expert serving Minneapolis, Saint Paul, and surrounding communities.",
-  jsonLd,
-  canonical,
+  jsonLd = [],
+  canonical = absoluteUrl(Astro.url.pathname),
+  ogImage = absoluteUrl(site.ogImagePath),
+  ogType = "website",
+  noindex = false,
 } = Astro.props;
+
+// ─── Derived values ──────────────────────────────────────────────────────────
+const fullTitle = `${title} | ${site.name}`;
 ---
 
 <!doctype html>
@@ -24,11 +53,33 @@ const {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
-    {canonical && <link rel="canonical" href={canonical} />}
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex, follow" />}
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title={`${site.name} Market Updates`}
+      href="/rss.xml"
+    />
     <meta name="generator" content={Astro.generator} />
-    <title>{title} | {site.name}</title>
-    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+    <title>{fullTitle}</title>
+
+    {/* ── Link previews (Open Graph / Twitter) ── */}
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:locale" content="en_US" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+
+    {/* ── Structured data (schema.org) ── */}
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLdDocument(jsonLd))} />
   </head>
   <body class="bg-white text-stone-800 font-sans antialiased">
     <Header />
@@ -45,6 +96,14 @@ const {
           <div class="font-semibold text-stone-900 mb-3">{site.name}</div>
           <div>{brokerage.name}</div>
           <div>{brokerage.serviceArea}</div>
+          <a
+            href={social.facebook}
+            rel="me noopener"
+            target="_blank"
+            class="inline-block py-1.5 mt-2 hover:text-stone-900 transition-colors"
+          >
+            Facebook
+          </a>
         </div>
         <div>
           <div class="font-semibold text-stone-900 mb-3">Navigate</div>

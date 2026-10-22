@@ -58,6 +58,28 @@ npm run build    # local production build; does not deploy
 - **Blog posts** in `src/content/blog/` arrive as `draft: true`; publishing means flipping
   that to `false`.
 
+## Machine-readable data (structured data, sitemaps, feeds)
+
+Goal: as much accurate machine-readable data as the MLS rules allow.
+
+- **JSON-LD on every page.** `Layout.astro` emits one schema.org `@graph`: the site-wide
+  entities from `lib/structured-data.ts` (WebSite, the agency as RealEstateAgent, each
+  team member as Person, the Wayzata office) plus the page's own nodes via the `jsonLd`
+  prop. Build page nodes with the helpers there (`listingNodes`, `blogPostNodes`,
+  `webPage`, `breadcrumbList`); link entities by `@id`, never duplicate them.
+- **Only state what's known.** Omit missing values; never invent addresses, dates or
+  contact details (team/office/social details live in `site.config.ts`).
+- **VERIFY-IDX:** a listing's offer is made by the listing brokerage, never us; no sold
+  listings on public pages or sitemaps (statuses decided by the API's `/sitemap`); AI
+  crawlers are kept off `/listings` in `robots.txt.ts`; `llms.txt` doesn't list listing data.
+- **Canonical + link previews:** canonical URLs and all absolute URLs come from
+  `site.siteUrl` (update it with the custom domain). Pages with a query string (e.g.
+  `/listings?minBeds=3`) are `noindex, follow` with the plain page as canonical. Open
+  Graph/Twitter tags default to `/og-default.jpg`; listings use their first photo.
+- **Endpoints:** `/sitemap.xml` (index) → `sitemap-pages.xml` (add new top-level pages
+  there), `sitemap-blog.xml`, `sitemap-listings.xml` (from API `GET /api/listings/sitemap`;
+  503 if the API is down); `/robots.txt`, `/llms.txt`, `/rss.xml`, all in `src/pages/*.ts`.
+
 ## Code organization and comments
 
 Goal: any file can be read top to bottom and understood without outside context.

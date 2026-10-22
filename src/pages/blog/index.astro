@@ -1,16 +1,49 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import { getCollection } from "astro:content";
+import {
+  absoluteUrl,
+  blogPostPath,
+  breadcrumbList,
+  ORGANIZATION_ID,
+  webPage,
+} from "../../lib/structured-data";
 
 const posts = (await getCollection("blog"))
   .filter((post: any) => !post.data.draft)
   .sort((a: any, b: any) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const description =
+  "Twin Cities real estate market updates, neighborhood reports, and homebuying guides from The Sawicki Group.";
+const blogUrl = absoluteUrl("/blog");
+const jsonLd = [
+  webPage("CollectionPage", "/blog", "Market Updates", description, {
+    mainEntity: { "@id": `${blogUrl}#blog` },
+    breadcrumb: { "@id": `${blogUrl}#breadcrumb` },
+  }),
+  {
+    "@type": "Blog",
+    "@id": `${blogUrl}#blog`,
+    url: blogUrl,
+    name: "Market Updates",
+    description,
+    publisher: { "@id": ORGANIZATION_ID },
+    blogPost: posts.map((post) => ({
+      "@type": "BlogPosting",
+      "@id": `${absoluteUrl(blogPostPath(post))}#article`,
+      url: absoluteUrl(blogPostPath(post)),
+      headline: post.data.title,
+      datePublished: post.data.date.toISOString(),
+    })),
+  },
+  breadcrumbList(blogUrl, [
+    { name: "Home", path: "/" },
+    { name: "Market Updates", path: "/blog" },
+  ]),
+];
 ---
 
-<Layout
-  title="Market Updates"
-  description="Twin Cities real estate market updates, neighborhood reports, and homebuying guides from The Sawicki Group."
->
+<Layout title="Market Updates" description={description} jsonLd={jsonLd}>
   <section class="max-w-4xl mx-auto px-6 py-20">
     <p class="text-sm font-semibold text-amber-700 uppercase tracking-widest mb-4">Blog</p>
     <h1 class="text-4xl font-semibold text-stone-900 mb-4">Market Updates</h1>

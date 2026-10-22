@@ -1,6 +1,7 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import { getCollection, render } from "astro:content";
+import { blogPostNodes } from "../../lib/structured-data";
 
 export const prerender = true;
 
@@ -19,7 +20,12 @@ if (!post) return Astro.redirect("/blog");
 const { Content } = await render(post);
 ---
 
-<Layout title={post.data.title} description={post.data.excerpt}>
+<Layout
+  title={post.data.title}
+  description={post.data.excerpt}
+  jsonLd={blogPostNodes(post)}
+  ogType="article"
+>
   <article class="max-w-3xl mx-auto px-6 py-20">
     <div class="mb-12">
       <div class="flex items-center gap-3 mb-4">

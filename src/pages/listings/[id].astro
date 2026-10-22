@@ -39,7 +39,8 @@ import {
   parseList,
   parseListingId,
 } from "../../lib/listing-utils";
-import { parsePhotoIds, parseVirtualTourUrls } from "../../lib/photo-utils";
+import { parsePhotoIds, parseVirtualTourUrls, photoUrl } from "../../lib/photo-utils";
+import { listingNodes } from "../../lib/structured-data";
 import { fetchWithTimeout, serviceUnavailableResponse } from "../../lib/api";
 
 // CSS for React islands is imported here in the .astro frontmatter, not inside the island,
@@ -103,7 +104,7 @@ if (Astro.url.pathname !== canonicalPath) {
   return Astro.redirect(canonicalUrl, 301);
 }
 
-// ─── Head data: title, description, JSON-LD ──────────────────────────────────
+// ─── Head data: title, description ──────────────────────────────────────────
 const priceDisplay = formatPrice(listing.listPrice);
 const bathDisplay = formatBathTotal(listing);
 const sqftDisplay = formatSqft(listing.sqftTotal);
@@ -111,40 +112,6 @@ const sqftDisplay = formatSqft(listing.sqftTotal);
 // IDX: every listing shows its listing brokerage (also used by the "Listed by" card).
 const listingBrokerDisplay =
   listing.listOfficeName ?? "Listing brokerage on file with NorthstarMLS";
-
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@type": "RealEstateListing",
-  name: `${listing.beds} BD / ${bathDisplay} BA ${formatLevels(listing.style) || "Home"} — ${listing.address}`,
-  description: listing.publicRemarks ?? "",
-  url: canonicalUrl,
-  // Only assert datePosted when we have it — falling back to "today" would fabricate
-  // structured data and make output non-deterministic.
-  ...(listing.listDate && { datePosted: listing.listDate }),
-  price: listing.listPrice,
-  priceCurrency: "USD",
-  address: {
-    "@type": "PostalAddress",
-    streetAddress: listing.address,
-    addressLocality: listing.city,
-    addressRegion: "MN",
-    postalCode: listing.zipCode ?? "",
-    addressCountry: "US",
-  },
-  ...(listing.sqftTotal && {
-    floorSize: {
-      "@type": "QuantitativeValue",
-      value: listing.sqftTotal,
-      unitCode: "FTK",
-    },
-  }),
-  ...(listing.beds != null && { numberOfBedrooms: listing.beds }),
-  // Always surface the listing brokerage — never imply Sawicki holds the listing.
-  broker: {
-    "@type": "RealEstateOffice",
-    name: listingBrokerDisplay,
-  },
-};
 
 // ─── Photo gallery data ──────────────────────────────────────────────────────
 // Cloudflare delivery URLs are built in the browser from these ids + the account hash.
@@ -154,6 +121,13 @@ const cfAccountHash =
 const photoIds = parsePhotoIds(listing.photoIds);
 const floorPlanIds = parsePhotoIds(listing.floorPlanIds);
 const virtualTourUrls = parseVirtualTourUrls(listing.virtualTourUrls);
+
+// ─── Structured data + link preview ──────────────────────────────────────────
+// A few large photos are plenty for search engines; the first is the link preview.
+const schemaImages = cfAccountHash
+  ? photoIds.slice(0, 5).map((id) => photoUrl(cfAccountHash, id, "heroDesktop"))
+  : [];
+const jsonLd = listingNodes(listing, schemaImages);
 
 // ─── Checklist sections ──────────────────────────────────────────────────────
 // JSON arrays (or comma-separated text) from MLS, shown as ✓ lists.
@@ -166,7 +140,7 @@ const amenitiesList = parseList(listing.amenities);
   title={`${listing.address} — ${priceDisplay}`}
   description={`${listing.beds ?? ""} bed, ${bathDisplay} bath ${formatLevels(listing.style) || "home"} in ${listing.neighborhood ?? listing.city}. ${sqftDisplay} sqft. Listed at ${priceDisplay}${listing.listOfficeName ? ` by ${listing.listOfficeName.replace(/\.$/, "")}` : ""}.`}
   jsonLd={jsonLd}
-  canonical={canonicalUrl}
+  ogImage={schemaImages[0]}
 >
   <BackToSearch />
   <Breadcrumb address={listing.address} />

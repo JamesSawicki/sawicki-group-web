@@ -20,6 +20,8 @@ import type { Listing, Page } from "../../types/listing";
 import { fetchWithTimeout } from "../../lib/api";
 import { applyFiltersToParams, filtersFromParams, MAP_API_SORT } from "../../lib/search-filters";
 import { areaFromParams } from "../../lib/search-area";
+import { absoluteUrl, breadcrumbList, webPage } from "../../lib/structured-data";
+import { listingPath } from "../../lib/listing-utils";
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 // Production: Cloud Run sets process.env at runtime; dev: Vite fills import.meta.env.
@@ -61,11 +63,40 @@ try {
   // Non-fatal: the map still renders with no pins and refetches client-side as the
   // visitor pans. A hanging API doesn't stall the server response.
 }
+
+// ─── Structured data ─────────────────────────────────────────────────────────
+// The plain /listings page is the one to index; filtered/moved variants (any query
+// string) are kept out of the index but their links are followed. The page lists the
+// first homes it shows, so crawlers can reach them from here.
+const description =
+  "Search Twin Cities homes for sale on an interactive map. Filter by price, beds, baths, property type and more.";
+const listingsUrl = absoluteUrl("/listings");
+const jsonLd = [
+  webPage("SearchResultsPage", "/listings", "Homes for sale", description, {
+    breadcrumb: { "@id": `${listingsUrl}#breadcrumb` },
+    mainEntity: {
+      "@type": "ItemList",
+      numberOfItems: initialTotal,
+      itemListElement: initialListings.slice(0, 50).map((l, i) => ({
+        "@type": "ListItem",
+        position: i + 1,
+        url: absoluteUrl(listingPath(l)),
+        name: [l.address, l.city].filter(Boolean).join(", "),
+      })),
+    },
+  }),
+  breadcrumbList(listingsUrl, [
+    { name: "Home", path: "/" },
+    { name: "Listings", path: "/listings" },
+  ]),
+];
 ---
 
 <Layout
   title="Search Homes"
-  description="Search Twin Cities homes for sale on an interactive map. Filter by price, beds, baths, property type and more."
+  description={description}
+  jsonLd={jsonLd}
+  noindex={Astro.url.search.length > 0}
 >
   <MapSearch
     client:load
