@@ -27,6 +27,10 @@ npm run build    # local production build; does not deploy
 ```
 
 - Restart `npm run dev` after editing `.env.local` (Vite reads it once at startup).
+- **On a phone (same Wi-Fi):** run `npm run dev -- --host` and open `http://<PC-LAN-IP>:4321`.
+  For the map and chat to work there, `.env.local` points `PUBLIC_API_BASE_URL` at the PC's
+  LAN IP (not `localhost`), and the API's `dev` profile allows `192.168.*` / `10.*` origins
+  (`app.cors.extra-origin-patterns`). If the PC's IP changes, update `.env.local`.
 - Env vars: `PUBLIC_API_BASE_URL`, `PUBLIC_MAPBOX_TOKEN`, `PUBLIC_CF_IMAGES_ACCOUNT_HASH`
   (`.env.local`); `RESEND_API_KEY` for the contact form. Never commit `.env*`.
 
