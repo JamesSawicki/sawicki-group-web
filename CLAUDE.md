@@ -115,6 +115,9 @@ Many visitors browse on phones, and map search is the primary way people look fo
   see all". The hand-drawn area is kept in the URL too (`area=`, `lib/search-area.ts`). If
   the page comes back from the back/forward cache (Back from a listing), it reloads rather
   than trusting a frozen map.
+- **Listing AI chat** (`ListingChat.tsx`) is a floating widget placed by the listing page:
+  an "AI" bubble bottom-right on phones (opens a bottom sheet) and an "AI chat" bar docked
+  bottom-right on desktop (opens a panel). Both labels are placeholders for the logo.
 - **Check it:** `npm run audit:mobile` (with `npm run dev` running) loads every main page at
   375 / 768 / 1280px, fails on any page wider than the screen, reports small tap targets and
   text, and saves phone screenshots to `.audit/`. For a quick look, Chrome DevTools device

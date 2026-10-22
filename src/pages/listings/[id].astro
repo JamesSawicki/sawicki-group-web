@@ -8,6 +8,7 @@
  */
 // ─── Imports ─────────────────────────────────────────────────────────────────
 import Layout from "../../layouts/Layout.astro";
+import ListingChat from "../../components/ListingChat.tsx";
 import ListingDisclosure from "../../components/ListingDisclosure.astro";
 import PhotoGallery from "../../components/PhotoGallery.tsx";
 import AmenityScorecard from "../../components/listing/AmenityScorecard.astro";
@@ -203,10 +204,13 @@ const amenitiesList = parseList(listing.amenities);
       <ListedBy brokerName={listingBrokerDisplay} listDate={listing.listDate} />
     </div>
 
-    <ContactSidebar listingId={listing.id} apiBase={apiBase} />
+    <ContactSidebar />
   </div>
 
   {/* IDX-required disclosure block: attribution, freshness, disclaimers, fair housing,
       copyright. Always rendered on every listing. */}
   <ListingDisclosure listing={listing} />
+
+  {/* ── AI chat: floating bubble (phones) / docked bar (desktop) ── */}
+  <ListingChat client:load listingId={listing.id} apiBaseUrl={apiBase} />
 </Layout>

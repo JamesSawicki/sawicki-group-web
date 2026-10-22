@@ -1,23 +1,13 @@
 ---
 /**
- * Right-hand sticky column: the buyer-inquiry call to action and the AI chat island.
+ * Right-hand sticky column: the buyer-inquiry call to action. (The AI chat is a floating
+ * widget, ListingChat, placed by the listing page.)
  *
  * Every listing gets the same CTA — Jim acts as a buyer's agent on all listings,
  * including ones held by his own brokerage.
  */
 // ─── Imports ─────────────────────────────────────────────────────────────────
-import ListingChat from "../ListingChat.tsx";
 import { agent, site } from "../../lib/site.config";
-
-// ─── Props ───────────────────────────────────────────────────────────────────
-interface Props {
-  /** Listing id the chat asks about; the API builds the prompt from it server-side. */
-  listingId: number;
-  /** Base URL of listing-agent-api, passed to the chat island for its POST /api/chat. */
-  apiBase: string;
-}
-
-const { listingId, apiBase } = Astro.props;
 
 // ─── Derived values ──────────────────────────────────────────────────────────
 const ctaTitle = "Interested in this property?";
@@ -37,15 +27,6 @@ const ctaButton = "Contact us about this listing";
       >
         {ctaButton}
       </a>
-    </div>
-
-    {/* ── AI chat ── */}
-    <div>
-      <h2 class="text-lg font-semibold text-stone-900 mb-1">Ask About This Property</h2>
-      <p class="text-sm text-stone-500 mb-4">
-        Get instant answers about features, the neighborhood, financials, or anything else.
-      </p>
-      <ListingChat client:load listingId={listingId} apiBaseUrl={apiBase} />
     </div>
   </div>
 </div>
