@@ -2,10 +2,12 @@
  * ListingPreview.tsx — the card shown when a listing pin (or list row) is tapped on the
  * search map: first photo, status, price, address, key stats, and a link to the details.
  *
- * Placement is relative to the map container: on phones/tablets a compact horizontal
- * card across the bottom of the map; from `lg` up a taller card (photo on top) in the
- * map's bottom-right corner. Dismissed with the X, Escape, or (touch) a swipe down;
- * MapSearch also closes it when the visitor taps empty map.
+ * Two placements (chosen by MapSearch):
+ *   - "sheet" (phones/tablets): a compact horizontal card across the bottom of the map.
+ *   - "popup" (desktop): a taller card, photo on top, rendered inside a Mapbox popup
+ *     anchored to the pin, so it sits on the dot and moves with the map.
+ * Dismissed with the X, Escape, or (touch) a swipe down; MapSearch also closes it when
+ * the visitor clicks empty map.
  */
 import { useEffect, useRef } from "react";
 import type { Listing } from "../../types/listing";
@@ -27,12 +29,24 @@ interface Props {
   accountHash?: string;
   /** Called when the card is dismissed. */
   onClose: () => void;
+  /** "sheet" = bottom of the map (phones/tablets); "popup" = inside a pin popup (desktop). */
+  placement?: "sheet" | "popup";
 }
+
+const PLACEMENT_CLASSES = {
+  sheet: "absolute z-20 left-2 right-2 bottom-2",
+  popup: "relative w-72",
+};
 
 // Downward swipe distance (px) that dismisses the card on touch screens.
 const SWIPE_DOWN_PX = 50;
 
-export default function ListingPreview({ listing, accountHash, onClose }: Props) {
+export default function ListingPreview({
+  listing,
+  accountHash,
+  onClose,
+  placement = "sheet",
+}: Props) {
   const touchStartY = useRef<number | null>(null);
 
   // Escape dismisses the card.
@@ -57,8 +71,8 @@ export default function ListingPreview({ listing, accountHash, onClose }: Props)
     <div
       role="dialog"
       aria-label={`Preview: ${listing.address}`}
-      className="absolute z-20 left-2 right-2 bottom-2 lg:left-auto lg:right-4 lg:bottom-4 lg:w-80
-        bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden"
+      className={`${PLACEMENT_CLASSES[placement]}
+        bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden`}
       onTouchStart={(e) => (touchStartY.current = e.touches[0].clientY)}
       onTouchEnd={(e) => {
         const start = touchStartY.current;

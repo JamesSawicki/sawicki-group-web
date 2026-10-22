@@ -38,6 +38,7 @@
  */
 import { formatPrice, formatBathTotal, formatSqft } from "../lib/listing-utils";
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
+import { createPortal } from "react-dom";
 import mapboxgl from "mapbox-gl";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
@@ -266,6 +267,21 @@ export default function MapSearch({
   // Listing shown in the preview card (null = no card). Kept as the object, so the card
   // stays put even if a refetch drops that listing from the current results.
   const [preview, setPreview] = useState<Listing | null>(null);
+
+  // Desktop (lg+) shows the preview on the pin, in a Mapbox popup whose content is the
+  // ListingPreview React component (rendered via a portal into popupContainer).
+  // Phones/tablets show it as a sheet along the bottom of the map instead.
+  const [isDesktop, setIsDesktop] = useState<boolean>(false);
+  const [popupContainer, setPopupContainer] = useState<HTMLDivElement | null>(null);
+  const popupRef = useRef<mapboxgl.Popup | null>(null);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    setIsDesktop(mq.matches);
+    const onChange = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mq.addEventListener("change", onChange);
+    setPopupContainer(document.createElement("div"));
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [activePolygon, setActivePolygon] = useState<GeoJSON.Feature<GeoJSON.Polygon> | null>(null);
@@ -602,6 +618,27 @@ export default function MapSearch({
   const closeFilters = useCallback(() => setFiltersOpen(false), []);
   const openFilters = useCallback(() => setFiltersOpen(true), []);
 
+  // Keep the anchored popup in step with the preview (desktop only).
+  useEffect(() => {
+    const map = mapRef.current;
+    const show = isDesktop && preview && popupContainer && map && preview.latitude != null;
+    if (!show) {
+      popupRef.current?.remove();
+      return;
+    }
+    if (!popupRef.current) {
+      popupRef.current = new mapboxgl.Popup({
+        closeButton: false, // the card has its own
+        closeOnClick: false, // MapSearch's map click handler decides
+        maxWidth: "none",
+        offset: 14,
+        className: "listing-preview-popup",
+      }).setDOMContent(popupContainer);
+    }
+    popupRef.current.setLngLat([preview.longitude!, preview.latitude!]).addTo(map);
+  }, [preview, isDesktop, popupContainer]);
+  useEffect(() => () => void popupRef.current?.remove(), []);
+
   const closePreview = useCallback((): void => {
     setPreview(null);
     mapRef.current?.setFilter("selected-point", ["==", ["get", "id"], ""]);
@@ -695,9 +732,21 @@ export default function MapSearch({
       <div className="order-1 lg:order-2 relative h-[60vh] lg:h-auto lg:flex-1">
         <div ref={mapContainerRef} className="w-full h-full" />
 
-        {preview && (
+        {preview && !isDesktop && (
           <ListingPreview listing={preview} accountHash={photoAccountHash} onClose={closePreview} />
         )}
+        {preview &&
+          isDesktop &&
+          popupContainer &&
+          createPortal(
+            <ListingPreview
+              listing={preview}
+              accountHash={photoAccountHash}
+              onClose={closePreview}
+              placement="popup"
+            />,
+            popupContainer,
+          )}
 
         {/* ── Draw controls — top-left, opposite NavigationControl ───────── */}
         <div className="absolute top-3 left-3 z-10 flex flex-col items-start gap-1.5">

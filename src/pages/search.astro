@@ -71,3 +71,28 @@ try {
     photoAccountHash={photoAccountHash}
   />
 </Layout>
+
+<style is:global>
+  /* The desktop listing preview is our own card inside a Mapbox popup: drop the popup's
+     default padding/background so only the card shows, and match the tip to the card. */
+  /* Mapbox sets its own font (Helvetica, 12px/20px) inside the map; use the site's. */
+  .listing-preview-popup {
+    font-family: var(--font-sans);
+    line-height: 1.5;
+  }
+  .listing-preview-popup .mapboxgl-popup-content {
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+  .listing-preview-popup.mapboxgl-popup-anchor-top .mapboxgl-popup-tip,
+  .listing-preview-popup.mapboxgl-popup-anchor-top-left .mapboxgl-popup-tip,
+  .listing-preview-popup.mapboxgl-popup-anchor-top-right .mapboxgl-popup-tip {
+    border-bottom-color: #fff;
+  }
+  .listing-preview-popup.mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip,
+  .listing-preview-popup.mapboxgl-popup-anchor-bottom-left .mapboxgl-popup-tip,
+  .listing-preview-popup.mapboxgl-popup-anchor-bottom-right .mapboxgl-popup-tip {
+    border-top-color: #fff;
+  }
+</style>

@@ -109,7 +109,7 @@ Many visitors browse on phones, and map search is the primary way people look fo
   is one page, `/search` (`/map` redirects there): the map comes first with listings
   underneath below `lg` and beside it from `lg` up (`MapSearch.tsx`), and criteria live in a
   drawer opened by a vertical "Filters" edge tab on the left (`search/FilterDrawer.tsx`; tap or swipe; "Show results" closes it only below `lg`) whose filters are defined once in
-  `src/lib/search-filters.ts` and mirrored into the URL. Tapping a pin or list row opens `search/ListingPreview.tsx` (photo-first card: bottom of the map on phones, corner card on desktop).
+  `src/lib/search-filters.ts` and mirrored into the URL. Tapping a pin or list row opens `search/ListingPreview.tsx` (photo-first card: bottom of the map on phones; on desktop inside a Mapbox popup anchored to the pin).
 - **Check it:** `npm run audit:mobile` (with `npm run dev` running) loads every main page at
   375 / 768 / 1280px, fails on any page wider than the screen, reports small tap targets and
   text, and saves phone screenshots to `.audit/`. For a quick look, Chrome DevTools device
