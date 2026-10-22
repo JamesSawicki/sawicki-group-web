@@ -119,6 +119,56 @@ function listingsToGeoJSON(listings: Listing[]): GeoJSON.FeatureCollection {
   };
 }
 
+// ─── Base map tint ────────────────────────────────────────────────────────────
+
+/**
+ * Soft colors for the base map's water, green space and civic land. The "light" style
+ * paints all of these gray; the data is already in the tiles, so tinting is a style
+ * change only (no extra requests, no extra cost). Kept pale so the blue listing pins
+ * stay the strongest color on the map.
+ */
+const BASE_MAP_TINT = {
+  water: "#bcd6ec",
+  park: "#d5e8c6", // parks, grass, sports fields, national/state parks
+  wood: "#c8dfb6",
+  school: "#ecdcc2",
+  cemetery: "#dfe6d6",
+};
+
+/** Applies BASE_MAP_TINT to Mapbox's light-v11 style. Call once the style has loaded. */
+function tintBaseMap(map: mapboxgl.Map): void {
+  const t = BASE_MAP_TINT;
+  map.setPaintProperty("water", "fill-color", t.water);
+  map.setPaintProperty("waterway", "line-color", t.water);
+  map.setPaintProperty("national-park", "fill-color", t.park);
+  // "landuse" colors by class; anything not listed keeps the style's own gray.
+  map.setPaintProperty("landuse", "fill-color", [
+    "match",
+    ["get", "class"],
+    ["park", "grass", "pitch"],
+    t.park,
+    "wood",
+    t.wood,
+    map.getPaintProperty("landuse", "fill-color"),
+  ]);
+  // The light style doesn't draw schools or cemeteries at all. Add them in a layer of our
+  // own, beneath "landuse" so sports fields still show on school grounds. (Hospitals are
+  // left out on purpose: buyers rarely ask, and fewer colors keep the pins prominent.)
+  map.addLayer(
+    {
+      id: "landuse-civic",
+      type: "fill",
+      source: "composite",
+      "source-layer": "landuse",
+      filter: ["match", ["get", "class"], ["school", "cemetery"], true, false],
+      paint: {
+        "fill-color": ["match", ["get", "class"], "school", t.school, t.cemetery],
+      },
+    },
+    "landuse",
+  );
+}
+
 // ─── Point-in-polygon helper ──────────────────────────────────────────────────
 
 /**
@@ -480,6 +530,8 @@ export default function MapSearch({
     });
 
     map.on("load", () => {
+      tintBaseMap(map);
+
       // Finished drawn area, below the listing layers.
       map.addSource("drawn-area", {
         type: "geojson",

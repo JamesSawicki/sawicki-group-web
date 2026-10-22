@@ -115,6 +115,9 @@ Many visitors browse on phones, and map search is the primary way people look fo
   see all". The hand-drawn area is kept in the URL too (`area=`, `lib/search-area.ts`). If
   the page comes back from the back/forward cache (Back from a listing), it reloads rather
   than trusting a frozen map.
+- **Map colors:** the search map uses Mapbox `light-v11`, tinted in `MapSearch.tsx`
+  (`tintBaseMap` / `BASE_MAP_TINT`): pale blue water, green parks, tan schools. Keep tints
+  pale so the blue listing pins stay the strongest color; it's style-only (no extra cost).
 - **Listing AI chat** (`ListingChat.tsx`) is a floating widget placed by the listing page:
   an "AI" bubble bottom-right on phones (opens a bottom sheet) and an "AI chat" bar docked
   bottom-right on desktop (opens a panel). Both labels are placeholders for the logo.
