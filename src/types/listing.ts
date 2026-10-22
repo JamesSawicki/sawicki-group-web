@@ -96,7 +96,10 @@ export interface Listing {
   familyRoomFeatures?: string;
   amenities?: string;
   parkingFeatures?: string; // JSON array
-  laundryFeatures?: string;
+  laundryFeatures?: string; // JSON array (RESO LaundryFeatures)
+  // NorthstarMLS search highlights, comma-separated, e.g.
+  // "Main Floor Laundry,Main Floor Bedroom,All Living Facilities on One Level".
+  specialSearch?: string;
   financing?: string;
 
   // Waterfront / Lake

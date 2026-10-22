@@ -24,6 +24,9 @@ const basement = formatList(listing.basement);
 const parking = formatList(listing.parkingFeatures);
 const sewer = formatList(listing.sewer);
 const water = formatList(listing.waterSource);
+const laundry = formatList(listing.laundryFeatures);
+// NorthstarMLS "special search" highlights (main-floor living, laundry location, ...).
+const specialFeatures = formatList(listing.specialSearch);
 
 // "2 — Living Room, Gas", or just "2" when the features aren't listed.
 const fireplaceDisplay = listing.fireplaceFeatures
@@ -39,7 +42,7 @@ const fireplaceDisplay = listing.fireplaceFeatures
     {listing.fuelType && <DetailRow label="Fuel">{listing.fuelType}</DetailRow>}
     {basement && <DetailRow label="Basement">{basement}</DetailRow>}
     {(listing.fireplaces ?? 0) > 0 && <DetailRow label="Fireplaces">{fireplaceDisplay}</DetailRow>}
-    {listing.laundryFeatures && <DetailRow label="Laundry">{listing.laundryFeatures}</DetailRow>}
+    {laundry && <DetailRow label="Laundry">{laundry}</DetailRow>}
     {parking && <DetailRow label="Parking">{parking}</DetailRow>}
     {isPositive(listing.garageSqft) && (
       <DetailRow label="Garage Sqft" longValue={false}>
@@ -49,5 +52,6 @@ const fireplaceDisplay = listing.fireplaceFeatures
     {listing.electric && <DetailRow label="Electric">{listing.electric}</DetailRow>}
     {sewer && <DetailRow label="Sewer">{sewer}</DetailRow>}
     {water && <DetailRow label="Water">{water}</DetailRow>}
+    {specialFeatures && <DetailRow label="Special Features">{specialFeatures}</DetailRow>}
   </dl>
 </div>
