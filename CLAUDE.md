@@ -91,7 +91,9 @@ npm run lint      # ESLint (TypeScript, Astro, TSDoc checks) — warnings are to
 ```
 
 ## Responsive design (every change must work on a phone)
+
 Many visitors browse on phones, and map search is the primary way people look for homes.
+
 - **Mobile-first Tailwind.** Unprefixed classes describe the phone layout; add `sm:` (640px),
   `md:` (768px), `lg:` (1024px) for wider screens. A multi-column grid is
   `grid-cols-1 md:grid-cols-3`, never a bare `grid-cols-3` (short stat grids excepted).
