@@ -66,6 +66,25 @@ try {
   fetchError = e instanceof Error ? e.message : "Unknown error fetching listings";
 }
 
+// Number of filters the visitor has set (status counts only when changed from the
+// default "Active"); shown on the mobile "Filters" button.
+const activeFilterCount =
+  [
+    filterMinPrice,
+    filterMaxPrice,
+    filterMinBeds,
+    filterMinBaths,
+    filterMinSqft,
+    filterCity,
+    filterPropertyType,
+    filterMinGarage,
+    filterMinYear,
+    filterMaxYear,
+  ].filter((v) => v !== "").length +
+  (filterWaterfront ? 1 : 0) +
+  (filterPool ? 1 : 0) +
+  (filterStatus !== "Active" ? 1 : 0);
+
 // ---------------------------------------------------------------------------
 // 4. PAGINATION URL BUILDER — clone current params, only change `page`
 // ---------------------------------------------------------------------------
@@ -80,10 +99,7 @@ function pageUrl(targetPage: number): string {
   title="Search Listings"
   description="Search Twin Cities homes for sale. Filter by price, beds, baths, and features."
 >
-  <div
-    class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col"
-    style="height: calc(100vh - 5rem);"
-  >
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col lg:h-[calc(100vh-5rem)]">
     {/* Page header */}
     <div class="mb-6 flex-shrink-0">
       <h1 class="text-3xl font-bold text-slate-900">Search Listings</h1>
@@ -99,13 +115,40 @@ function pageUrl(targetPage: number): string {
         2. Each column gets overflow-y-auto to create its own scroll context.
         3. min-h-0 on both columns — without this, flex children refuse to
            shrink below their content height and overflow-y never activates.
-        4. On mobile (below lg breakpoint): stacked, normal page scroll.
+        4. On mobile (below lg breakpoint): stacked, normal page scroll, and the filter
+           form is collapsed behind a "Filters" button so results come first.
     */}
     <div class="flex flex-col lg:flex-row gap-8 flex-1 min-h-0">
       {/* === FILTER SIDEBAR ============================================= */}
       <aside class="lg:w-72 lg:flex-shrink-0 lg:overflow-y-auto lg:min-h-0">
-        <form method="GET" action="/search" class="bg-white rounded-lg shadow-sm p-4">
-          <h2 class="font-semibold text-slate-900 mb-4">Filters</h2>
+        {/* ── Mobile: Filters toggle (below lg) ── */}
+        <button
+          type="button"
+          id="filters-toggle"
+          class="lg:hidden w-full flex items-center justify-between bg-white rounded-lg shadow-sm px-4 h-12 font-semibold text-slate-900"
+          aria-controls="filters-form"
+          aria-expanded="false"
+        >
+          <span>
+            Filters
+            {activeFilterCount > 0 && (
+              <span class="ml-2 text-sm font-medium text-blue-600">
+                ({activeFilterCount} active)
+              </span>
+            )}
+          </span>
+          <span aria-hidden="true" data-chevron class="transition-transform">
+            ▾
+          </span>
+        </button>
+
+        <form
+          method="GET"
+          action="/search"
+          id="filters-form"
+          class="hidden lg:block mt-2 lg:mt-0 bg-white rounded-lg shadow-sm p-4"
+        >
+          <h2 class="hidden lg:block font-semibold text-slate-900 mb-4">Filters</h2>
 
           {/* Status */}
           <div class="mb-4">
@@ -364,13 +407,26 @@ function pageUrl(targetPage: number): string {
             >
               Apply Filters
             </button>
-            <a href="/search" class="block text-center text-sm text-slate-500 hover:text-slate-700">
+            <a
+              href="/search"
+              class="block text-center text-sm text-slate-500 hover:text-slate-700 py-2"
+            >
               Clear All
             </a>
           </div>
         </form>
       </aside>
 
+      <script>
+        // Mobile filter toggle. On lg+ the form is always shown via `lg:block`.
+        const filtersToggle = document.getElementById("filters-toggle");
+        const filtersForm = document.getElementById("filters-form");
+        filtersToggle?.addEventListener("click", () => {
+          const open = filtersForm?.classList.toggle("hidden") === false;
+          filtersToggle.setAttribute("aria-expanded", String(open));
+          filtersToggle.querySelector("[data-chevron]")?.classList.toggle("rotate-180", open);
+        });
+      </script>
       {/* === RESULTS PANEL ============================================== */}
       <section class="flex-1 min-h-0 lg:overflow-y-auto">
         {fetchError && (
