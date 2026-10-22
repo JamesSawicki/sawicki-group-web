@@ -36,7 +36,7 @@ async function firstLink(path, pattern) {
   const hrefs = await discover.$$eval("a[href]", (as) => as.map((a) => a.getAttribute("href")));
   return hrefs.find((h) => h && pattern.test(h));
 }
-const pages = ["/", "/listings", "/search", "/map", "/blog", "/about", "/contact", "/privacy"];
+const pages = ["/", "/listings", "/blog", "/about", "/contact", "/privacy"];
 const listing = await firstLink("/listings", /^\/listings\/[a-z0-9-]+-\d+$/);
 const post = await firstLink("/blog", /^\/blog\/[a-z0-9-]+$/);
 if (listing) pages.push(listing);

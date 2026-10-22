@@ -1,0 +1,8 @@
+---
+/**
+ * /search moved to /listings, which is now the single map + filters search page.
+ * Permanent redirect, keeping the query string so saved searches (viewport, filters,
+ * drawn area) still work.
+ */
+return Astro.redirect(`/listings${Astro.url.search}`, 301);
+---

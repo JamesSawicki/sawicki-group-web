@@ -199,6 +199,23 @@ export interface CategoryScore {
   subtypes?: Record<string, number>;
 }
 
+/** A city or ZIP code suggested by the search box, with the bounding box of its listings. */
+export interface PlaceSuggestion {
+  type: "city" | "zip";
+  label: string;
+  count: number;
+  minLat: number;
+  maxLat: number;
+  minLng: number;
+  maxLng: number;
+}
+
+/** GET /api/listings/suggest: matching places and up to 5 listings. */
+export interface SearchSuggestions {
+  places: PlaceSuggestion[];
+  listings: Listing[];
+}
+
 export interface AmenityScores {
   generatedAt: string;
   scores: Record<string, Record<string, CategoryScore>>;

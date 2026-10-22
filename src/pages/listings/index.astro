@@ -1,7 +1,8 @@
 ---
 /**
- * Search page (/search): the site's one search experience — a map with listing pins, the
- * matching listings beside/below it, and a filter drawer (MapSearch + FilterDrawer).
+ * Listings page (/listings): the site's one search experience — a map with listing pins,
+ * the matching listings beside/below it, an address/city/ZIP search box and a filter
+ * drawer (MapSearch, SearchBox, FilterDrawer). /search and /map redirect here.
  *
  * This file only reads the viewport and filters from the URL and fetches the first page
  * of results on the server, so the map has pins on first paint. Everything after that
@@ -13,12 +14,12 @@
 import "mapbox-gl/dist/mapbox-gl.css";
 import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
 
-import Layout from "../layouts/Layout.astro";
-import MapSearch from "../components/MapSearch.tsx";
-import type { Listing, Page } from "../types/listing";
-import { fetchWithTimeout } from "../lib/api";
-import { applyFiltersToParams, filtersFromParams, MAP_API_SORT } from "../lib/search-filters";
-import { areaFromParams } from "../lib/search-area";
+import Layout from "../../layouts/Layout.astro";
+import MapSearch from "../../components/MapSearch.tsx";
+import type { Listing, Page } from "../../types/listing";
+import { fetchWithTimeout } from "../../lib/api";
+import { applyFiltersToParams, filtersFromParams, MAP_API_SORT } from "../../lib/search-filters";
+import { areaFromParams } from "../../lib/search-area";
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 // Production: Cloud Run sets process.env at runtime; dev: Vite fills import.meta.env.

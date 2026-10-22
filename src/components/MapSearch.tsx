@@ -38,15 +38,16 @@
  * bookmarked or shared. Each fetch is capped at 200 and asks for the listings nearest
  * the view's center (sortBy=nearest); the visitor's chosen sort orders them here.
  */
-import { formatPrice, formatBathTotal, formatSqft } from "../lib/listing-utils";
+import { formatPrice, formatBathTotal, formatSqft, listingPath } from "../lib/listing-utils";
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { createPortal } from "react-dom";
 import mapboxgl from "mapbox-gl";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
-import type { Listing, Page } from "../types/listing";
+import type { Listing, Page, PlaceSuggestion } from "../types/listing";
 import FilterDrawer from "./search/FilterDrawer";
 import ListingPreview from "./search/ListingPreview";
+import SearchBox from "./search/SearchBox";
 import { saveLastSearchUrl } from "../lib/search-return";
 import { parsePhotoIds, photoUrl } from "../lib/photo-utils";
 import {
@@ -243,9 +244,16 @@ function SidebarCard({ listing, isSelected, onClick, photoAccountHash }: Sidebar
   ];
   const gradient = gradients[listing.id % gradients.length];
 
+  // A real link to the listing (crawlable; Ctrl/Cmd/middle-click opens it in a new tab).
+  // A plain click previews it on the map instead.
   return (
-    <div
-      onClick={onClick}
+    <a
+      href={listingPath(listing)}
+      onClick={(e) => {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+        e.preventDefault();
+        onClick();
+      }}
       className={`flex gap-3 p-3 rounded-lg mb-2 cursor-pointer border transition-colors
         ${
           isSelected
@@ -289,7 +297,7 @@ function SidebarCard({ listing, isSelected, onClick, photoAccountHash }: Sidebar
           {formatSqft(listing.sqftTotal)} sqft
         </div>
       </div>
-    </div>
+    </a>
   );
 }
 
@@ -737,6 +745,29 @@ export default function MapSearch({
   }, [preview, isDesktop, popupContainer]);
   useEffect(() => () => void popupRef.current?.remove(), []);
 
+  // ── Search box picks ───────────────────────────────────────────────────────
+  // A city or ZIP: frame its listings (the move triggers the usual refetch).
+  const goToPlace = useCallback((place: PlaceSuggestion): void => {
+    setPreview(null);
+    mapRef.current?.fitBounds(
+      [
+        [place.minLng, place.minLat],
+        [place.maxLng, place.maxLat],
+      ],
+      { padding: 60, maxZoom: 14 },
+    );
+  }, []);
+
+  // A listing: fly to it and open its preview (it may not be in the current results yet).
+  const goToListing = useCallback((listing: Listing): void => {
+    const map = mapRef.current;
+    if (!map || listing.latitude == null || listing.longitude == null) return;
+    setPreview(listing);
+    setSelectedId(listing.id);
+    map.setFilter("selected-point", ["==", ["get", "id"], String(listing.id)]);
+    map.flyTo({ center: [listing.longitude, listing.latitude], zoom: Math.max(map.getZoom(), 15) });
+  }, []);
+
   const closePreview = useCallback((): void => {
     setPreview(null);
     mapRef.current?.setFilter("selected-point", ["==", ["get", "id"], ""]);
@@ -851,8 +882,18 @@ export default function MapSearch({
             popupContainer,
           )}
 
-        {/* ── Draw controls — top-left, opposite NavigationControl ───────── */}
-        <div className="absolute top-3 left-3 z-10 flex flex-col items-start gap-1.5">
+        {/* ── Search box — top-left, leaving room for the zoom buttons ─────── */}
+        <div className="absolute top-3 left-3 right-14 lg:right-auto lg:w-96 z-20">
+          <SearchBox
+            apiBaseUrl={apiBaseUrl}
+            status={filters.status}
+            onSelectPlace={goToPlace}
+            onSelectListing={goToListing}
+          />
+        </div>
+
+        {/* ── Draw controls — below the search box ─────────────────────────── */}
+        <div className="absolute top-16 left-3 z-10 flex flex-col items-start gap-1.5">
           {/* Three-state button: idle / drawing / polygon-active */}
           <button
             onClick={isDrawing ? cancelDraw : activePolygon ? clearPolygon : startDraw}

@@ -11,7 +11,7 @@
 
 <div class="max-w-6xl mx-auto px-6 pt-4">
   <a
-    href="/search"
+    href="/listings"
     id="back-to-search"
     class="inline-flex items-center gap-1.5 h-11 px-3 -ml-3 rounded-lg text-sm font-medium text-stone-700 hover:bg-stone-100 transition-colors"
   >
@@ -45,7 +45,7 @@
     let cameFromSearch = false;
     try {
       const ref = new URL(document.referrer);
-      cameFromSearch = ref.origin === location.origin && ref.pathname === "/search";
+      cameFromSearch = ref.origin === location.origin && ref.pathname === "/listings";
     } catch {
       // No or unparseable referrer — use the saved link.
     }

@@ -1,7 +1,7 @@
 ---
 /**
- * /map moved to /search, which is now the single map + filters search page. Permanent
+ * /map moved to /listings, which is now the single map + filters search page. Permanent
  * redirect, keeping the query string so saved map links (viewport, status) still work.
  */
-return Astro.redirect(`/search${Astro.url.search}`, 301);
+return Astro.redirect(`/listings${Astro.url.search}`, 301);
 ---

@@ -106,13 +106,16 @@ Many visitors browse on phones, and map search is the primary way people look fo
 - **Tap targets ≥ 44px tall** for anything a thumb hits (nav, buttons, list rows); text links
   get padding (`py-2`) for a taller hit area. Text no smaller than 12px (`text-xs`).
 - **Patterns in use:** header links move into a dropdown below `md` (`Header.astro`). Search
-  is one page, `/search` (`/map` redirects there): the map comes first with listings
+  is one page, `/listings` (`/search` and `/map` 301 there): the map comes first with listings
   underneath below `lg` and beside it from `lg` up (`MapSearch.tsx`), and criteria live in a
   drawer opened by a vertical "Filters" edge tab on the left (`search/FilterDrawer.tsx`; tap or swipe; "Show results" closes it only below `lg`) whose filters are defined once in
   `src/lib/search-filters.ts` and mirrored into the URL. Tapping a pin or list row opens `search/ListingPreview.tsx` (photo-first card: bottom of the map on phones; on desktop inside a Mapbox popup anchored to the pin). Each fetch returns at most 200
   listings, the ones nearest the view's center (API `sortBy=nearest`; the visitor's sort is
   applied in the browser); when more match, the header reads "Showing 200 of N · Zoom in to
-  see all". The hand-drawn area is kept in the URL too (`area=`, `lib/search-area.ts`). If
+  see all". A search box over the map (`search/SearchBox.tsx`, API `/api/listings/suggest`)
+  suggests cities/ZIPs (frames them) and listings (flies to one and previews it) from our
+  own data. List rows are real links to the listing (crawlable; a plain click previews).
+  The hand-drawn area is kept in the URL too (`area=`, `lib/search-area.ts`). If
   the page comes back from the back/forward cache (Back from a listing), it reloads rather
   than trusting a frozen map.
 - **Map colors:** the search map uses Mapbox `light-v11`, tinted in `MapSearch.tsx`

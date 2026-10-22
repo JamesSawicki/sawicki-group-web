@@ -9,9 +9,12 @@
 
 const KEY = "sawicki:lastSearchUrl";
 
-/** Saves a search URL, e.g. "/search?minLat=…&minBeds=3". Only /search URLs are kept. */
+/** The map search page; listing pages live under it (/listings/<slug>), which don't count. */
+const isSearchUrl = (pathAndQuery: string): boolean => /^\/listings(\?|$)/.test(pathAndQuery);
+
+/** Saves a search URL, e.g. "/listings?minLat=…&minBeds=3". Only map search URLs are kept. */
 export function saveLastSearchUrl(pathAndQuery: string): void {
-  if (!pathAndQuery.startsWith("/search")) return;
+  if (!isSearchUrl(pathAndQuery)) return;
   try {
     sessionStorage.setItem(KEY, pathAndQuery);
   } catch {
@@ -23,7 +26,7 @@ export function saveLastSearchUrl(pathAndQuery: string): void {
 export function readLastSearchUrl(): string | null {
   try {
     const value = sessionStorage.getItem(KEY);
-    return value && value.startsWith("/search") ? value : null;
+    return value && isSearchUrl(value) ? value : null;
   } catch {
     return null;
   }
