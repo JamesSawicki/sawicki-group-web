@@ -110,7 +110,9 @@ Many visitors browse on phones, and map search is the primary way people look fo
   underneath below `lg` and beside it from `lg` up (`MapSearch.tsx`), and criteria live in a
   drawer opened by a vertical "Filters" edge tab on the left (`search/FilterDrawer.tsx`; tap or swipe; "Show results" closes it only below `lg`) whose filters are defined once in
   `src/lib/search-filters.ts` and mirrored into the URL. Tapping a pin or list row opens `search/ListingPreview.tsx` (photo-first card: bottom of the map on phones; on desktop inside a Mapbox popup anchored to the pin). Each fetch returns at most 200
-  listings; when more match, the header reads "Showing 200 of N · Zoom in to see all". If
+  listings, the ones nearest the view's center (API `sortBy=nearest`; the visitor's sort is
+  applied in the browser); when more match, the header reads "Showing 200 of N · Zoom in to
+  see all". The hand-drawn area is kept in the URL too (`area=`, `lib/search-area.ts`). If
   the page comes back from the back/forward cache (Back from a listing), it reloads rather
   than trusting a frozen map.
 - **Check it:** `npm run audit:mobile` (with `npm run dev` running) loads every main page at

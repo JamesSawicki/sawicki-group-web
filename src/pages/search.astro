@@ -17,7 +17,8 @@ import Layout from "../layouts/Layout.astro";
 import MapSearch from "../components/MapSearch.tsx";
 import type { Listing, Page } from "../types/listing";
 import { fetchWithTimeout } from "../lib/api";
-import { applyFiltersToParams, filtersFromParams } from "../lib/search-filters";
+import { applyFiltersToParams, filtersFromParams, MAP_API_SORT } from "../lib/search-filters";
+import { areaFromParams } from "../lib/search-area";
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 // Production: Cloud Run sets process.env at runtime; dev: Vite fills import.meta.env.
@@ -34,6 +35,7 @@ const maxLat = parseFloat(params.get("maxLat") ?? "45.15");
 const minLng = parseFloat(params.get("minLng") ?? "-93.90");
 const maxLng = parseFloat(params.get("maxLng") ?? "-93.10");
 const filters = filtersFromParams(params);
+const initialArea = areaFromParams(params); // hand-drawn area, if the URL has one
 
 // ─── Data fetching ───────────────────────────────────────────────────────────
 let initialListings: Listing[] = [];
@@ -45,6 +47,7 @@ try {
   url.searchParams.set("minLng", String(minLng));
   url.searchParams.set("maxLng", String(maxLng));
   applyFiltersToParams(filters, url.searchParams);
+  url.searchParams.set("sortBy", MAP_API_SORT); // nearest the center; MapSearch applies the chosen sort
   url.searchParams.set("size", "200");
 
   const res = await fetchWithTimeout(url.toString());
@@ -69,6 +72,7 @@ try {
     initialTotal={initialTotal}
     initialBbox={{ minLat, maxLat, minLng, maxLng }}
     initialFilters={filters}
+    initialArea={initialArea}
     apiBaseUrl={apiBase}
     mapboxToken={mapboxToken}
     photoAccountHash={photoAccountHash}

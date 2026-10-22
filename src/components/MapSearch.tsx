@@ -22,7 +22,8 @@
  * Polygon state persists across pans: draw a polygon, pan away, results update
  * as listings enter/leave the viewport but the polygon filter stays active.
  * This lets buyers say "show me everything in this neighborhood, even if I need
- * to pan around to see details."
+ * to pan around to see details." The area is kept in the page URL (`area=`, see
+ * lib/search-area.ts), so it survives reloads, Back from a listing, and shared links.
  *
  * Touch: Mapbox Draw's touchend handler always calls preventDefault(), which swallows
  * the taps Mapbox turns into clicks — with Draw attached, tapping a listing dot did
@@ -34,7 +35,8 @@
  * Search criteria: this is the site's single search page (/search). Filters live in
  * FilterDrawer; applying them refetches the current viewport, and every fetch (pan, zoom,
  * apply) sends the active filters and mirrors them into the page URL so a search can be
- * bookmarked or shared.
+ * bookmarked or shared. Each fetch is capped at 200 and asks for the listings nearest
+ * the view's center (sortBy=nearest); the visitor's chosen sort orders them here.
  */
 import { formatPrice, formatBathTotal, formatSqft } from "../lib/listing-utils";
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
@@ -50,8 +52,11 @@ import { parsePhotoIds, photoUrl } from "../lib/photo-utils";
 import {
   applyFiltersToParams,
   countActiveFilters,
+  MAP_API_SORT,
+  sortListings,
   type SearchFilters,
 } from "../lib/search-filters";
+import { setAreaParam, type SearchArea } from "../lib/search-area";
 // CSS for both libraries is imported in search.astro — not here.
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -70,6 +75,8 @@ interface Props {
   initialBbox: Bbox;
   /** Filters from the page URL, already applied to initialListings by the server. */
   initialFilters: SearchFilters;
+  /** Hand-drawn area from the page URL (`area=`), or null. */
+  initialArea?: SearchArea | null;
   apiBaseUrl: string;
   mapboxToken: string;
   /** Cloudflare Images account hash, for listing photos in the preview card and list. */
@@ -243,6 +250,7 @@ export default function MapSearch({
   initialTotal = 0,
   initialBbox,
   initialFilters,
+  initialArea = null,
   apiBaseUrl,
   mapboxToken,
   photoAccountHash,
@@ -259,7 +267,7 @@ export default function MapSearch({
 
   // Keep polygon in a ref so the moveend closure always sees the latest value
   // without needing to re-register the event listener on each state change.
-  const activePolygonRef = useRef<GeoJSON.Feature<GeoJSON.Polygon> | null>(null);
+  const activePolygonRef = useRef<SearchArea | null>(initialArea);
 
   const [listings, setListings] = useState<Listing[]>(initialListings);
   // How many listings match the viewport in total. Each fetch returns at most 200, so when
@@ -290,7 +298,7 @@ export default function MapSearch({
   }, []);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [activePolygon, setActivePolygon] = useState<GeoJSON.Feature<GeoJSON.Polygon> | null>(null);
+  const [activePolygon, setActivePolygon] = useState<SearchArea | null>(initialArea);
   const [isDrawing, setIsDrawing] = useState<boolean>(false);
   // Touch devices get tap-based drawing instructions. Set after mount (no window in SSR).
   const [isTouch, setIsTouch] = useState<boolean>(false);
@@ -308,15 +316,22 @@ export default function MapSearch({
   // When a polygon is active, filter listings to those inside it.
   // useMemo recalculates automatically whenever listings or activePolygon changes,
   // so the sidebar and map markers stay in sync without manual coordination.
+  // The API returns the listings nearest the view's center; order them by the visitor's sort.
   const displayedListings = useMemo<Listing[]>(() => {
-    if (!activePolygon) return listings;
-    return listings.filter((l) => listingInPolygon(l, activePolygon));
-  }, [listings, activePolygon]);
+    const inArea = activePolygon
+      ? listings.filter((l) => listingInPolygon(l, activePolygon))
+      : listings;
+    return sortListings(inArea, filters.sortBy);
+  }, [listings, activePolygon, filters.sortBy]);
 
   // ── Sync map markers with displayedListings ────────────────────────────────
   // Fires whenever displayedListings changes — covers both viewport fetches
   // (listings state updates) and polygon draw/clear (activePolygon changes).
+  // The ref hands the latest set to the map's load handler, which may run after this
+  // effect (e.g. with a drawn area restored from the URL).
+  const displayedListingsRef = useRef<Listing[]>(displayedListings);
   useEffect(() => {
+    displayedListingsRef.current = displayedListings;
     sourceRef.current?.setData(listingsToGeoJSON(displayedListings));
   }, [displayedListings]);
 
@@ -331,11 +346,13 @@ export default function MapSearch({
         url.searchParams.set("minLng", bounds.getWest().toFixed(5));
         url.searchParams.set("maxLng", bounds.getEast().toFixed(5));
         applyFiltersToParams(filtersRef.current, url.searchParams);
+        url.searchParams.set("sortBy", MAP_API_SORT); // the chosen sort is applied above
         url.searchParams.set("size", "200");
 
-        // Keep the URL shareable: viewport + filters (the polygon is ephemeral client state).
+        // Keep the URL shareable: viewport + filters + drawn area.
         const pageUrl = new URL(window.location.href);
         applyFiltersToParams(filtersRef.current, pageUrl.searchParams);
+        setAreaParam(pageUrl.searchParams, activePolygonRef.current);
         pageUrl.searchParams.set("minLat", bounds.getSouth().toFixed(4));
         pageUrl.searchParams.set("maxLat", bounds.getNorth().toFixed(4));
         pageUrl.searchParams.set("minLng", bounds.getWest().toFixed(4));
@@ -399,12 +416,17 @@ export default function MapSearch({
     setIsDrawing(false);
   }, [detachDraw]);
 
-  // Render the finished polygon with our own layers (Draw is gone by then).
+  // Render the finished polygon with our own layers (Draw is gone by then), and mirror it
+  // into the page URL and the saved "Back to map" search.
   useEffect(() => {
     drawnSourceRef.current?.setData({
       type: "FeatureCollection",
       features: activePolygon ? [activePolygon] : [],
     });
+    const pageUrl = new URL(window.location.href);
+    setAreaParam(pageUrl.searchParams, activePolygon);
+    window.history.replaceState({}, "", pageUrl);
+    saveLastSearchUrl(pageUrl.pathname + pageUrl.search);
   }, [activePolygon]);
 
   // ── Map initialization (once on mount) ────────────────────────────────────
@@ -461,7 +483,11 @@ export default function MapSearch({
       // Finished drawn area, below the listing layers.
       map.addSource("drawn-area", {
         type: "geojson",
-        data: { type: "FeatureCollection", features: [] },
+        // A restored area (from the URL) is drawn as soon as the map loads.
+        data: {
+          type: "FeatureCollection",
+          features: activePolygonRef.current ? [activePolygonRef.current] : [],
+        },
       });
       drawnSourceRef.current = map.getSource("drawn-area") as mapboxgl.GeoJSONSource;
       map.addLayer({
@@ -479,7 +505,7 @@ export default function MapSearch({
 
       map.addSource("listings", {
         type: "geojson",
-        data: listingsToGeoJSON(initialListings),
+        data: listingsToGeoJSON(displayedListingsRef.current),
         cluster: true,
         clusterRadius: 50,
         clusterMaxZoom: 14,
@@ -549,7 +575,9 @@ export default function MapSearch({
         },
       });
 
+      // Tap a cluster → zoom into it (ignored while drawing, when taps place points).
       map.on("click", "clusters", (e) => {
+        if (drawRef.current) return;
         const [feature] = map.queryRenderedFeatures(e.point, { layers: ["clusters"] });
         if (!sourceRef.current) return;
         sourceRef.current.getClusterExpansionZoom(
@@ -614,7 +642,7 @@ export default function MapSearch({
   // can restore this page from the back/forward cache: a frozen snapshot, not a reload.
   // Mobile browsers may tear down the map's WebGL context or workers while it's frozen,
   // leaving a map that pans but never redraws its pins. Reload instead; the URL already
-  // holds the viewport and filters, so the visitor lands on the same search.
+  // holds the viewport, filters and drawn area, so the visitor lands on the same search.
   useEffect(() => {
     const onPageShow = (e: PageTransitionEvent) => e.persisted && window.location.reload();
     window.addEventListener("pageshow", onPageShow);

@@ -5,6 +5,7 @@
  * Shared by the server render (search.astro's first fetch) and the browser (MapSearch's
  * refetches), so both always send the API the same thing.
  */
+import type { Listing } from "../types/listing";
 
 /** Every filter as the string a form field holds; "" means "not set". */
 export interface SearchFilters {
@@ -77,6 +78,33 @@ export const SORT_OPTIONS = [
   { value: "dom_asc", label: "Days on market" },
   { value: "sqft_desc", label: "Largest" },
 ];
+
+// ─── Sorting ─────────────────────────────────────────────────────────────────
+// The map asks the API for the listings nearest the view's center (each fetch is capped,
+// so this keeps a zoomed-out page relevant to where the visitor is looking), then orders
+// that page by the visitor's chosen sort here in the browser.
+
+/** The sortBy the map sends the API: rank by distance from the viewport center. */
+export const MAP_API_SORT = "nearest";
+
+const SORT_KEYS: Record<string, { key: keyof Listing; dir: 1 | -1 }> = {
+  price_desc: { key: "listPrice", dir: -1 },
+  price_asc: { key: "listPrice", dir: 1 },
+  newest: { key: "listDate", dir: -1 },
+  dom_asc: { key: "daysOnMarket", dir: 1 },
+  sqft_desc: { key: "sqftTotal", dir: -1 },
+};
+
+/** Returns a copy of `listings` in a SORT_OPTIONS order; listings missing the value go last. */
+export function sortListings(listings: Listing[], sortBy: string): Listing[] {
+  const { key, dir } = SORT_KEYS[sortBy] ?? SORT_KEYS[DEFAULT_SORT];
+  return [...listings].sort((a, b) => {
+    const x = a[key] as string | number | null | undefined;
+    const y = b[key] as string | number | null | undefined;
+    if (x == null || y == null) return x == null ? (y == null ? 0 : 1) : -1;
+    return x < y ? -dir : x > y ? dir : 0;
+  });
+}
 
 // ─── URL <-> filters ─────────────────────────────────────────────────────────
 
