@@ -525,6 +525,10 @@ export default function MapSearch({
       zoom: Math.max(mapRef.current.getZoom(), 14),
       speed: 1.2,
     });
+    // Below lg the map sits above the list, so bring it back into view to show the pan.
+    if (window.matchMedia("(max-width: 1023px)").matches) {
+      mapContainerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
   }, []);
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -544,10 +548,13 @@ export default function MapSearch({
     );
   }
 
+  // Layout: below lg (1024px) the map comes first at 60% of the screen height and the
+  // listings follow underneath in normal page scroll — people search by browsing pins.
+  // From lg up: listings sidebar on the left, map filling the rest of the viewport.
   return (
-    <div className="flex" style={{ height: "calc(100vh - 5rem)" }}>
-      {/* ── Sidebar ──────────────────────────────────────────────────────── */}
-      <div className="w-96 flex-shrink-0 flex flex-col border-r border-stone-200 bg-white">
+    <div className="flex flex-col lg:flex-row lg:h-[calc(100vh-5rem)]">
+      {/* ── Sidebar (below the map on small screens) ─────────────────────── */}
+      <div className="order-2 lg:order-1 w-full lg:w-96 lg:flex-shrink-0 flex flex-col border-t lg:border-t-0 lg:border-r border-stone-200 bg-white">
         <div className="flex-shrink-0 px-4 py-3 border-b border-stone-100">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-slate-700">
@@ -557,13 +564,13 @@ export default function MapSearch({
                   ? `${displayedListings.length} of ${listings.length} in drawn area`
                   : `${listings.length} listing${listings.length !== 1 ? "s" : ""} in view`}
             </span>
-            <a href="/search" className="text-xs text-blue-600 hover:text-blue-700">
+            <a href="/search" className="text-sm text-blue-600 hover:text-blue-700 py-2">
               Filter view →
             </a>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-3 py-3">
+        <div className="lg:flex-1 lg:overflow-y-auto px-3 py-3">
           {displayedListings.length === 0 && !isLoading && (
             <div className="text-center py-12 text-sm text-slate-500">
               {activePolygon
@@ -582,8 +589,8 @@ export default function MapSearch({
         </div>
       </div>
 
-      {/* ── Map ──────────────────────────────────────────────────────────── */}
-      <div className="flex-1 relative">
+      {/* ── Map (first on small screens) ─────────────────────────────────── */}
+      <div className="order-1 lg:order-2 relative h-[60vh] lg:h-auto lg:flex-1">
         <div ref={mapContainerRef} className="w-full h-full" />
 
         {/* ── Draw controls — top-left, opposite NavigationControl ───────── */}
@@ -592,7 +599,7 @@ export default function MapSearch({
           <button
             onClick={isDrawing ? cancelDraw : activePolygon ? clearPolygon : startDraw}
             className={`
-              px-3 py-1.5 rounded text-sm font-medium shadow-md border
+              px-3 py-2 rounded text-sm font-medium shadow-md border
               transition-colors whitespace-nowrap
               ${
                 isDrawing
