@@ -52,6 +52,9 @@ try {
   applyFiltersToParams(filters, url.searchParams);
   url.searchParams.set("sortBy", MAP_API_SORT); // nearest the center; MapSearch applies the chosen sort
   url.searchParams.set("size", "200");
+  // Slim listings (~20 fields): they're embedded in this page's HTML for the map island,
+  // and full records made the page ~7 MB.
+  url.searchParams.set("view", "summary");
 
   const res = await fetchWithTimeout(url.toString());
   if (res.ok) {

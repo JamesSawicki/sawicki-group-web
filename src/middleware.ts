@@ -97,5 +97,35 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   }
 
   // Request is allowed — continue to the page or API endpoint
-  return next();
+  return compress(request, await next());
 };
+
+// ─────────────────────────────────────────────
+// RESPONSE COMPRESSION
+// The Node server and Cloud Run don't compress, so pages, sitemaps and feeds went out
+// at full size (HTML compresses ~5-10x). gzip text responses here. Static files under
+// /_astro (JS/CSS, cached for a year) bypass middleware; a CDN in front of the domain
+// covers those at go-live. Production only: Vite's dev server handles its own.
+// ─────────────────────────────────────────────
+const COMPRESSIBLE = /^(text\/|application\/(json|xml|rss\+xml|ld\+json))/;
+
+function compress(request: Request, response: Response): Response {
+  if (!import.meta.env.PROD || !response.body) return response;
+  const type = response.headers.get("Content-Type") ?? "";
+  if (
+    response.headers.has("Content-Encoding") ||
+    !COMPRESSIBLE.test(type) ||
+    !/\bgzip\b/.test(request.headers.get("Accept-Encoding") ?? "")
+  ) {
+    return response;
+  }
+  const headers = new Headers(response.headers);
+  headers.set("Content-Encoding", "gzip");
+  headers.delete("Content-Length");
+  headers.append("Vary", "Accept-Encoding");
+  return new Response(response.body.pipeThrough(new CompressionStream("gzip")), {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}

@@ -59,7 +59,8 @@ export default function ListingPreview({
   // ─── Derived values ────────────────────────────────────────────────────────
   const photoIds = parsePhotoIds(listing.photoIds);
   const photo = photoIds.length ? photoUrl(accountHash, photoIds[0], "card") : "";
-  const photoCount = photoIds.length || listing.photosCount || 0;
+  // Map summaries carry only the first photo id, so prefer the listing's photo count.
+  const photoCount = Math.max(listing.photosCount ?? 0, photoIds.length);
   const detailUrl = listingPath(listing);
   const stats = [
     isPositive(listing.beds) ? `${listing.beds} bd` : null,

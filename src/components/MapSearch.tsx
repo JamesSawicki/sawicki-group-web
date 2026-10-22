@@ -406,6 +406,7 @@ export default function MapSearch({
         applyFiltersToParams(filtersRef.current, url.searchParams);
         url.searchParams.set("sortBy", MAP_API_SORT); // the chosen sort is applied above
         url.searchParams.set("size", "200");
+        url.searchParams.set("view", "summary"); // ~20 fields per listing, not ~150
 
         // Keep the URL shareable: viewport + filters + drawn area.
         const pageUrl = new URL(window.location.href);

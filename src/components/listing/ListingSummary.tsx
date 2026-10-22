@@ -56,9 +56,15 @@ interface CarouselProps {
   /** "card": large frame with arrows; "mini": small swipeable frame. */
   size: "card" | "mini";
   address: string;
+  /**
+   * Whether the frame is on screen. No image is requested until it is: the card's frame
+   * is hidden on phones and starts behind the map on desktop, and the mini header starts
+   * off screen — rendering them eagerly downloaded photos nobody saw.
+   */
+  active: boolean;
 }
 
-function PhotoCarousel({ photoIds, accountHash, size, address }: CarouselProps) {
+function PhotoCarousel({ photoIds, accountHash, size, address, active }: CarouselProps) {
   const [emblaRef, embla] = useEmblaCarousel({ loop: true });
   const [selected, setSelected] = useState<number>(0);
 
@@ -97,7 +103,7 @@ function PhotoCarousel({ photoIds, accountHash, size, address }: CarouselProps) 
                 className="relative min-w-full h-full"
                 aria-label={`Open photo ${i + 1} of ${address}`}
               >
-                {near && (
+                {active && near && (
                   <img
                     src={photoUrl(accountHash, id, variant)}
                     alt=""
@@ -187,6 +193,16 @@ export default function ListingSummary({
 
   const hasPhotos = Boolean(accountHash) && photoIds.length > 0;
 
+  // The card's media frame only exists on desktop (lg+).
+  const [isDesktop, setIsDesktop] = useState<boolean>(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    setIsDesktop(mq.matches);
+    const onChange = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+
   // Card frame tab: automatic (map while the gallery is in view, then photos) until the
   // visitor picks one.
   const [pickedTab, setPickedTab] = useState<"map" | "photos" | null>(null);
@@ -208,6 +224,7 @@ export default function ListingSummary({
               accountHash={accountHash!}
               size="mini"
               address={address}
+              active={scrolledPast}
             />
           )}
           <div className="min-w-0 flex-1">
@@ -259,6 +276,7 @@ export default function ListingSummary({
                   accountHash={accountHash!}
                   size="card"
                   address={address}
+                  active={showPhotos && isDesktop}
                 />
               </div>
             )}
