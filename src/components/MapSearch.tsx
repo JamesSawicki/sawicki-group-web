@@ -42,7 +42,7 @@ import { createPortal } from "react-dom";
 import mapboxgl from "mapbox-gl";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
-import type { Listing } from "../types/listing";
+import type { Listing, Page } from "../types/listing";
 import FilterDrawer from "./search/FilterDrawer";
 import ListingPreview from "./search/ListingPreview";
 import { saveLastSearchUrl } from "../lib/search-return";
@@ -65,6 +65,8 @@ interface Bbox {
 
 interface Props {
   initialListings?: Listing[];
+  /** Total matches in the initial viewport (can exceed initialListings, which is capped). */
+  initialTotal?: number;
   initialBbox: Bbox;
   /** Filters from the page URL, already applied to initialListings by the server. */
   initialFilters: SearchFilters;
@@ -238,6 +240,7 @@ function SidebarCard({ listing, isSelected, onClick, photoAccountHash }: Sidebar
 
 export default function MapSearch({
   initialListings = [],
+  initialTotal = 0,
   initialBbox,
   initialFilters,
   apiBaseUrl,
@@ -259,6 +262,9 @@ export default function MapSearch({
   const activePolygonRef = useRef<GeoJSON.Feature<GeoJSON.Polygon> | null>(null);
 
   const [listings, setListings] = useState<Listing[]>(initialListings);
+  // How many listings match the viewport in total. Each fetch returns at most 200, so when
+  // zoomed out this is larger than listings.length and the header says to zoom in.
+  const [totalInView, setTotalInView] = useState<number>(initialTotal);
   // Latest listings for map event handlers, which are registered once at load.
   const listingsRef = useRef<Listing[]>(initialListings);
   useEffect(() => {
@@ -340,11 +346,12 @@ export default function MapSearch({
 
         const res = await fetch(url.toString());
         if (!res.ok) return;
-        const data = await res.json();
+        const data = (await res.json()) as Page<Listing>;
 
         // setListings triggers useMemo → displayedListings recomputes →
         // useEffect above syncs map markers. No manual source.setData needed here.
-        setListings(data.content as Listing[]);
+        setListings(data.content);
+        setTotalInView(data.totalElements);
       } catch {
         // Swallow fetch errors silently — map will retry on next moveend
       } finally {
@@ -603,6 +610,17 @@ export default function MapSearch({
   // Remember the search as first loaded, too (the URL already holds its state).
   useEffect(() => saveLastSearchUrl(window.location.pathname + window.location.search), []);
 
+  // Coming back from a listing (browser Back or "Back to map", which uses history.back())
+  // can restore this page from the back/forward cache: a frozen snapshot, not a reload.
+  // Mobile browsers may tear down the map's WebGL context or workers while it's frozen,
+  // leaving a map that pans but never redraws its pins. Reload instead; the URL already
+  // holds the viewport and filters, so the visitor lands on the same search.
+  useEffect(() => {
+    const onPageShow = (e: PageTransitionEvent) => e.persisted && window.location.reload();
+    window.addEventListener("pageshow", onPageShow);
+    return () => window.removeEventListener("pageshow", onPageShow);
+  }, []);
+
   // ── Apply new search criteria → refetch the current viewport ──────────────
   const applyFilters = useCallback(
     (next: SearchFilters): void => {
@@ -701,8 +719,13 @@ export default function MapSearch({
                 ? "Searching…"
                 : activePolygon
                   ? `${displayedListings.length} of ${listings.length} in drawn area`
-                  : `${listings.length} listing${listings.length !== 1 ? "s" : ""} in view`}
+                  : totalInView > listings.length
+                    ? `Showing ${listings.length} of ${totalInView}`
+                    : `${listings.length} listing${listings.length !== 1 ? "s" : ""} in view`}
             </span>
+            {!isLoading && totalInView > listings.length && (
+              <span className="text-xs text-slate-500">Zoom in to see all</span>
+            )}
           </div>
         </div>
 

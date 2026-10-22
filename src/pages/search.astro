@@ -37,6 +37,7 @@ const filters = filtersFromParams(params);
 
 // ─── Data fetching ───────────────────────────────────────────────────────────
 let initialListings: Listing[] = [];
+let initialTotal = 0;
 try {
   const url = new URL(`${apiBase}/api/listings/search`);
   url.searchParams.set("minLat", String(minLat));
@@ -50,6 +51,7 @@ try {
   if (res.ok) {
     const data = (await res.json()) as Page<Listing>;
     initialListings = data.content;
+    initialTotal = data.totalElements;
   }
 } catch {
   // Non-fatal: the map still renders with no pins and refetches client-side as the
@@ -64,6 +66,7 @@ try {
   <MapSearch
     client:load
     initialListings={initialListings}
+    initialTotal={initialTotal}
     initialBbox={{ minLat, maxLat, minLng, maxLng }}
     initialFilters={filters}
     apiBaseUrl={apiBase}
