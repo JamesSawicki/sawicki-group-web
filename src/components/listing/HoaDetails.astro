@@ -17,9 +17,7 @@ interface Props {
 const { listing } = Astro.props;
 ---
 
-{/* Known quirk: the API sends `associationFee` as a number but the type says string, so
-    the `!== "0"` check never filters anything. Kept as-is for now. */}
-{listing.associationFee && listing.associationFee !== "0" && (
+{(listing.associationFee ?? 0) > 0 && (
   <div>
     <h2 class="text-lg font-semibold text-stone-900 mb-3">HOA / Association</h2>
     <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-sm">

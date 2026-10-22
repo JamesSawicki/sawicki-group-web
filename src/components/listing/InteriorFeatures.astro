@@ -15,6 +15,12 @@ interface Props {
 }
 
 const { listing } = Astro.props;
+
+// ─── Derived values ──────────────────────────────────────────────────────────
+// "2 — Living Room, Gas", or just "2" when the features aren't listed.
+const fireplaceDisplay = listing.fireplaceFeatures
+  ? `${listing.fireplaces} — ${listing.fireplaceFeatures}`
+  : `${listing.fireplaces}`;
 ---
 
 <div>
@@ -24,13 +30,7 @@ const { listing } = Astro.props;
     {listing.airConditioning && <DetailRow label="Cooling">{listing.airConditioning}</DetailRow>}
     {listing.fuelType && <DetailRow label="Fuel">{listing.fuelType}</DetailRow>}
     {listing.basement && <DetailRow label="Basement">{listing.basement}</DetailRow>}
-    {/* Known quirk: the API sends `fireplaces` as a number but the type says string, so the
-        `!== "0"` check never filters anything and a 0 renders as "0". Kept as-is for now. */}
-    {listing.fireplaces && listing.fireplaces !== "0" && (
-      <DetailRow label="Fireplaces">
-        {`${listing.fireplaces} — ${listing.fireplaceFeatures ?? ""}`}
-      </DetailRow>
-    )}
+    {(listing.fireplaces ?? 0) > 0 && <DetailRow label="Fireplaces">{fireplaceDisplay}</DetailRow>}
     {listing.laundryFeatures && <DetailRow label="Laundry">{listing.laundryFeatures}</DetailRow>}
     {listing.parkingFeatures && <DetailRow label="Parking">{listing.parkingFeatures}</DetailRow>}
     {listing.garageSqft && (
