@@ -55,8 +55,8 @@ const apiBase = process.env.PUBLIC_API_BASE_URL || import.meta.env.PUBLIC_API_BA
 if (!apiBase) {
   throw new Error(
     "PUBLIC_API_BASE_URL not set in process.env (production) or import.meta.env (dev). " +
-    "In dev: confirm sawicki-group-web/.env.local has the line and `npm run dev` was restarted. " +
-    "In production: confirm Cloud Run has the env var set via cloudbuild.yaml --update-env-vars."
+      "In dev: confirm sawicki-group-web/.env.local has the line and `npm run dev` was restarted. " +
+      "In production: confirm Cloud Run has the env var set via cloudbuild.yaml --update-env-vars.",
   );
 }
 
@@ -87,7 +87,7 @@ try {
 // No redirect loop: listingPath() is deterministic, so a request that already
 // hit the canonical path matches below and falls through without redirecting.
 const canonicalPath = listingPath(listing);
-const canonicalUrl  = new URL(canonicalPath, Astro.url.origin).toString();
+const canonicalUrl = new URL(canonicalPath, Astro.url.origin).toString();
 if (Astro.url.pathname !== canonicalPath) {
   return Astro.redirect(canonicalUrl, 301);
 }
@@ -95,18 +95,19 @@ if (Astro.url.pathname !== canonicalPath) {
 // ─── Derived display values ──────────────────────────────────────────────────
 // Compute once here; reference throughout the template.
 // Never call utility functions multiple times for the same value.
-const priceDisplay   = formatPrice(listing.listPrice);
-const bathDisplay    = formatBathTotal(listing);
-const sqftDisplay    = formatSqft(listing.sqftTotal);
-const lotDisplay     = formatLot(listing.lotSqft);
-const priceReduced   = hasPriceReduction(listing);
-const rooms          = parseRooms(listing.roomInfo);
-const mlsID          = formatMlsId(listing.mlsId);
+const priceDisplay = formatPrice(listing.listPrice);
+const bathDisplay = formatBathTotal(listing);
+const sqftDisplay = formatSqft(listing.sqftTotal);
+const lotDisplay = formatLot(listing.lotSqft);
+const priceReduced = hasPriceReduction(listing);
+const rooms = parseRooms(listing.roomInfo);
+const mlsID = formatMlsId(listing.mlsId);
 
 // ─── IDX brokerage attribution ──────────────────────────────────────────────
 // Every listing shows the listing brokerage. No branching — Jim acts as a
 // buyer's agent for all listings, including those held by his own brokerage.
-const listingBrokerDisplay = listing.listOfficeName ?? "Listing brokerage on file with NorthstarMLS";
+const listingBrokerDisplay =
+  listing.listOfficeName ?? "Listing brokerage on file with NorthstarMLS";
 
 // Single CTA for all listings — buyer inquiry to contact page.
 const ctaTitle = "Interested in this property?";
@@ -118,11 +119,10 @@ const ctaButton = "Contact us about this listing";
 // the account hash. PUBLIC_ prefix makes the hash safely exposed to the
 // client (the hash is already visible in every imagedelivery.net URL).
 const cfAccountHash =
-  process.env.PUBLIC_CF_IMAGES_ACCOUNT_HASH ||
-  import.meta.env.PUBLIC_CF_IMAGES_ACCOUNT_HASH;
+  process.env.PUBLIC_CF_IMAGES_ACCOUNT_HASH || import.meta.env.PUBLIC_CF_IMAGES_ACCOUNT_HASH;
 
-const photoIds        = parsePhotoIds(listing.photoIds);
-const floorPlanIds    = parsePhotoIds(listing.floorPlanIds);
+const photoIds = parsePhotoIds(listing.photoIds);
+const floorPlanIds = parsePhotoIds(listing.floorPlanIds);
 const virtualTourUrls = parseVirtualTourUrls(listing.virtualTourUrls);
 
 // cityLine for display: "Edina, MN 55436"
@@ -147,36 +147,36 @@ const appliancesList: string[] = listing.appliances
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "RealEstateListing",
-  "name": `${listing.beds} BD / ${bathDisplay} BA ${listing.style ?? "Home"} — ${listing.address}`,
-  "description": listing.publicRemarks ?? "",
-  "url": canonicalUrl,
+  name: `${listing.beds} BD / ${bathDisplay} BA ${listing.style ?? "Home"} — ${listing.address}`,
+  description: listing.publicRemarks ?? "",
+  url: canonicalUrl,
   // Only assert datePosted when we actually have it. Previously this fell back
   // to `new Date()`, fabricating "today" as the post date on every render —
   // misleading structured data and non-deterministic output.
-  ...(listing.listDate && { "datePosted": listing.listDate }),
-  "price": listing.listPrice,
-  "priceCurrency": "USD",
-  "address": {
+  ...(listing.listDate && { datePosted: listing.listDate }),
+  price: listing.listPrice,
+  priceCurrency: "USD",
+  address: {
     "@type": "PostalAddress",
-    "streetAddress": listing.address,
-    "addressLocality": listing.city,
-    "addressRegion": "MN",
-    "postalCode": listing.zipCode ?? "",
-    "addressCountry": "US"
+    streetAddress: listing.address,
+    addressLocality: listing.city,
+    addressRegion: "MN",
+    postalCode: listing.zipCode ?? "",
+    addressCountry: "US",
   },
   ...(listing.sqftTotal && {
-    "floorSize": {
+    floorSize: {
       "@type": "QuantitativeValue",
-      "value": listing.sqftTotal,
-      "unitCode": "FTK"
-    }
+      value: listing.sqftTotal,
+      unitCode: "FTK",
+    },
   }),
-  ...(listing.beds != null && { "numberOfBedrooms": listing.beds }),
+  ...(listing.beds != null && { numberOfBedrooms: listing.beds }),
   // Always surface the listing brokerage — never imply Sawicki holds the listing.
-  "broker": {
+  broker: {
     "@type": "RealEstateOffice",
-    "name": listingBrokerDisplay,
-  }
+    name: listingBrokerDisplay,
+  },
 };
 // amenityScores are fetched server-side with the listing, so we parse and
 // render them without any client-side API call.
@@ -187,36 +187,41 @@ const amenityScores = parseAmenityScores(listing.amenityScores);
 // with multi-line JSX returning class attributes break it.
 const SCORECARD_CATEGORIES = ["grocery", "restaurants", "pharmacy", "hardware"] as const;
 const SCORECARD_MODES = [
-  { key: "walk",  label: "Walking",  icon: "🚶" },
-  { key: "bike",  label: "Cycling",  icon: "🚴" },
-  { key: "drive", label: "Driving",  icon: "🚗" },
+  { key: "walk", label: "Walking", icon: "🚶" },
+  { key: "bike", label: "Cycling", icon: "🚴" },
+  { key: "drive", label: "Driving", icon: "🚗" },
 ] as const;
 
-const scorecardData = amenityScores ? SCORECARD_MODES.map((mode) => {
-  const rows = SCORECARD_CATEGORIES.map((catKey) => {
-    const c5  = amenityScores.scores[`${mode.key}_5min`]?.[catKey];
-    const c10 = amenityScores.scores[`${mode.key}_10min`]?.[catKey];
-    const c15 = amenityScores.scores[`${mode.key}_15min`]?.[catKey];
-    const closest = c5 ?? c10 ?? c15;
-    const subtypeEntries = closest?.subtypes ? Object.entries(closest.subtypes) : [];
-    return {
-      catLabel: categoryLabel(catKey),
-      c5Count: c5?.count,
-      c10Count: c10?.count,
-      c15Count: c15?.count,
-      closestName: closest?.nearestName,
-      closestMeters: closest?.nearestMeters,
-      subtypeEntries,
-      showBreakdown: subtypeEntries.length > 1,
-    };
-  });
-  return { ...mode, rows };
-}) : [];
+const scorecardData = amenityScores
+  ? SCORECARD_MODES.map((mode) => {
+      const rows = SCORECARD_CATEGORIES.map((catKey) => {
+        const c5 = amenityScores.scores[`${mode.key}_5min`]?.[catKey];
+        const c10 = amenityScores.scores[`${mode.key}_10min`]?.[catKey];
+        const c15 = amenityScores.scores[`${mode.key}_15min`]?.[catKey];
+        const closest = c5 ?? c10 ?? c15;
+        const subtypeEntries = closest?.subtypes ? Object.entries(closest.subtypes) : [];
+        return {
+          catLabel: categoryLabel(catKey),
+          c5Count: c5?.count,
+          c10Count: c10?.count,
+          c15Count: c15?.count,
+          closestName: closest?.nearestName,
+          closestMeters: closest?.nearestMeters,
+          subtypeEntries,
+          showBreakdown: subtypeEntries.length > 1,
+        };
+      });
+      return { ...mode, rows };
+    })
+  : [];
 
 const generatedAtFormatted = amenityScores
-  ? new Date(amenityScores.generatedAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })
+  ? new Date(amenityScores.generatedAt).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    })
   : "";
-
 
 // The AI chat system prompt is built SERVER-SIDE by the listing API from the
 // listingId (see ChatController / ListingChatPromptBuilder). The browser sends
@@ -230,13 +235,16 @@ const generatedAtFormatted = amenityScores
   jsonLd={jsonLd}
   canonical={canonicalUrl}
 >
-
   <!-- BREADCRUMB -->
   <div class="max-w-6xl mx-auto px-6 pt-8">
     <nav class="text-sm text-stone-400">
-      <a href="/" class="hover:text-stone-600 transition-colors">Home</a>
+      <a href="/" class="hover:text-stone-600 transition-colors">
+        Home
+      </a>
       <span class="mx-2">›</span>
-      <a href="/listings" class="hover:text-stone-600 transition-colors">Listings</a>
+      <a href="/listings" class="hover:text-stone-600 transition-colors">
+        Listings
+      </a>
       <span class="mx-2">›</span>
       <span class="text-stone-600">{listing.address}</span>
     </nav>
@@ -278,49 +286,63 @@ const generatedAtFormatted = amenityScores
       <div class="text-right shrink-0">
         <div class="text-3xl font-semibold text-stone-900">{priceDisplay}</div>
         {priceReduced && (
-          <div class="text-sm text-stone-400 line-through mt-0.5">{formatPrice(listing.originalListPrice)}</div>
+          <div class="text-sm text-stone-400 line-through mt-0.5">
+            {formatPrice(listing.originalListPrice)}
+          </div>
         )}
-        {mlsID && (
-          <div class="text-xs text-stone-400 mt-1">MLS #{mlsID}</div>
-        )}
+        {mlsID && <div class="text-xs text-stone-400 mt-1">MLS #{mlsID}</div>}
       </div>
     </div>
 
     <!-- KEY STATS BAR -->
     <div class="flex flex-wrap gap-6 mt-6 text-sm text-stone-700">
       {listing.beds && (
-        <div><span class="font-semibold text-stone-900">{listing.beds}</span> Beds</div>
+        <div>
+          <span class="font-semibold text-stone-900">{listing.beds}</span> Beds
+        </div>
       )}
       {bathTotal(listing) > 0 && (
-        <div><span class="font-semibold text-stone-900">{bathDisplay}</span> Baths</div>
+        <div>
+          <span class="font-semibold text-stone-900">{bathDisplay}</span> Baths
+        </div>
       )}
       {listing.sqftTotal && (
-        <div><span class="font-semibold text-stone-900">{sqftDisplay}</span> Sqft</div>
+        <div>
+          <span class="font-semibold text-stone-900">{sqftDisplay}</span> Sqft
+        </div>
       )}
       {listing.lotSqft && (
-        <div><span class="font-semibold text-stone-900">{lotDisplay}</span> Lot</div>
+        <div>
+          <span class="font-semibold text-stone-900">{lotDisplay}</span> Lot
+        </div>
       )}
       {listing.style && (
-        <div><span class="font-semibold text-stone-900">{listing.style}</span></div>
+        <div>
+          <span class="font-semibold text-stone-900">{listing.style}</span>
+        </div>
       )}
       {listing.yearBuilt && (
-        <div>Built <span class="font-semibold text-stone-900">{listing.yearBuilt}</span></div>
+        <div>
+          Built <span class="font-semibold text-stone-900">{listing.yearBuilt}</span>
+        </div>
       )}
       {listing.garageStalls != null && (
-        <div><span class="font-semibold text-stone-900">{listing.garageStalls}</span> Car Garage</div>
+        <div>
+          <span class="font-semibold text-stone-900">{listing.garageStalls}</span> Car Garage
+        </div>
       )}
       {listing.daysOnMarket != null && (
-        <div><span class="font-semibold text-stone-900">{listing.daysOnMarket}</span> Days on Market</div>
+        <div>
+          <span class="font-semibold text-stone-900">{listing.daysOnMarket}</span> Days on Market
+        </div>
       )}
     </div>
   </div>
 
   <!-- MAIN CONTENT + CHAT -->
   <div class="max-w-6xl mx-auto px-6 py-10 grid grid-cols-1 lg:grid-cols-5 gap-12">
-
     <!-- LEFT: LISTING DETAILS -->
     <div class="lg:col-span-3 space-y-10">
-
       <!-- Description -->
       {listing.publicRemarks && (
         <div>
@@ -328,69 +350,77 @@ const generatedAtFormatted = amenityScores
           <p class="text-stone-600 leading-relaxed">{listing.publicRemarks}</p>
         </div>
       )}
-{amenityScores && (
-  <section class="my-12">
-    <h2 class="text-2xl font-semibold mb-2">What's nearby</h2>
-    <p class="text-sm text-gray-500 mb-8">
-      Travel times computed from real road and path networks, not radius circles.
-    </p>
+      {amenityScores && (
+        <section class="my-12">
+          <h2 class="text-2xl font-semibold mb-2">What's nearby</h2>
+          <p class="text-sm text-gray-500 mb-8">
+            Travel times computed from real road and path networks, not radius circles.
+          </p>
 
-    <div class="space-y-10">
-      {scorecardData.map((mode) => (
-        <div>
-          <h3 class="text-lg font-semibold mb-3 flex items-center gap-2">
-            <span aria-hidden="true">{mode.icon}</span> {mode.label}
-          </h3>
+          <div class="space-y-10">
+            {scorecardData.map((mode) => (
+              <div>
+                <h3 class="text-lg font-semibold mb-3 flex items-center gap-2">
+                  <span aria-hidden="true">{mode.icon}</span> {mode.label}
+                </h3>
 
-          <div class="overflow-x-auto">
-            <table class="w-full text-sm border-collapse">
-              <thead>
-                <tr class="border-b border-gray-200 text-gray-600">
-                  <th class="text-left py-2 pr-4 font-medium">Category</th>
-                  <th class="text-center px-3 font-medium">5 min</th>
-                  <th class="text-center px-3 font-medium">10 min</th>
-                  <th class="text-center px-3 font-medium">15 min</th>
-                  <th class="text-left pl-4 font-medium">Closest</th>
-                </tr>
-              </thead>
-              <tbody>
-                {mode.rows.map((row) => (
-                  <tr class="border-b border-gray-100">
-                    <td class="py-2 pr-4">{row.catLabel}</td>
-                    <td class="text-center px-3">{row.c5Count ?? "—"}</td>
-                    <td class="text-center px-3">{row.c10Count ?? "—"}</td>
-                    <td class="text-center px-3">{row.c15Count ?? "—"}</td>
-                    <td class="pl-4 text-gray-700">
-                      {row.closestName ? (
-                        <span>
-                          <span>{row.closestName} · {formatDistance(row.closestMeters)}</span>
-                          {row.showBreakdown && (
-                            <details class="inline-block ml-2 align-middle">
-                              <summary class="text-xs text-blue-600 cursor-pointer hover:underline list-none">breakdown</summary>
-                              <ul class="text-xs mt-1 ml-4 text-gray-600 space-y-0.5">
-                                {row.subtypeEntries.map(([type, n]) => (
-                                  <li>{subtypeLabel(type)}: {n}</li>
-                                ))}
-                              </ul>
-                            </details>
-                          )}
-                        </span>
-                      ) : "—"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-sm border-collapse">
+                    <thead>
+                      <tr class="border-b border-gray-200 text-gray-600">
+                        <th class="text-left py-2 pr-4 font-medium">Category</th>
+                        <th class="text-center px-3 font-medium">5 min</th>
+                        <th class="text-center px-3 font-medium">10 min</th>
+                        <th class="text-center px-3 font-medium">15 min</th>
+                        <th class="text-left pl-4 font-medium">Closest</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {mode.rows.map((row) => (
+                        <tr class="border-b border-gray-100">
+                          <td class="py-2 pr-4">{row.catLabel}</td>
+                          <td class="text-center px-3">{row.c5Count ?? "—"}</td>
+                          <td class="text-center px-3">{row.c10Count ?? "—"}</td>
+                          <td class="text-center px-3">{row.c15Count ?? "—"}</td>
+                          <td class="pl-4 text-gray-700">
+                            {row.closestName ? (
+                              <span>
+                                <span>
+                                  {row.closestName} · {formatDistance(row.closestMeters)}
+                                </span>
+                                {row.showBreakdown && (
+                                  <details class="inline-block ml-2 align-middle">
+                                    <summary class="text-xs text-blue-600 cursor-pointer hover:underline list-none">
+                                      breakdown
+                                    </summary>
+                                    <ul class="text-xs mt-1 ml-4 text-gray-600 space-y-0.5">
+                                      {row.subtypeEntries.map(([type, n]) => (
+                                        <li>
+                                          {subtypeLabel(type)}: {n}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </details>
+                                )}
+                              </span>
+                            ) : (
+                              "—"
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ))}
           </div>
-        </div>
-      ))}
-    </div>
 
-    <p class="text-xs text-gray-400 mt-8">
-      Data via Mapbox isochrones and OpenStreetMap. Updated {generatedAtFormatted}.
-    </p>
-  </section>
-)}
+          <p class="text-xs text-gray-400 mt-8">
+            Data via Mapbox isochrones and OpenStreetMap. Updated {generatedAtFormatted}.
+          </p>
+        </section>
+      )}
       <!-- Room Dimensions -->
       {rooms.length !== 0 && (
         <div>
@@ -487,7 +517,9 @@ const generatedAtFormatted = amenityScores
           {listing.airConditioning && (
             <div class="flex justify-between border-b border-stone-100 pb-2">
               <dt class="text-stone-500">Cooling</dt>
-              <dd class="text-stone-800 font-medium text-right max-w-[60%]">{listing.airConditioning}</dd>
+              <dd class="text-stone-800 font-medium text-right max-w-[60%]">
+                {listing.airConditioning}
+              </dd>
             </div>
           )}
           {listing.fuelType && (
@@ -505,19 +537,25 @@ const generatedAtFormatted = amenityScores
           {listing.fireplaces && listing.fireplaces !== "0" && (
             <div class="flex justify-between border-b border-stone-100 pb-2">
               <dt class="text-stone-500">Fireplaces</dt>
-              <dd class="text-stone-800 font-medium text-right max-w-[60%]">{listing.fireplaces} — {listing.fireplaceFeatures}</dd>
+              <dd class="text-stone-800 font-medium text-right max-w-[60%]">
+                {listing.fireplaces} — {listing.fireplaceFeatures}
+              </dd>
             </div>
           )}
           {listing.laundryFeatures && (
             <div class="flex justify-between border-b border-stone-100 pb-2">
               <dt class="text-stone-500">Laundry</dt>
-              <dd class="text-stone-800 font-medium text-right max-w-[60%]">{listing.laundryFeatures}</dd>
+              <dd class="text-stone-800 font-medium text-right max-w-[60%]">
+                {listing.laundryFeatures}
+              </dd>
             </div>
           )}
           {listing.parkingFeatures && (
             <div class="flex justify-between border-b border-stone-100 pb-2">
               <dt class="text-stone-500">Parking</dt>
-              <dd class="text-stone-800 font-medium text-right max-w-[60%]">{listing.parkingFeatures}</dd>
+              <dd class="text-stone-800 font-medium text-right max-w-[60%]">
+                {listing.parkingFeatures}
+              </dd>
             </div>
           )}
           {listing.garageSqft && (
@@ -541,7 +579,9 @@ const generatedAtFormatted = amenityScores
           {listing.waterSource && (
             <div class="flex justify-between border-b border-stone-100 pb-2">
               <dt class="text-stone-500">Water</dt>
-              <dd class="text-stone-800 font-medium text-right max-w-[60%]">{listing.waterSource}</dd>
+              <dd class="text-stone-800 font-medium text-right max-w-[60%]">
+                {listing.waterSource}
+              </dd>
             </div>
           )}
         </dl>
@@ -569,7 +609,9 @@ const generatedAtFormatted = amenityScores
           {listing.constructionMaterials && (
             <div class="flex justify-between border-b border-stone-100 pb-2">
               <dt class="text-stone-500">Construction</dt>
-              <dd class="text-stone-800 font-medium text-right max-w-[60%]">{listing.constructionMaterials}</dd>
+              <dd class="text-stone-800 font-medium text-right max-w-[60%]">
+                {listing.constructionMaterials}
+              </dd>
             </div>
           )}
           {listing.roof && (
@@ -581,13 +623,17 @@ const generatedAtFormatted = amenityScores
           {listing.exteriorFeatures && (
             <div class="flex justify-between border-b border-stone-100 pb-2">
               <dt class="text-stone-500">Exterior Features</dt>
-              <dd class="text-stone-800 font-medium text-right max-w-[60%]">{listing.exteriorFeatures}</dd>
+              <dd class="text-stone-800 font-medium text-right max-w-[60%]">
+                {listing.exteriorFeatures}
+              </dd>
             </div>
           )}
           {listing.lotFeatures && (
             <div class="flex justify-between border-b border-stone-100 pb-2">
               <dt class="text-stone-500">Lot Features</dt>
-              <dd class="text-stone-800 font-medium text-right max-w-[60%]">{listing.lotFeatures}</dd>
+              <dd class="text-stone-800 font-medium text-right max-w-[60%]">
+                {listing.lotFeatures}
+              </dd>
             </div>
           )}
           {listing.lotDimensions && (
@@ -689,13 +735,16 @@ const generatedAtFormatted = amenityScores
             <div class="flex justify-between border-b border-stone-100 pb-2">
               <dt class="text-stone-500">Fee</dt>
               <dd class="text-stone-800 font-medium">
-                {formatMoneyString(listing.associationFee)}/{listing.associationFeeFrequency ?? "month"}
+                {formatMoneyString(listing.associationFee)}/
+                {listing.associationFeeFrequency ?? "month"}
               </dd>
             </div>
             {listing.associationFeeIncludes && (
               <div class="flex justify-between border-b border-stone-100 pb-2 col-span-2">
                 <dt class="text-stone-500 shrink-0 mr-4">Includes</dt>
-                <dd class="text-stone-800 font-medium text-right">{listing.associationFeeIncludes}</dd>
+                <dd class="text-stone-800 font-medium text-right">
+                  {listing.associationFeeIncludes}
+                </dd>
               </div>
             )}
             {listing.associationMgmtName && (
@@ -721,7 +770,9 @@ const generatedAtFormatted = amenityScores
           {listing.taxWithAssessments && listing.taxWithAssessments !== listing.taxAmount && (
             <div>
               <div class="text-stone-400 mb-0.5">Tax w/ Assessments</div>
-              <div class="font-medium text-stone-800">{formatMoneyString(listing.taxWithAssessments)}</div>
+              <div class="font-medium text-stone-800">
+                {formatMoneyString(listing.taxWithAssessments)}
+              </div>
             </div>
           )}
           {listing.lotSqft && (
@@ -740,7 +791,10 @@ const generatedAtFormatted = amenityScores
       </div>
 
       <!-- Schools -->
-      {(listing.elementarySchool || listing.middleSchool || listing.highSchool || listing.schoolDistrict) && (
+      {(listing.elementarySchool ||
+        listing.middleSchool ||
+        listing.highSchool ||
+        listing.schoolDistrict) && (
         <div>
           <h2 class="text-lg font-semibold text-stone-900 mb-3">Schools</h2>
           <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-sm">
@@ -788,18 +842,21 @@ const generatedAtFormatted = amenityScores
           <div class="text-stone-400 text-xs mt-2">Listed {listing.listDate}</div>
         )}
       </div>
-
     </div>
 
     <!-- RIGHT: CTA + AI CHAT -->
     <div class="lg:col-span-2">
       <div class="sticky top-8 space-y-6">
-
         <!-- CTA -->
         <div class="border border-stone-200 rounded-xl p-6">
           <div class="font-semibold text-stone-900 mb-1">{ctaTitle}</div>
           <p class="text-sm text-stone-500 mb-4">{ctaBody}</p>
-          <a href="/contact" class="inline-block bg-stone-900 text-white text-sm px-5 py-2.5 rounded-lg hover:bg-stone-700 transition-colors">{ctaButton}</a>
+          <a
+            href="/contact"
+            class="inline-block bg-stone-900 text-white text-sm px-5 py-2.5 rounded-lg hover:bg-stone-700 transition-colors"
+          >
+            {ctaButton}
+          </a>
         </div>
 
         <!-- AI Chat -->
@@ -808,20 +865,13 @@ const generatedAtFormatted = amenityScores
           <p class="text-sm text-stone-500 mb-4">
             Get instant answers about features, the neighborhood, financials, or anything else.
           </p>
-          <ListingChat
-            client:load
-            listingId={listing.id}
-            apiBaseUrl={apiBase}
-          />
+          <ListingChat client:load listingId={listing.id} apiBaseUrl={apiBase} />
         </div>
-
       </div>
     </div>
-
   </div>
 
   <!-- IDX-required disclosure block: attribution, freshness, disclaimers,
        fair housing, copyright. Always rendered on every listing. -->
   <ListingDisclosure listing={listing} />
-
 </Layout>

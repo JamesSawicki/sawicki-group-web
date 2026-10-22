@@ -64,7 +64,7 @@ interface MarkerProperties {
   sqftTotal: number;
   priceDisplay: string;
   sqftDisplay: string;
-  detailUrl: string;   // pre-built SEO slug path; computed where we still have the full Listing
+  detailUrl: string; // pre-built SEO slug path; computed where we still have the full Listing
 }
 
 /**
@@ -91,16 +91,16 @@ function listingsToGeoJSON(listings: Listing[]): GeoJSON.FeatureCollection {
           coordinates: [l.longitude!, l.latitude!],
         },
         properties: {
-          id:           String(l.id),
-          address:      l.address,
-          city:         l.city ?? "",
-          listPrice:    l.listPrice ?? 0,
-          beds:         l.beds ?? 0,
-          baths:        formatBathTotal(l),
-          sqftTotal:    l.sqftTotal ?? 0,
+          id: String(l.id),
+          address: l.address,
+          city: l.city ?? "",
+          listPrice: l.listPrice ?? 0,
+          beds: l.beds ?? 0,
+          baths: formatBathTotal(l),
+          sqftTotal: l.sqftTotal ?? 0,
           priceDisplay: formatPrice(l.listPrice),
-          sqftDisplay:  formatSqft(l.sqftTotal),
-          detailUrl:    listingPath(l),
+          sqftDisplay: formatSqft(l.sqftTotal),
+          detailUrl: listingPath(l),
         } satisfies MarkerProperties,
       })),
   };
@@ -134,10 +134,7 @@ function buildPopupHTML(props: MarkerProperties): string {
  * Wrapped in try/catch — Turf throws on malformed geometry, which can happen
  * mid-draw if an event fires with an incomplete polygon.
  */
-function listingInPolygon(
-  listing: Listing,
-  polygon: GeoJSON.Feature<GeoJSON.Polygon>
-): boolean {
+function listingInPolygon(listing: Listing, polygon: GeoJSON.Feature<GeoJSON.Polygon>): boolean {
   if (listing.latitude == null || listing.longitude == null) return false;
   try {
     return booleanPointInPolygon(
@@ -146,7 +143,7 @@ function listingInPolygon(
         geometry: { type: "Point", coordinates: [listing.longitude, listing.latitude] },
         properties: {},
       },
-      polygon
+      polygon,
     );
   } catch {
     return false;
@@ -166,7 +163,7 @@ function listingInPolygon(
 function onDrawPolygon(
   map: mapboxgl.Map,
   type: "draw.create" | "draw.update",
-  handler: (polygon: GeoJSON.Feature<GeoJSON.Polygon>) => void
+  handler: (polygon: GeoJSON.Feature<GeoJSON.Polygon>) => void,
 ): void {
   map.on(type as string, (e: unknown) => {
     const feature = (e as DrawEvent).features?.[0];
@@ -204,14 +201,27 @@ function SidebarCard({ listing, isSelected, onClick }: SidebarCardProps) {
     <div
       onClick={onClick}
       className={`flex gap-3 p-3 rounded-lg mb-2 cursor-pointer border transition-colors
-        ${isSelected
-          ? "border-blue-500 bg-blue-50"
-          : "border-stone-100 hover:border-stone-300 hover:bg-stone-50"}`}
+        ${
+          isSelected
+            ? "border-blue-500 bg-blue-50"
+            : "border-stone-100 hover:border-stone-300 hover:bg-stone-50"
+        }`}
     >
-      <div className={`w-16 h-16 rounded shrink-0 bg-gradient-to-br ${gradient} flex items-center justify-center`}>
-        <svg className="h-6 w-6 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+      <div
+        className={`w-16 h-16 rounded shrink-0 bg-gradient-to-br ${gradient} flex items-center justify-center`}
+      >
+        <svg
+          className="h-6 w-6 text-white/40"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+          />
         </svg>
       </div>
       <div className="min-w-0 flex-1">
@@ -219,7 +229,8 @@ function SidebarCard({ listing, isSelected, onClick }: SidebarCardProps) {
         <div className="text-xs text-slate-700 truncate mt-0.5">{listing.address}</div>
         <div className="text-xs text-slate-500">{listing.city}, MN</div>
         <div className="text-xs text-slate-600 mt-1">
-          {listing.beds ?? "—"} bd &nbsp;·&nbsp; {formatBathTotal(listing)} ba &nbsp;·&nbsp; {formatSqft(listing.sqftTotal)} sqft
+          {listing.beds ?? "—"} bd &nbsp;·&nbsp; {formatBathTotal(listing)} ba &nbsp;·&nbsp;{" "}
+          {formatSqft(listing.sqftTotal)} sqft
         </div>
       </div>
     </div>
@@ -237,24 +248,24 @@ export default function MapSearch({
 }: Props) {
   // Refs typed to their concrete DOM/library types so method calls type-check.
   // `| null` because useRef starts null and the map is created asynchronously.
-  const mapContainerRef  = useRef<HTMLDivElement>(null);
-  const mapRef           = useRef<mapboxgl.Map | null>(null);
-  const drawRef          = useRef<MapboxDraw | null>(null);
-  const debounceRef      = useRef<number | null>(null);
-  const popupRef         = useRef<mapboxgl.Popup | null>(null);
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<mapboxgl.Map | null>(null);
+  const drawRef = useRef<MapboxDraw | null>(null);
+  const debounceRef = useRef<number | null>(null);
+  const popupRef = useRef<mapboxgl.Popup | null>(null);
   // Captured once in the load handler so all subsequent .setData() and
   // .getClusterExpansionZoom() calls are fully typed — no per-call cast needed.
-  const sourceRef        = useRef<mapboxgl.GeoJSONSource | null>(null);
+  const sourceRef = useRef<mapboxgl.GeoJSONSource | null>(null);
 
   // Keep polygon in a ref so the moveend closure always sees the latest value
   // without needing to re-register the event listener on each state change.
   const activePolygonRef = useRef<GeoJSON.Feature<GeoJSON.Polygon> | null>(null);
 
-  const [listings,      setListings]      = useState<Listing[]>(initialListings);
-  const [selectedId,    setSelectedId]    = useState<number | null>(null);
-  const [isLoading,     setIsLoading]     = useState<boolean>(false);
+  const [listings, setListings] = useState<Listing[]>(initialListings);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [activePolygon, setActivePolygon] = useState<GeoJSON.Feature<GeoJSON.Polygon> | null>(null);
-  const [isDrawing,     setIsDrawing]     = useState<boolean>(false);
+  const [isDrawing, setIsDrawing] = useState<boolean>(false);
 
   // ── Derived listing set ────────────────────────────────────────────────────
   // When a polygon is active, filter listings to those inside it.
@@ -273,41 +284,41 @@ export default function MapSearch({
   }, [displayedListings]);
 
   // ── Fetch listings for current viewport ───────────────────────────────────
-  const fetchForViewport = useCallback(async (
-    bounds: mapboxgl.LngLatBounds,
-    status: string
-  ): Promise<void> => {
-    setIsLoading(true);
-    try {
-      const url = new URL(`${apiBaseUrl}/api/listings/search`);
-      url.searchParams.set("minLat", bounds.getSouth().toFixed(5));
-      url.searchParams.set("maxLat", bounds.getNorth().toFixed(5));
-      url.searchParams.set("minLng", bounds.getWest().toFixed(5));
-      url.searchParams.set("maxLng", bounds.getEast().toFixed(5));
-      url.searchParams.set("status", status);
-      url.searchParams.set("size",   "200");
+  const fetchForViewport = useCallback(
+    async (bounds: mapboxgl.LngLatBounds, status: string): Promise<void> => {
+      setIsLoading(true);
+      try {
+        const url = new URL(`${apiBaseUrl}/api/listings/search`);
+        url.searchParams.set("minLat", bounds.getSouth().toFixed(5));
+        url.searchParams.set("maxLat", bounds.getNorth().toFixed(5));
+        url.searchParams.set("minLng", bounds.getWest().toFixed(5));
+        url.searchParams.set("maxLng", bounds.getEast().toFixed(5));
+        url.searchParams.set("status", status);
+        url.searchParams.set("size", "200");
 
-      // Keep URL shareable (bbox only — polygon is ephemeral client state)
-      const pageUrl = new URL(window.location.href);
-      pageUrl.searchParams.set("minLat", bounds.getSouth().toFixed(4));
-      pageUrl.searchParams.set("maxLat", bounds.getNorth().toFixed(4));
-      pageUrl.searchParams.set("minLng", bounds.getWest().toFixed(4));
-      pageUrl.searchParams.set("maxLng", bounds.getEast().toFixed(4));
-      window.history.replaceState({}, "", pageUrl);
+        // Keep URL shareable (bbox only — polygon is ephemeral client state)
+        const pageUrl = new URL(window.location.href);
+        pageUrl.searchParams.set("minLat", bounds.getSouth().toFixed(4));
+        pageUrl.searchParams.set("maxLat", bounds.getNorth().toFixed(4));
+        pageUrl.searchParams.set("minLng", bounds.getWest().toFixed(4));
+        pageUrl.searchParams.set("maxLng", bounds.getEast().toFixed(4));
+        window.history.replaceState({}, "", pageUrl);
 
-      const res  = await fetch(url.toString());
-      if (!res.ok) return;
-      const data = await res.json();
+        const res = await fetch(url.toString());
+        if (!res.ok) return;
+        const data = await res.json();
 
-      // setListings triggers useMemo → displayedListings recomputes →
-      // useEffect above syncs map markers. No manual source.setData needed here.
-      setListings(data.content as Listing[]);
-    } catch {
-      // Swallow fetch errors silently — map will retry on next moveend
-    } finally {
-      setIsLoading(false);
-    }
-  }, [apiBaseUrl]);
+        // setListings triggers useMemo → displayedListings recomputes →
+        // useEffect above syncs map markers. No manual source.setData needed here.
+        setListings(data.content as Listing[]);
+      } catch {
+        // Swallow fetch errors silently — map will retry on next moveend
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [apiBaseUrl],
+  );
 
   // ── Draw handlers ──────────────────────────────────────────────────────────
 
@@ -394,10 +405,10 @@ export default function MapSearch({
 
     map.on("load", () => {
       map.addSource("listings", {
-        type:           "geojson",
-        data:           listingsToGeoJSON(initialListings),
-        cluster:        true,
-        clusterRadius:  50,
+        type: "geojson",
+        data: listingsToGeoJSON(initialListings),
+        cluster: true,
+        clusterRadius: 50,
         clusterMaxZoom: 14,
       });
       // Capture the typed source once. getSource() returns AnySourceImpl;
@@ -405,46 +416,52 @@ export default function MapSearch({
       sourceRef.current = map.getSource("listings") as mapboxgl.GeoJSONSource;
 
       map.addLayer({
-        id: "clusters", type: "circle", source: "listings",
+        id: "clusters",
+        type: "circle",
+        source: "listings",
         filter: ["has", "point_count"],
         paint: {
-          "circle-color": ["step", ["get", "point_count"],
-            "#3b82f6", 5, "#1d4ed8", 20, "#1e3a8a"],
-          "circle-radius": ["step", ["get", "point_count"],
-            18, 5, 24, 20, 32],
+          "circle-color": ["step", ["get", "point_count"], "#3b82f6", 5, "#1d4ed8", 20, "#1e3a8a"],
+          "circle-radius": ["step", ["get", "point_count"], 18, 5, 24, 20, 32],
           "circle-stroke-width": 2,
           "circle-stroke-color": "#ffffff",
         },
       });
 
       map.addLayer({
-        id: "cluster-count", type: "symbol", source: "listings",
+        id: "cluster-count",
+        type: "symbol",
+        source: "listings",
         filter: ["has", "point_count"],
         layout: {
           "text-field": "{point_count_abbreviated}",
-          "text-font":  ["DIN Offc Pro Medium", "Arial Unicode MS Bold"],
-          "text-size":  12,
+          "text-font": ["DIN Offc Pro Medium", "Arial Unicode MS Bold"],
+          "text-size": 12,
         },
         paint: { "text-color": "#ffffff" },
       });
 
       map.addLayer({
-        id: "unclustered-point", type: "circle", source: "listings",
+        id: "unclustered-point",
+        type: "circle",
+        source: "listings",
         filter: ["!", ["has", "point_count"]],
         paint: {
-          "circle-color":        "#2563eb",
-          "circle-radius":       8,
+          "circle-color": "#2563eb",
+          "circle-radius": 8,
           "circle-stroke-width": 2,
           "circle-stroke-color": "#ffffff",
         },
       });
 
       map.addLayer({
-        id: "selected-point", type: "circle", source: "listings",
+        id: "selected-point",
+        type: "circle",
+        source: "listings",
         filter: ["==", ["get", "id"], ""],
         paint: {
-          "circle-color":        "#dc2626",
-          "circle-radius":       11,
+          "circle-color": "#dc2626",
+          "circle-radius": 11,
           "circle-stroke-width": 2,
           "circle-stroke-color": "#ffffff",
         },
@@ -460,7 +477,7 @@ export default function MapSearch({
               const coords = feature.geometry.coordinates;
               map.easeTo({ center: [coords[0], coords[1]], zoom });
             }
-          }
+          },
         );
       });
 
@@ -474,9 +491,11 @@ export default function MapSearch({
           .addTo(map);
       });
 
-      const setCursor = (c: string) => () => { map.getCanvas().style.cursor = c; };
-      map.on("mouseenter", "clusters",          setCursor("pointer"));
-      map.on("mouseleave", "clusters",          setCursor(""));
+      const setCursor = (c: string) => () => {
+        map.getCanvas().style.cursor = c;
+      };
+      map.on("mouseenter", "clusters", setCursor("pointer"));
+      map.on("mouseleave", "clusters", setCursor(""));
       map.on("mouseenter", "unclustered-point", setCursor("pointer"));
       map.on("mouseleave", "unclustered-point", setCursor(""));
     });
@@ -503,8 +522,8 @@ export default function MapSearch({
     mapRef.current.setFilter("selected-point", ["==", ["get", "id"], String(listing.id)]);
     mapRef.current.flyTo({
       center: [listing.longitude!, listing.latitude],
-      zoom:   Math.max(mapRef.current.getZoom(), 14),
-      speed:  1.2,
+      zoom: Math.max(mapRef.current.getZoom(), 14),
+      speed: 1.2,
     });
   }, []);
 
@@ -516,8 +535,8 @@ export default function MapSearch({
         <div className="bg-white border border-red-200 rounded-lg p-8 max-w-md text-center shadow">
           <div className="text-red-600 font-semibold mb-2">Mapbox token missing</div>
           <p className="text-sm text-slate-600">
-            Add <code className="bg-slate-100 px-1 rounded">PUBLIC_MAPBOX_TOKEN=pk.your-token</code> to
-            {" "}<code className="bg-slate-100 px-1 rounded">sawicki-group-web/.env.local</code> and
+            Add <code className="bg-slate-100 px-1 rounded">PUBLIC_MAPBOX_TOKEN=pk.your-token</code>{" "}
+            to <code className="bg-slate-100 px-1 rounded">sawicki-group-web/.env.local</code> and
             restart the dev server.
           </p>
         </div>
@@ -527,17 +546,16 @@ export default function MapSearch({
 
   return (
     <div className="flex" style={{ height: "calc(100vh - 5rem)" }}>
-
       {/* ── Sidebar ──────────────────────────────────────────────────────── */}
       <div className="w-96 flex-shrink-0 flex flex-col border-r border-stone-200 bg-white">
         <div className="flex-shrink-0 px-4 py-3 border-b border-stone-100">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-slate-700">
-              {isLoading ? "Searching…" : (
-                activePolygon
+              {isLoading
+                ? "Searching…"
+                : activePolygon
                   ? `${displayedListings.length} of ${listings.length} in drawn area`
-                  : `${listings.length} listing${listings.length !== 1 ? "s" : ""} in view`
-              )}
+                  : `${listings.length} listing${listings.length !== 1 ? "s" : ""} in view`}
             </span>
             <a href="/search" className="text-xs text-blue-600 hover:text-blue-700">
               Filter view →
@@ -570,18 +588,19 @@ export default function MapSearch({
 
         {/* ── Draw controls — top-left, opposite NavigationControl ───────── */}
         <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5">
-
           {/* Three-state button: idle / drawing / polygon-active */}
           <button
             onClick={isDrawing ? cancelDraw : activePolygon ? clearPolygon : startDraw}
             className={`
               px-3 py-1.5 rounded text-sm font-medium shadow-md border
               transition-colors whitespace-nowrap
-              ${isDrawing
-                ? "bg-red-500 text-white border-red-600 hover:bg-red-600"
-                : activePolygon
-                ? "bg-blue-600 text-white border-blue-700 hover:bg-blue-700"
-                : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50"}
+              ${
+                isDrawing
+                  ? "bg-red-500 text-white border-red-600 hover:bg-red-600"
+                  : activePolygon
+                    ? "bg-blue-600 text-white border-blue-700 hover:bg-blue-700"
+                    : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50"
+              }
             `}
           >
             {isDrawing ? "Cancel" : activePolygon ? "Clear Area" : "Draw Area"}
@@ -590,10 +609,11 @@ export default function MapSearch({
           {/* Instruction pill — only visible while user is actively drawing */}
           {isDrawing && (
             <div className="bg-white/95 text-slate-600 text-xs px-2.5 py-1.5 rounded shadow border border-slate-200 leading-snug">
-              Click to place points.<br />Double-click to finish.
+              Click to place points.
+              <br />
+              Double-click to finish.
             </div>
           )}
-
         </div>
 
         {/* Loading overlay */}
@@ -603,7 +623,6 @@ export default function MapSearch({
           </div>
         )}
       </div>
-
     </div>
   );
 }

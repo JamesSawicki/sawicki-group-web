@@ -31,9 +31,9 @@ export interface Listing {
   // Location
   address: string;
   city: string;
-  postalCity?: string;   // Mailing city (RESO PostalCity) — often differs from
-                         // `city` in rural MN (which can be a township). Preferred
-                         // for SEO slugs. Already serialized by the API.
+  postalCity?: string; // Mailing city (RESO PostalCity) — often differs from
+  // `city` in rural MN (which can be a township). Preferred
+  // for SEO slugs. Already serialized by the API.
   zipCode?: string;
   county?: string;
   neighborhood?: string;
@@ -153,8 +153,8 @@ export interface Page<T> {
   content: T[];
   totalElements: number;
   totalPages: number;
-  number: number;          // current page (0-indexed)
-  size: number;            // page size requested
+  number: number; // current page (0-indexed)
+  size: number; // page size requested
   first: boolean;
   last: boolean;
   numberOfElements: number; // results on this page (may be less than size on last page)

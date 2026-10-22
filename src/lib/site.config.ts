@@ -13,8 +13,8 @@ export const siteConfig = {
     title: "REALTOR®",
     licenseText: "Licensed in Minnesota",
     email: "jsawicki@CBRealty.com",
-    phone: "9522121586",                      // digits only, e.g. "6125550100" (used in tel: links)
-    phoneDisplay: "(952) 212-1586",               // formatted, e.g. "(612) 555-0100" (used in display)
+    phone: "9522121586", // digits only, e.g. "6125550100" (used in tel: links)
+    phoneDisplay: "(952) 212-1586", // formatted, e.g. "(612) 555-0100" (used in display)
   },
 
   brokerage: {

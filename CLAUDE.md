@@ -5,6 +5,7 @@ and Tailwind. Listing pages are server-rendered from `listing-agent-api`; blog p
 Markdown content collections, drafted weekly by `sawicki-blog-agent`.
 
 ## ⚠️ Deploys
+
 - **Work happens on `dev`** (tracks `origin/dev`); commit and push there freely. `main` is
   the deploy branch and only moves at go-live, with Jim's explicit go-ahead.
 - **Pushing to `main` deploys to Cloud Run** (Cloud Build trigger `sawicki-group-web-main`).
@@ -19,15 +20,18 @@ Markdown content collections, drafted weekly by `sawicki-blog-agent`.
   same window as the matching `listing-agent-api` change.
 
 ## Run locally
+
 ```bash
 npm run dev      # http://localhost:4321 — needs the API running (see listing-agent-api)
 npm run build    # local production build; does not deploy
 ```
+
 - Restart `npm run dev` after editing `.env.local` (Vite reads it once at startup).
 - Env vars: `PUBLIC_API_BASE_URL`, `PUBLIC_MAPBOX_TOKEN`, `PUBLIC_CF_IMAGES_ACCOUNT_HASH`
   (`.env.local`); `RESEND_API_KEY` for the contact form. Never commit `.env*`.
 
 ## Conventions
+
 - **Env access in SSR code:** `process.env.X || import.meta.env.X` (Cloud Run sets
   `process.env` at runtime; dev falls back to Vite's `import.meta.env`).
 - **API calls from SSR pages** go through `fetchWithTimeout` in `src/lib/api.ts`. A 404 from
@@ -51,6 +55,7 @@ npm run build    # local production build; does not deploy
   that to `false`.
 
 ## Code organization and comments
+
 Goal: any file can be read top to bottom and understood without outside context.
 
 **Pages are thin; sections are components.** A page does routing, data fetching, redirects
@@ -61,6 +66,7 @@ is reused; extract a repeated markup pattern into a small helper component (e.g.
 `DetailRow.astro`) instead of copy-pasting it.
 
 **Every `.astro` file follows the same layout:**
+
 1. **Header block** (TSDoc `/** ... */`, 3–6 lines): what the file renders and any
    non-obvious decision. Don't list "used by" — it goes stale; use Find All References.
 2. **`interface Props`** with a TSDoc line on each prop.
@@ -78,11 +84,13 @@ it changes — a stale comment is worse than none.
 VS Code shows these on hover.
 
 **Formatting and linting** (run before committing):
+
 ```bash
 npm run format    # Prettier (incl. .astro) — rewrites files
 npm run lint      # ESLint (TypeScript, Astro, TSDoc checks) — warnings are to-dos, errors must be fixed
 ```
 
 ## More context
+
 Cross-repo identifiers, URLs and env var details: `../cowork-context/project-identifiers_6-6-26.md`.
 Keep this file current: when a convention or workflow changes, update it in the same change.

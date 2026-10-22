@@ -26,11 +26,11 @@ try {
   url.searchParams.set("minLng", String(minLng));
   url.searchParams.set("maxLng", String(maxLng));
   url.searchParams.set("status", status);
-  url.searchParams.set("size",   "200");
+  url.searchParams.set("size", "200");
 
   const res = await fetchWithTimeout(url.toString());
   if (res.ok) {
-    const data = await res.json() as Page<Listing>;
+    const data = (await res.json()) as Page<Listing>;
     initialListings = data.content;
   }
 } catch (_) {
@@ -39,10 +39,7 @@ try {
 }
 ---
 
-<Layout
-  title="Map Search"
-  description="Search Twin Cities homes for sale on an interactive map."
->
+<Layout title="Map Search" description="Search Twin Cities homes for sale on an interactive map.">
   <MapSearch
     client:load
     initialListings={initialListings as any}

@@ -17,13 +17,7 @@
  * the request Accept header — no URL params required.
  */
 
-export type PhotoVariant =
-  | "thumb"
-  | "card"
-  | "heroMobile"
-  | "heroDesktop"
-  | "mosaic"
-  | "lightbox";
+export type PhotoVariant = "thumb" | "card" | "heroMobile" | "heroDesktop" | "mosaic" | "lightbox";
 
 /**
  * Builds a Cloudflare Images delivery URL.
@@ -65,11 +59,7 @@ export function parsePhotoIds(json: string | null | undefined): string[] {
     return parsed
       .map((v): string | null => {
         if (typeof v === "string" && v.length > 0) return v;
-        if (
-          v &&
-          typeof v === "object" &&
-          typeof (v as Record<string, unknown>).cfId === "string"
-        ) {
+        if (v && typeof v === "object" && typeof (v as Record<string, unknown>).cfId === "string") {
           return (v as { cfId: string }).cfId;
         }
         return null;
@@ -91,16 +81,17 @@ export interface VirtualTourLink {
   label: string;
 }
 
-export function parseVirtualTourUrls(
-  json: string | null | undefined,
-): VirtualTourLink[] {
+export function parseVirtualTourUrls(json: string | null | undefined): VirtualTourLink[] {
   if (!json) return [];
   try {
     const parsed = JSON.parse(json);
     if (!Array.isArray(parsed)) return [];
     return parsed
-      .filter((v): v is { url?: unknown; provider?: unknown; label?: unknown } =>
-        typeof v === "object" && v !== null && typeof (v as Record<string, unknown>).url === "string",
+      .filter(
+        (v): v is { url?: unknown; provider?: unknown; label?: unknown } =>
+          typeof v === "object" &&
+          v !== null &&
+          typeof (v as Record<string, unknown>).url === "string",
       )
       .map((v) => ({
         url: String(v.url),

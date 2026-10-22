@@ -82,11 +82,7 @@ export default function PhotoGallery({
       </div>
     );
   }
-  if (
-    photoIds.length === 0 &&
-    floorPlanIds.length === 0 &&
-    virtualTourUrls.length === 0
-  ) {
+  if (photoIds.length === 0 && floorPlanIds.length === 0 && virtualTourUrls.length === 0) {
     return (
       <div className="aspect-[16/9] bg-stone-100 rounded-xl flex items-center justify-center text-stone-400 text-sm">
         Photos coming soon
@@ -158,16 +154,13 @@ export default function PhotoGallery({
             </button>
           ) : (
             <div key={i} className="bg-stone-100" />
-          )
+          ),
         )}
       </div>
 
       {/* ── Mobile carousel ─────────────────────────────────────────────── */}
       <div className="md:hidden">
-        <div
-          className="overflow-hidden rounded-xl aspect-[4/3] bg-stone-200"
-          ref={emblaRef}
-        >
+        <div className="overflow-hidden rounded-xl aspect-[4/3] bg-stone-200" ref={emblaRef}>
           <div className="flex h-full">
             {photoIds.map((id, i) => (
               <div key={id} className="min-w-full h-full">
@@ -203,7 +196,14 @@ export default function PhotoGallery({
             onClick={() => openLightbox("photos", 0)}
             className="inline-flex items-center gap-1.5 text-sm px-3 py-1.5 bg-stone-100 hover:bg-stone-200 rounded-lg transition-colors"
           >
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+            <svg
+              className="w-4 h-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              aria-hidden="true"
+            >
               <rect x="3" y="3" width="7" height="7" rx="1" />
               <rect x="14" y="3" width="7" height="7" rx="1" />
               <rect x="3" y="14" width="7" height="7" rx="1" />
@@ -219,7 +219,14 @@ export default function PhotoGallery({
             onClick={() => openLightbox("floorPlans", 0)}
             className="inline-flex items-center gap-1.5 text-sm px-3 py-1.5 bg-stone-100 hover:bg-stone-200 rounded-lg transition-colors"
           >
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+            <svg
+              className="w-4 h-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              aria-hidden="true"
+            >
               <rect x="3" y="3" width="18" height="18" rx="1" />
               <path d="M3 12h18M12 3v18" />
             </svg>
@@ -235,7 +242,14 @@ export default function PhotoGallery({
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 text-sm px-3 py-1.5 bg-stone-100 hover:bg-stone-200 rounded-lg transition-colors"
           >
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+            <svg
+              className="w-4 h-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              aria-hidden="true"
+            >
               <path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               <path d="M3.6 9h16.8M3.6 15h16.8M12 3a14 14 0 010 18M12 3a14 14 0 000 18" />
             </svg>

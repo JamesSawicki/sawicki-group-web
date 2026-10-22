@@ -133,9 +133,7 @@ export function statusLabel(status: string | undefined): string {
  */
 export function formatMoneyString(value: string | number | null | undefined): string {
   if (value == null || value === "") return "—";
-  const n = typeof value === "number"
-    ? value
-    : parseFloat(value.replace(/[^0-9.-]/g, ""));
+  const n = typeof value === "number" ? value : parseFloat(value.replace(/[^0-9.-]/g, ""));
   if (Number.isNaN(n)) return `$${value}`;
   return `$${n.toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
 }
@@ -147,12 +145,18 @@ export function formatMoneyString(value: string | number | null | undefined): st
 export function statusBadgeClasses(status: string | undefined): string {
   const base = "inline-block px-2 py-1 text-xs font-semibold rounded";
   switch (status) {
-    case "Active":      return `${base} bg-green-100 text-green-800`;
-    case "Pending":     return `${base} bg-amber-100 text-amber-800`;
-    case "Coming Soon": return `${base} bg-purple-100 text-purple-800`;
-    case "TNAS":        return `${base} bg-red-100 text-red-800`;
-    case "Sold":        return `${base} bg-slate-200 text-slate-700`;
-    default:            return `${base} bg-slate-100 text-slate-600`;
+    case "Active":
+      return `${base} bg-green-100 text-green-800`;
+    case "Pending":
+      return `${base} bg-amber-100 text-amber-800`;
+    case "Coming Soon":
+      return `${base} bg-purple-100 text-purple-800`;
+    case "TNAS":
+      return `${base} bg-red-100 text-red-800`;
+    case "Sold":
+      return `${base} bg-slate-200 text-slate-700`;
+    default:
+      return `${base} bg-slate-100 text-slate-600`;
   }
 }
 
@@ -168,7 +172,7 @@ export function parseRooms(roomInfo: string | undefined): Room[] {
   if (!roomInfo) return [];
   try {
     const parsed = JSON.parse(roomInfo);
-    return Array.isArray(parsed) ? parsed as Room[] : [];
+    return Array.isArray(parsed) ? (parsed as Room[]) : [];
   } catch {
     return [];
   }
@@ -231,12 +235,12 @@ export function categoryLabel(jsonKey: string): string {
 }
 /**
  * Function to strip the three letter MLS identifier off of the mlsId
- * @param mlsId 
- * @returns 
+ * @param mlsId
+ * @returns
  */
 export function formatMlsId(mlsId: string | null | undefined): string {
-  if (!mlsId) return '';
-  return mlsId.replace(/^[A-Z]+/, '');
+  if (!mlsId) return "";
+  return mlsId.replace(/^[A-Z]+/, "");
 }
 
 /**
@@ -312,7 +316,7 @@ export function subtypeLabel(subtype: string): string {
 export function slugify(input: string): string {
   return input
     .normalize("NFKD")
-    .replace(/[̀-ͯ]/g, "")   // strip combining diacritical marks
+    .replace(/[̀-ͯ]/g, "") // strip combining diacritical marks
     .toLowerCase()
     .replace(/\bsaint\b/g, "st")
     .replace(/&/g, " and ")
