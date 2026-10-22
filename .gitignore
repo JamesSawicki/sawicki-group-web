@@ -26,3 +26,6 @@ pnpm-debug.log*
 # other crap
 .firebase/# editor settings (personal)
 .vscode/
+
+# responsive audit screenshots (npm run audit:mobile)
+.audit/

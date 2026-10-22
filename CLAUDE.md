@@ -90,6 +90,23 @@ npm run format    # Prettier (incl. .astro) — rewrites files
 npm run lint      # ESLint (TypeScript, Astro, TSDoc checks) — warnings are to-dos, errors must be fixed
 ```
 
+## Responsive design (every change must work on a phone)
+Many visitors browse on phones, and map search is the primary way people look for homes.
+- **Mobile-first Tailwind.** Unprefixed classes describe the phone layout; add `sm:` (640px),
+  `md:` (768px), `lg:` (1024px) for wider screens. A multi-column grid is
+  `grid-cols-1 md:grid-cols-3`, never a bare `grid-cols-3` (short stat grids excepted).
+- **No fixed widths without a breakpoint.** `w-96`, `min-w-[...]` or a fixed `height` must be
+  scoped (`lg:w-96`), or the page gets wider than a 375px screen.
+- **Tap targets ≥ 44px tall** for anything a thumb hits (nav, buttons, list rows); text links
+  get padding (`py-2`) for a taller hit area. Text no smaller than 12px (`text-xs`).
+- **Patterns in use:** header links move into a dropdown below `md` (`Header.astro`); map
+  search shows the map first with listings underneath below `lg` (`MapSearch.tsx`); search
+  filters collapse behind a "Filters" button below `lg` (`search.astro`).
+- **Check it:** `npm run audit:mobile` (with `npm run dev` running) loads every main page at
+  375 / 768 / 1280px, fails on any page wider than the screen, reports small tap targets and
+  text, and saves phone screenshots to `.audit/`. For a quick look, Chrome DevTools device
+  mode: F12, then Ctrl+Shift+M.
+
 ## More context
 
 Cross-repo identifiers, URLs and env var details: `../cowork-context/project-identifiers_6-6-26.md`.

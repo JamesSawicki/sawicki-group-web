@@ -37,6 +37,20 @@ export default [
     },
   },
 
+  // Node scripts (scripts/): Node globals, plus browser globals used inside Playwright's
+  // page.evaluate() callbacks, which run in the page.
+  {
+    files: ["scripts/**/*.mjs"],
+    languageOptions: {
+      globals: {
+        process: "readonly",
+        console: "readonly",
+        document: "readonly",
+        getComputedStyle: "readonly",
+      },
+    },
+  },
+
   // Project-wide relaxations: surface as to-dos rather than failures.
   {
     rules: {
