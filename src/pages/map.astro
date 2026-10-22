@@ -5,6 +5,7 @@ import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
 import Layout from "../layouts/Layout.astro";
 import MapSearch from "../components/MapSearch.tsx";
 import type { Listing, Page } from "../types/listing";
+import { fetchWithTimeout } from "../lib/api";
 
 const apiBase = process.env.PUBLIC_API_BASE_URL || import.meta.env.PUBLIC_API_BASE_URL;
 const mapboxToken = process.env.PUBLIC_MAPBOX_TOKEN || import.meta.env.PUBLIC_MAPBOX_TOKEN;
@@ -27,12 +28,15 @@ try {
   url.searchParams.set("status", status);
   url.searchParams.set("size",   "200");
 
-  const res = await fetch(url.toString());
+  const res = await fetchWithTimeout(url.toString());
   if (res.ok) {
     const data = await res.json() as Page<Listing>;
     initialListings = data.content;
   }
-} catch (_) {}
+} catch (_) {
+  // Non-fatal: the map still renders with no pins and refetches client-side
+  // as the user pans. A hanging API no longer stalls the SSR response.
+}
 ---
 
 <Layout

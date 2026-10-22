@@ -2,12 +2,12 @@
 import Layout from "../layouts/Layout.astro";
 import ListingCard from "../components/ListingCard.astro";
 import type { Listing, Page } from "../types/listing";
+import { fetchWithTimeout } from "../lib/api";
 
 // ---------------------------------------------------------------------------
 // 1. PARSE URL PARAMS
 // ---------------------------------------------------------------------------
 const params = Astro.url.searchParams;
-console.log("DEBUG search.astro apiBase=", JSON.stringify(process.env.PUBLIC_API_BASE_URL));
 const filterStatus      = params.get("status")        ?? "Active";
 const filterMinPrice    = params.get("minPrice")       ?? "";
 const filterMaxPrice    = params.get("maxPrice")       ?? "";
@@ -39,8 +39,7 @@ if (!apiBase) {
     "In production: confirm Cloud Run has the env var set via cloudbuild.yaml --update-env-vars."
   );
 }
-const url = new URL(`${apiBase}/api/listings/search`);
-const apiUrl  = new URL(`${apiBase}/api/listings/search`);
+const apiUrl = new URL(`${apiBase}/api/listings/search`);
 
 for (const [key, value] of params.entries()) {
   // Skip empty strings — they add noise to the API call and can confuse
@@ -57,7 +56,7 @@ let results: Page<Listing> | null = null;
 let fetchError: string | null = null;
 
 try {
-  const res = await fetch(apiUrl.toString());
+  const res = await fetchWithTimeout(apiUrl.toString());
   if (!res.ok) {
     fetchError = `API returned ${res.status} ${res.statusText}`;
   } else {

@@ -1,0 +1,41 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+// In SSR, Astro serves this route for unmatched URLs. It is ALSO rendered
+// explicitly via `Astro.rewrite("/404")` from dynamic pages (e.g. a listing id
+// that doesn't exist). In both cases we want a real 404 status, not 200, so
+// crawlers and monitoring treat it correctly.
+Astro.response.status = 404;
+---
+
+<Layout
+  title="Page not found"
+  description="The page you were looking for could not be found."
+>
+  <div class="max-w-2xl mx-auto px-6 py-32 text-center">
+    <p class="text-sm font-semibold text-amber-700 uppercase tracking-widest mb-4">
+      404
+    </p>
+    <h1 class="text-3xl font-semibold text-stone-900 mb-4">
+      We couldn't find that page
+    </h1>
+    <p class="text-stone-500 mb-10 leading-relaxed">
+      The listing or page you were looking for may have been sold, removed, or
+      never existed. Let's get you back on track.
+    </p>
+    <div class="flex gap-3 justify-center">
+      <a
+        href="/listings"
+        class="bg-stone-900 text-white px-6 py-3 rounded-lg hover:bg-stone-700 transition-colors font-medium text-sm"
+      >
+        Browse listings
+      </a>
+      <a
+        href="/contact"
+        class="border border-stone-300 text-stone-700 px-6 py-3 rounded-lg hover:border-stone-500 transition-colors font-medium text-sm"
+      >
+        Contact us
+      </a>
+    </div>
+  </div>
+</Layout>
