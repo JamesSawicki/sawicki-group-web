@@ -44,15 +44,37 @@ export function photoUrl(
 }
 
 /**
- * Parses Listing.photoIds / Listing.floorPlanIds — a JSON array of CF Image IDs.
- * Returns [] on null, empty, or malformed input. Never throws.
+ * Parses Listing.photoIds / Listing.floorPlanIds and returns just the
+ * Cloudflare Image IDs in display order. Returns [] on null/empty/malformed.
+ *
+ * Recognizes BOTH storage formats:
+ *   - Current (MLS Grid Rule 11 compliant):
+ *       [{"key":"NST75326957","cfId":"abc123"}, ...]
+ *   - Legacy (pre-June 2026):
+ *       ["abc123","def456", ...]
+ *
+ * Frontend callers only care about the CF Image IDs (to build delivery URLs),
+ * so we collapse both formats to a flat `string[]`. The MediaKey is preserved
+ * server-side for diffing on the next ingestion.
  */
 export function parsePhotoIds(json: string | null | undefined): string[] {
   if (!json) return [];
   try {
     const parsed = JSON.parse(json);
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter((v): v is string => typeof v === "string" && v.length > 0);
+    return parsed
+      .map((v): string | null => {
+        if (typeof v === "string" && v.length > 0) return v;
+        if (
+          v &&
+          typeof v === "object" &&
+          typeof (v as Record<string, unknown>).cfId === "string"
+        ) {
+          return (v as { cfId: string }).cfId;
+        }
+        return null;
+      })
+      .filter((v): v is string => v !== null && v.length > 0);
   } catch {
     return [];
   }
