@@ -179,6 +179,18 @@ export function parseRooms(roomInfo: string | undefined): Room[] {
 }
 
 // -------------------------------------------------------------------
+// PRESENCE CHECKS
+// -------------------------------------------------------------------
+
+/**
+ * True when a numeric field has a real, positive value. Use it instead of
+ * `{value && ...}` in templates: with a 0, `&&` renders a literal "0".
+ */
+export function isPositive(value: number | null | undefined): value is number {
+  return typeof value === "number" && value > 0;
+}
+
+// -------------------------------------------------------------------
 // LIST-VALUED FIELDS
 //
 // Many RESO fields are multi-valued (Heating, Basement, Appliances, ...). The API

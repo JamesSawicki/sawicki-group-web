@@ -13,6 +13,7 @@ import {
   formatPrice,
   formatSqft,
   hasPriceReduction,
+  isPositive,
   statusBadgeClasses,
   statusLabel,
 } from "../../lib/listing-utils";
@@ -73,10 +74,8 @@ const cityLine = listing.city
   </div>
 
   {/* ── Key stats bar ── */}
-  {/* Note: `listing.beds && ...` (and sqft/lot/year) renders a literal "0" when the value
-      is 0 — known quirk, kept as-is in the component split. */}
   <div class="flex flex-wrap gap-6 mt-6 text-sm text-stone-700">
-    {listing.beds && (
+    {isPositive(listing.beds) && (
       <div>
         <span class="font-semibold text-stone-900">{listing.beds}</span> Beds
       </div>
@@ -86,12 +85,12 @@ const cityLine = listing.city
         <span class="font-semibold text-stone-900">{bathDisplay}</span> Baths
       </div>
     )}
-    {listing.sqftTotal && (
+    {isPositive(listing.sqftTotal) && (
       <div>
         <span class="font-semibold text-stone-900">{sqftDisplay}</span> Sqft
       </div>
     )}
-    {listing.lotSqft && (
+    {isPositive(listing.lotSqft) && (
       <div>
         <span class="font-semibold text-stone-900">{lotDisplay}</span> Lot
       </div>
@@ -101,12 +100,12 @@ const cityLine = listing.city
         <span class="font-semibold text-stone-900">{listing.style}</span>
       </div>
     )}
-    {listing.yearBuilt && (
+    {isPositive(listing.yearBuilt) && (
       <div>
         Built <span class="font-semibold text-stone-900">{listing.yearBuilt}</span>
       </div>
     )}
-    {listing.garageStalls != null && (
+    {isPositive(listing.garageStalls) && (
       <div>
         <span class="font-semibold text-stone-900">{listing.garageStalls}</span> Car Garage
       </div>

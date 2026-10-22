@@ -2,7 +2,7 @@
 /** Annual taxes (with and without assessments), lot size, and financing terms. */
 // ─── Imports ─────────────────────────────────────────────────────────────────
 import type { Listing } from "../../types/listing";
-import { formatLot, formatMoneyString } from "../../lib/listing-utils";
+import { formatLot, formatMoneyString, isPositive } from "../../lib/listing-utils";
 
 // ─── Props ───────────────────────────────────────────────────────────────────
 interface Props {
@@ -16,6 +16,7 @@ const { listing } = Astro.props;
 // taxWithAssessments is a decimal string from MLS ("1069.0400"); taxAmount is whole
 // dollars. Only worth a second line when assessments actually change the number.
 const taxWithAssessments = Number(listing.taxWithAssessments);
+const taxLabel = listing.taxYear ? `Annual Taxes (${listing.taxYear})` : "Annual Taxes";
 const showTaxWithAssessments =
   taxWithAssessments > 0 && Math.round(taxWithAssessments) !== listing.taxAmount;
 ---
@@ -23,9 +24,9 @@ const showTaxWithAssessments =
 <div>
   <h2 class="text-lg font-semibold text-stone-900 mb-3">Financial Details</h2>
   <div class="grid grid-cols-2 gap-4 text-sm">
-    {listing.taxAmount && (
+    {isPositive(listing.taxAmount) && (
       <div>
-        <div class="text-stone-400 mb-0.5">Annual Taxes ({listing.taxYear})</div>
+        <div class="text-stone-400 mb-0.5">{taxLabel}</div>
         <div class="font-medium text-stone-800">{formatMoneyString(listing.taxAmount)}</div>
       </div>
     )}
@@ -37,7 +38,7 @@ const showTaxWithAssessments =
         </div>
       </div>
     )}
-    {listing.lotSqft && (
+    {isPositive(listing.lotSqft) && (
       <div>
         <div class="text-stone-400 mb-0.5">Lot Size</div>
         <div class="font-medium text-stone-800">{formatLot(listing.lotSqft)}</div>

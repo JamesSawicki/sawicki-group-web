@@ -8,6 +8,7 @@ import {
   statusBadgeClasses,
   statusLabel,
   formatMlsId,
+  isPositive,
   listingPath,
 } from "../../lib/listing-utils";
 import { fetchWithTimeout } from "../../lib/api";
@@ -153,13 +154,13 @@ try {
 
           {/* Key stats */}
           <div class="flex flex-wrap gap-4 text-sm text-stone-600 mb-3">
-            {listing.beds && (
+            {isPositive(listing.beds) && (
               <span>
                 {listing.beds} {listing.beds === 1 ? "bed" : "beds"}
               </span>
             )}
             {listing.bathsFull != null && <span>{formatBathTotal(listing)} bath</span>}
-            {listing.sqftTotal && <span>{formatSqft(listing.sqftTotal)} sqft</span>}
+            {isPositive(listing.sqftTotal) && <span>{formatSqft(listing.sqftTotal)} sqft</span>}
             {listing.style && <span>· {listing.style}</span>}
           </div>
 

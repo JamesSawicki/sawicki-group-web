@@ -5,7 +5,7 @@
  */
 // ─── Imports ─────────────────────────────────────────────────────────────────
 import type { Listing } from "../../types/listing";
-import { formatList, formatSqft } from "../../lib/listing-utils";
+import { formatList, formatSqft, isPositive } from "../../lib/listing-utils";
 import DetailRow from "./DetailRow.astro";
 
 // ─── Props ───────────────────────────────────────────────────────────────────
@@ -41,7 +41,7 @@ const fireplaceDisplay = listing.fireplaceFeatures
     {(listing.fireplaces ?? 0) > 0 && <DetailRow label="Fireplaces">{fireplaceDisplay}</DetailRow>}
     {listing.laundryFeatures && <DetailRow label="Laundry">{listing.laundryFeatures}</DetailRow>}
     {parking && <DetailRow label="Parking">{parking}</DetailRow>}
-    {listing.garageSqft && (
+    {isPositive(listing.garageSqft) && (
       <DetailRow label="Garage Sqft" longValue={false}>
         {formatSqft(listing.garageSqft)}
       </DetailRow>
