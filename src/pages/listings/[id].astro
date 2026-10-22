@@ -38,7 +38,6 @@ import {
   parseListingId,
 } from "../../lib/listing-utils";
 import { parsePhotoIds, parseVirtualTourUrls } from "../../lib/photo-utils";
-import { site } from "../../lib/site.config";
 import { fetchWithTimeout, serviceUnavailableResponse } from "../../lib/api";
 
 // CSS for React islands is imported here in the .astro frontmatter, not inside the island,
@@ -160,9 +159,10 @@ const appliancesList = parseList(listing.appliances);
 const amenitiesList = parseList(listing.amenities);
 ---
 
+{/* IDX: the description names the actual listing brokerage, never The Sawicki Group. */}
 <Layout
   title={`${listing.address} — ${priceDisplay}`}
-  description={`${listing.beds ?? ""} bed, ${bathDisplay} bath ${formatLevels(listing.style) || "home"} in ${listing.neighborhood ?? listing.city}. ${sqftDisplay} sqft. Listed at ${priceDisplay} by ${site.name}.`}
+  description={`${listing.beds ?? ""} bed, ${bathDisplay} bath ${formatLevels(listing.style) || "home"} in ${listing.neighborhood ?? listing.city}. ${sqftDisplay} sqft. Listed at ${priceDisplay}${listing.listOfficeName ? ` by ${listing.listOfficeName.replace(/\.$/, "")}` : ""}.`}
   jsonLd={jsonLd}
   canonical={canonicalUrl}
 >
