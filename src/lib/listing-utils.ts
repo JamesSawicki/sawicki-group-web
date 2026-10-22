@@ -179,6 +179,53 @@ export function parseRooms(roomInfo: string | undefined): Room[] {
 }
 
 // -------------------------------------------------------------------
+// LIST-VALUED FIELDS
+//
+// Many RESO fields are multi-valued (Heating, Basement, Appliances, ...). The API
+// stores them as a JSON array string: '["Forced Air","Radiant Floor"]'. A few
+// older/other fields are plain comma-separated text. These helpers accept both,
+// so templates never show raw JSON.
+// -------------------------------------------------------------------
+
+/**
+ * Splits a list-valued listing field into its items.
+ *
+ * @param value - a JSON array string ('["Full","Walkout"]') or comma-separated text
+ *   ("Full, Walkout"); null, empty or malformed input yields `[]`.
+ * @returns the non-empty, trimmed items in their original order.
+ */
+export function parseList(value: string | null | undefined): string[] {
+  if (!value) return [];
+  const trimmed = value.trim();
+  if (trimmed.startsWith("[")) {
+    try {
+      const parsed: unknown = JSON.parse(trimmed);
+      if (Array.isArray(parsed)) {
+        return parsed
+          .filter((v): v is string => typeof v === "string")
+          .map((v) => v.trim())
+          .filter(Boolean);
+      }
+    } catch {
+      // Not valid JSON after all — fall through to comma-splitting.
+    }
+  }
+  return trimmed
+    .split(",")
+    .map((v) => v.trim())
+    .filter(Boolean);
+}
+
+/**
+ * Formats a list-valued listing field for display, e.g. '["Full","Walkout"]' →
+ * "Full, Walkout". Returns "" when there's nothing to show, so it works directly in
+ * `{value && ...}` template conditions.
+ */
+export function formatList(value: string | null | undefined): string {
+  return parseList(value).join(", ");
+}
+
+// -------------------------------------------------------------------
 // PRICE CHANGE INDICATOR
 //
 // If listPrice < originalListPrice, the listing has had a price reduction.

@@ -33,6 +33,7 @@ import {
   formatPrice,
   formatSqft,
   listingPath,
+  parseList,
   parseListingId,
 } from "../../lib/listing-utils";
 import { parsePhotoIds, parseVirtualTourUrls } from "../../lib/photo-utils";
@@ -153,9 +154,9 @@ const floorPlanIds = parsePhotoIds(listing.floorPlanIds);
 const virtualTourUrls = parseVirtualTourUrls(listing.virtualTourUrls);
 
 // ─── Checklist sections ──────────────────────────────────────────────────────
-// MLS sends these as one comma-separated string; shown as ✓ lists.
-const appliancesList = listing.appliances ? listing.appliances.split(", ").filter(Boolean) : [];
-const amenitiesList = listing.amenities ? listing.amenities.split(", ").filter(Boolean) : [];
+// JSON arrays (or comma-separated text) from MLS, shown as ✓ lists.
+const appliancesList = parseList(listing.appliances);
+const amenitiesList = parseList(listing.amenities);
 ---
 
 <Layout

@@ -5,7 +5,7 @@
  */
 // ─── Imports ─────────────────────────────────────────────────────────────────
 import type { Listing } from "../../types/listing";
-import { formatSqft } from "../../lib/listing-utils";
+import { formatList, formatSqft } from "../../lib/listing-utils";
 import DetailRow from "./DetailRow.astro";
 
 // ─── Props ───────────────────────────────────────────────────────────────────
@@ -17,6 +17,14 @@ interface Props {
 const { listing } = Astro.props;
 
 // ─── Derived values ──────────────────────────────────────────────────────────
+// Multi-valued MLS fields arrive as JSON arrays; show them as "A, B, C".
+const heating = formatList(listing.heating);
+const cooling = formatList(listing.airConditioning);
+const basement = formatList(listing.basement);
+const parking = formatList(listing.parkingFeatures);
+const sewer = formatList(listing.sewer);
+const water = formatList(listing.waterSource);
+
 // "2 — Living Room, Gas", or just "2" when the features aren't listed.
 const fireplaceDisplay = listing.fireplaceFeatures
   ? `${listing.fireplaces} — ${listing.fireplaceFeatures}`
@@ -26,20 +34,20 @@ const fireplaceDisplay = listing.fireplaceFeatures
 <div>
   <h2 class="text-lg font-semibold text-stone-900 mb-3">Interior Features</h2>
   <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-sm">
-    {listing.heating && <DetailRow label="Heating">{listing.heating}</DetailRow>}
-    {listing.airConditioning && <DetailRow label="Cooling">{listing.airConditioning}</DetailRow>}
+    {heating && <DetailRow label="Heating">{heating}</DetailRow>}
+    {cooling && <DetailRow label="Cooling">{cooling}</DetailRow>}
     {listing.fuelType && <DetailRow label="Fuel">{listing.fuelType}</DetailRow>}
-    {listing.basement && <DetailRow label="Basement">{listing.basement}</DetailRow>}
+    {basement && <DetailRow label="Basement">{basement}</DetailRow>}
     {(listing.fireplaces ?? 0) > 0 && <DetailRow label="Fireplaces">{fireplaceDisplay}</DetailRow>}
     {listing.laundryFeatures && <DetailRow label="Laundry">{listing.laundryFeatures}</DetailRow>}
-    {listing.parkingFeatures && <DetailRow label="Parking">{listing.parkingFeatures}</DetailRow>}
+    {parking && <DetailRow label="Parking">{parking}</DetailRow>}
     {listing.garageSqft && (
       <DetailRow label="Garage Sqft" longValue={false}>
         {formatSqft(listing.garageSqft)}
       </DetailRow>
     )}
     {listing.electric && <DetailRow label="Electric">{listing.electric}</DetailRow>}
-    {listing.sewer && <DetailRow label="Sewer">{listing.sewer}</DetailRow>}
-    {listing.waterSource && <DetailRow label="Water">{listing.waterSource}</DetailRow>}
+    {sewer && <DetailRow label="Sewer">{sewer}</DetailRow>}
+    {water && <DetailRow label="Water">{water}</DetailRow>}
   </dl>
 </div>

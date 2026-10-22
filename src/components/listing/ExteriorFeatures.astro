@@ -5,6 +5,7 @@
  */
 // ─── Imports ─────────────────────────────────────────────────────────────────
 import type { Listing } from "../../types/listing";
+import { formatList } from "../../lib/listing-utils";
 import DetailRow from "./DetailRow.astro";
 
 // ─── Props ───────────────────────────────────────────────────────────────────
@@ -14,15 +15,18 @@ interface Props {
 }
 
 const { listing } = Astro.props;
+
+// ─── Derived values ──────────────────────────────────────────────────────────
+// Multi-valued MLS fields arrive as JSON arrays; show them as "A, B, C".
+const construction = formatList(listing.constructionMaterials);
+const roof = formatList(listing.roof);
 ---
 
 <div>
   <h2 class="text-lg font-semibold text-stone-900 mb-3">Exterior & Construction</h2>
   <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3 text-sm">
-    {listing.constructionMaterials && (
-      <DetailRow label="Construction">{listing.constructionMaterials}</DetailRow>
-    )}
-    {listing.roof && <DetailRow label="Roof">{listing.roof}</DetailRow>}
+    {construction && <DetailRow label="Construction">{construction}</DetailRow>}
+    {roof && <DetailRow label="Roof">{roof}</DetailRow>}
     {listing.exteriorFeatures && (
       <DetailRow label="Exterior Features">{listing.exteriorFeatures}</DetailRow>
     )}
