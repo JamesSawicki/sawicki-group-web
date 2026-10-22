@@ -23,6 +23,11 @@
  * as listings enter/leave the viewport but the polygon filter stays active.
  * This lets buyers say "show me everything in this neighborhood, even if I need
  * to pan around to see details."
+ *
+ * Search criteria: this is the site's single search page (/search). Filters live in
+ * FilterDrawer; applying them refetches the current viewport, and every fetch (pan, zoom,
+ * apply) sends the active filters and mirrors them into the page URL so a search can be
+ * bookmarked or shared.
  */
 import { formatPrice, formatBathTotal, formatSqft, listingPath } from "../lib/listing-utils";
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
@@ -30,7 +35,13 @@ import mapboxgl from "mapbox-gl";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
 import type { Listing } from "../types/listing";
-// CSS for both libraries is imported in map.astro — not here.
+import FilterDrawer from "./search/FilterDrawer";
+import {
+  applyFiltersToParams,
+  countActiveFilters,
+  type SearchFilters,
+} from "../lib/search-filters";
+// CSS for both libraries is imported in search.astro — not here.
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -44,7 +55,8 @@ interface Bbox {
 interface Props {
   initialListings?: Listing[];
   initialBbox: Bbox;
-  initialStatus?: string;
+  /** Filters from the page URL, already applied to initialListings by the server. */
+  initialFilters: SearchFilters;
   apiBaseUrl: string;
   mapboxToken: string;
 }
@@ -242,7 +254,7 @@ function SidebarCard({ listing, isSelected, onClick }: SidebarCardProps) {
 export default function MapSearch({
   initialListings = [],
   initialBbox,
-  initialStatus = "Active",
+  initialFilters,
   apiBaseUrl,
   mapboxToken,
 }: Props) {
@@ -267,6 +279,12 @@ export default function MapSearch({
   const [activePolygon, setActivePolygon] = useState<GeoJSON.Feature<GeoJSON.Polygon> | null>(null);
   const [isDrawing, setIsDrawing] = useState<boolean>(false);
 
+  // Search criteria. The ref lets the moveend closure (registered once) read the latest.
+  const [filters, setFilters] = useState<SearchFilters>(initialFilters);
+  const filtersRef = useRef<SearchFilters>(initialFilters);
+  const [filtersOpen, setFiltersOpen] = useState<boolean>(false);
+  const activeFilterCount = countActiveFilters(filters);
+
   // ── Derived listing set ────────────────────────────────────────────────────
   // When a polygon is active, filter listings to those inside it.
   // useMemo recalculates automatically whenever listings or activePolygon changes,
@@ -285,7 +303,7 @@ export default function MapSearch({
 
   // ── Fetch listings for current viewport ───────────────────────────────────
   const fetchForViewport = useCallback(
-    async (bounds: mapboxgl.LngLatBounds, status: string): Promise<void> => {
+    async (bounds: mapboxgl.LngLatBounds): Promise<void> => {
       setIsLoading(true);
       try {
         const url = new URL(`${apiBaseUrl}/api/listings/search`);
@@ -293,11 +311,12 @@ export default function MapSearch({
         url.searchParams.set("maxLat", bounds.getNorth().toFixed(5));
         url.searchParams.set("minLng", bounds.getWest().toFixed(5));
         url.searchParams.set("maxLng", bounds.getEast().toFixed(5));
-        url.searchParams.set("status", status);
+        applyFiltersToParams(filtersRef.current, url.searchParams);
         url.searchParams.set("size", "200");
 
-        // Keep URL shareable (bbox only — polygon is ephemeral client state)
+        // Keep the URL shareable: viewport + filters (the polygon is ephemeral client state).
         const pageUrl = new URL(window.location.href);
+        applyFiltersToParams(filtersRef.current, pageUrl.searchParams);
         pageUrl.searchParams.set("minLat", bounds.getSouth().toFixed(4));
         pageUrl.searchParams.set("maxLat", bounds.getNorth().toFixed(4));
         pageUrl.searchParams.set("minLng", bounds.getWest().toFixed(4));
@@ -504,7 +523,7 @@ export default function MapSearch({
     map.on("moveend", () => {
       if (debounceRef.current !== null) clearTimeout(debounceRef.current);
       debounceRef.current = window.setTimeout(() => {
-        fetchForViewport(map.getBounds()!, initialStatus);
+        fetchForViewport(map.getBounds()!);
       }, 400);
     });
 
@@ -514,6 +533,18 @@ export default function MapSearch({
       map.remove();
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Apply new search criteria → refetch the current viewport ──────────────
+  const applyFilters = useCallback(
+    (next: SearchFilters): void => {
+      filtersRef.current = next;
+      setFilters(next);
+      setFiltersOpen(false);
+      if (mapRef.current) fetchForViewport(mapRef.current.getBounds()!);
+    },
+    [fetchForViewport],
+  );
+  const closeFilters = useCallback(() => setFiltersOpen(false), []);
 
   // ── Sidebar card click → pan + highlight ──────────────────────────────────
   const handleSidebarClick = useCallback((listing: Listing): void => {
@@ -552,7 +583,14 @@ export default function MapSearch({
   // listings follow underneath in normal page scroll — people search by browsing pins.
   // From lg up: listings sidebar on the left, map filling the rest of the viewport.
   return (
-    <div className="flex flex-col lg:flex-row lg:h-[calc(100vh-5rem)]">
+    <div className="relative flex flex-col lg:flex-row lg:h-[calc(100vh-5rem)]">
+      <FilterDrawer
+        open={filtersOpen}
+        filters={filters}
+        onApply={applyFilters}
+        onClose={closeFilters}
+      />
+
       {/* ── Sidebar (below the map on small screens) ─────────────────────── */}
       <div className="order-2 lg:order-1 w-full lg:w-96 lg:flex-shrink-0 flex flex-col border-t lg:border-t-0 lg:border-r border-stone-200 bg-white">
         <div className="flex-shrink-0 px-4 py-3 border-b border-stone-100">
@@ -564,9 +602,15 @@ export default function MapSearch({
                   ? `${displayedListings.length} of ${listings.length} in drawn area`
                   : `${listings.length} listing${listings.length !== 1 ? "s" : ""} in view`}
             </span>
-            <a href="/search" className="text-sm text-blue-600 hover:text-blue-700 py-2">
-              Filter view →
-            </a>
+            <button
+              type="button"
+              onClick={() => setFiltersOpen(true)}
+              className="text-sm font-medium text-blue-600 hover:text-blue-700 py-2"
+              aria-controls="search-filters"
+              aria-expanded={filtersOpen}
+            >
+              Filters{activeFilterCount > 0 ? ` (${activeFilterCount})` : ""}
+            </button>
           </div>
         </div>
 
@@ -575,7 +619,9 @@ export default function MapSearch({
             <div className="text-center py-12 text-sm text-slate-500">
               {activePolygon
                 ? "No listings inside the drawn area. Try redrawing a larger shape."
-                : "No listings in this area. Pan the map to explore."}
+                : activeFilterCount > 0
+                  ? "No listings here match your filters. Pan the map or loosen the filters."
+                  : "No listings in this area. Pan the map to explore."}
             </div>
           )}
           {displayedListings.map((listing) => (
@@ -594,7 +640,23 @@ export default function MapSearch({
         <div ref={mapContainerRef} className="w-full h-full" />
 
         {/* ── Draw controls — top-left, opposite NavigationControl ───────── */}
-        <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5">
+        <div className="absolute top-3 left-3 z-10 flex flex-col items-start gap-1.5">
+          {/* Search criteria drawer */}
+          <button
+            type="button"
+            onClick={() => setFiltersOpen(true)}
+            className="px-3 py-2 rounded text-sm font-medium shadow-md border bg-white text-slate-700 border-slate-300 hover:bg-slate-50 whitespace-nowrap"
+            aria-controls="search-filters"
+            aria-expanded={filtersOpen}
+          >
+            Filters
+            {activeFilterCount > 0 && (
+              <span className="ml-1.5 inline-flex items-center justify-center min-w-5 h-5 px-1 rounded-full bg-blue-600 text-white text-xs">
+                {activeFilterCount}
+              </span>
+            )}
+          </button>
+
           {/* Three-state button: idle / drawing / polygon-active */}
           <button
             onClick={isDrawing ? cancelDraw : activePolygon ? clearPolygon : startDraw}

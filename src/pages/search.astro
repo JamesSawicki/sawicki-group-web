@@ -1,495 +1,70 @@
 ---
+/**
+ * Search page (/search): the site's one search experience — a map with listing pins, the
+ * matching listings beside/below it, and a filter drawer (MapSearch + FilterDrawer).
+ *
+ * This file only reads the viewport and filters from the URL and fetches the first page
+ * of results on the server, so the map has pins on first paint. Everything after that
+ * (panning, zooming, changing filters) is fetched by the MapSearch island.
+ */
+// ─── Imports ─────────────────────────────────────────────────────────────────
+// Mapbox CSS must be imported here in the .astro frontmatter, not inside the React
+// island, so Vite bundles it through Astro's build.
+import "mapbox-gl/dist/mapbox-gl.css";
+import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
+
 import Layout from "../layouts/Layout.astro";
-import ListingCard from "../components/ListingCard.astro";
+import MapSearch from "../components/MapSearch.tsx";
 import type { Listing, Page } from "../types/listing";
 import { fetchWithTimeout } from "../lib/api";
+import { applyFiltersToParams, filtersFromParams } from "../lib/search-filters";
 
-// ---------------------------------------------------------------------------
-// 1. PARSE URL PARAMS
-// ---------------------------------------------------------------------------
-const params = Astro.url.searchParams;
-const filterStatus = params.get("status") ?? "Active";
-const filterMinPrice = params.get("minPrice") ?? "";
-const filterMaxPrice = params.get("maxPrice") ?? "";
-const filterMinBeds = params.get("minBeds") ?? "";
-const filterMinBaths = params.get("minBaths") ?? "";
-const filterMinSqft = params.get("minSqft") ?? "";
-const filterCity = params.get("city") ?? "";
-const filterPropertyType = params.get("propertyType") ?? "";
-const filterWaterfront = params.get("waterfront") === "true";
-const filterPool = params.get("pool") === "true";
-const filterMinGarage = params.get("minGarageStalls") ?? "";
-const filterMinYear = params.get("minYearBuilt") ?? "";
-const filterMaxYear = params.get("maxYearBuilt") ?? "";
-const filterSortBy = params.get("sortBy") ?? "price_desc";
-const currentPage = parseInt(params.get("page") ?? "0", 10);
-
-// ---------------------------------------------------------------------------
-// 2. BUILD API URL — skip empty-string params so the API receives clean input
-// ---------------------------------------------------------------------------
-// Production: Cloud Run sets process.env at runtime.
-// Dev: Vite populates import.meta.env from .env.local but NOT process.env.
-// Use both with || so either source works.
+// ─── Config ──────────────────────────────────────────────────────────────────
+// Production: Cloud Run sets process.env at runtime; dev: Vite fills import.meta.env.
 const apiBase = process.env.PUBLIC_API_BASE_URL || import.meta.env.PUBLIC_API_BASE_URL;
+const mapboxToken = process.env.PUBLIC_MAPBOX_TOKEN || import.meta.env.PUBLIC_MAPBOX_TOKEN;
 
-if (!apiBase) {
-  throw new Error(
-    "PUBLIC_API_BASE_URL not set in process.env (production) or import.meta.env (dev). " +
-      "In dev: confirm sawicki-group-web/.env.local has the line and `npm run dev` was restarted. " +
-      "In production: confirm Cloud Run has the env var set via cloudbuild.yaml --update-env-vars.",
-  );
-}
-const apiUrl = new URL(`${apiBase}/api/listings/search`);
+// ─── Viewport + filters from the URL ─────────────────────────────────────────
+// Defaults frame the Twin Cities metro.
+const params = Astro.url.searchParams;
+const minLat = parseFloat(params.get("minLat") ?? "44.75");
+const maxLat = parseFloat(params.get("maxLat") ?? "45.15");
+const minLng = parseFloat(params.get("minLng") ?? "-93.90");
+const maxLng = parseFloat(params.get("maxLng") ?? "-93.10");
+const filters = filtersFromParams(params);
 
-for (const [key, value] of params.entries()) {
-  // Skip empty strings — they add noise to the API call and can confuse
-  // Spring's type binding when an empty string is bound to a Long field.
-  if (value !== "") {
-    apiUrl.searchParams.set(key, value);
-  }
-}
-
-// ---------------------------------------------------------------------------
-// 3. FETCH
-// ---------------------------------------------------------------------------
-let results: Page<Listing> | null = null;
-let fetchError: string | null = null;
-
+// ─── Data fetching ───────────────────────────────────────────────────────────
+let initialListings: Listing[] = [];
 try {
-  const res = await fetchWithTimeout(apiUrl.toString());
-  if (!res.ok) {
-    fetchError = `API returned ${res.status} ${res.statusText}`;
-  } else {
-    results = (await res.json()) as Page<Listing>;
+  const url = new URL(`${apiBase}/api/listings/search`);
+  url.searchParams.set("minLat", String(minLat));
+  url.searchParams.set("maxLat", String(maxLat));
+  url.searchParams.set("minLng", String(minLng));
+  url.searchParams.set("maxLng", String(maxLng));
+  applyFiltersToParams(filters, url.searchParams);
+  url.searchParams.set("size", "200");
+
+  const res = await fetchWithTimeout(url.toString());
+  if (res.ok) {
+    const data = (await res.json()) as Page<Listing>;
+    initialListings = data.content;
   }
-} catch (e) {
-  fetchError = e instanceof Error ? e.message : "Unknown error fetching listings";
-}
-
-// Number of filters the visitor has set (status counts only when changed from the
-// default "Active"); shown on the mobile "Filters" button.
-const activeFilterCount =
-  [
-    filterMinPrice,
-    filterMaxPrice,
-    filterMinBeds,
-    filterMinBaths,
-    filterMinSqft,
-    filterCity,
-    filterPropertyType,
-    filterMinGarage,
-    filterMinYear,
-    filterMaxYear,
-  ].filter((v) => v !== "").length +
-  (filterWaterfront ? 1 : 0) +
-  (filterPool ? 1 : 0) +
-  (filterStatus !== "Active" ? 1 : 0);
-
-// ---------------------------------------------------------------------------
-// 4. PAGINATION URL BUILDER — clone current params, only change `page`
-// ---------------------------------------------------------------------------
-function pageUrl(targetPage: number): string {
-  const next = new URLSearchParams(params);
-  next.set("page", String(targetPage));
-  return `/search?${next.toString()}`;
+} catch {
+  // Non-fatal: the map still renders with no pins and refetches client-side as the
+  // visitor pans. A hanging API doesn't stall the server response.
 }
 ---
 
 <Layout
-  title="Search Listings"
-  description="Search Twin Cities homes for sale. Filter by price, beds, baths, and features."
+  title="Search Homes"
+  description="Search Twin Cities homes for sale on an interactive map. Filter by price, beds, baths, property type and more."
 >
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col lg:h-[calc(100vh-5rem)]">
-    {/* Page header */}
-    <div class="mb-6 flex-shrink-0">
-      <h1 class="text-3xl font-bold text-slate-900">Search Listings</h1>
-      <p class="text-slate-600 mt-1">Twin Cities homes for sale</p>
-    </div>
-
-    {/*
-      Two-panel layout with independent scroll on desktop.
-
-      Keys to making independent scroll work:
-        1. The wrapper must have a bounded height (flex-1 + min-h-0 here,
-           bounded by the parent's calc height).
-        2. Each column gets overflow-y-auto to create its own scroll context.
-        3. min-h-0 on both columns — without this, flex children refuse to
-           shrink below their content height and overflow-y never activates.
-        4. On mobile (below lg breakpoint): stacked, normal page scroll, and the filter
-           form is collapsed behind a "Filters" button so results come first.
-    */}
-    <div class="flex flex-col lg:flex-row gap-8 flex-1 min-h-0">
-      {/* === FILTER SIDEBAR ============================================= */}
-      <aside class="lg:w-72 lg:flex-shrink-0 lg:overflow-y-auto lg:min-h-0">
-        {/* ── Mobile: Filters toggle (below lg) ── */}
-        <button
-          type="button"
-          id="filters-toggle"
-          class="lg:hidden w-full flex items-center justify-between bg-white rounded-lg shadow-sm px-4 h-12 font-semibold text-slate-900"
-          aria-controls="filters-form"
-          aria-expanded="false"
-        >
-          <span>
-            Filters
-            {activeFilterCount > 0 && (
-              <span class="ml-2 text-sm font-medium text-blue-600">
-                ({activeFilterCount} active)
-              </span>
-            )}
-          </span>
-          <span aria-hidden="true" data-chevron class="transition-transform">
-            ▾
-          </span>
-        </button>
-
-        <form
-          method="GET"
-          action="/search"
-          id="filters-form"
-          class="hidden lg:block mt-2 lg:mt-0 bg-white rounded-lg shadow-sm p-4"
-        >
-          <h2 class="hidden lg:block font-semibold text-slate-900 mb-4">Filters</h2>
-
-          {/* Status */}
-          <div class="mb-4">
-            <label for="status" class="block text-sm font-medium text-slate-700 mb-1">
-              Status
-            </label>
-            <select
-              id="status"
-              name="status"
-              class="w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
-            >
-              <option value="Active" selected={filterStatus === "Active"}>
-                Active
-              </option>
-              <option
-                value="Active,Pending,TNAS,Coming Soon"
-                selected={filterStatus === "Active,Pending,TNAS,Coming Soon"}
-              >
-                For Sale (Active + Pending)
-              </option>
-              <option value="Pending" selected={filterStatus === "Pending"}>
-                Pending
-              </option>
-              <option value="Sold" selected={filterStatus === "Sold"}>
-                Sold (Recent)
-              </option>
-              <option value="Coming Soon" selected={filterStatus === "Coming Soon"}>
-                Coming Soon
-              </option>
-            </select>
-          </div>
-
-          {/* Price range
-              FIX: value={filterMinPrice || undefined}
-              When filterMinPrice is "" (empty string), || undefined evaluates to
-              undefined, so Astro renders NO value attribute — giving a genuinely
-              blank input. Without this fix, value="" on <input type="number">
-              renders as -1 in Windows Chrome.
-          */}
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-slate-700 mb-1">Price</label>
-            <div class="grid grid-cols-2 gap-2">
-              <input
-                type="number"
-                name="minPrice"
-                placeholder="Min"
-                value={filterMinPrice || undefined}
-                class="rounded border border-slate-300 px-2 py-1.5 text-sm"
-              />
-              <input
-                type="number"
-                name="maxPrice"
-                placeholder="Max"
-                value={filterMaxPrice || undefined}
-                class="rounded border border-slate-300 px-2 py-1.5 text-sm"
-              />
-            </div>
-          </div>
-
-          {/* Beds / Baths */}
-          <div class="grid grid-cols-2 gap-2 mb-4">
-            <div>
-              <label for="minBeds" class="block text-sm font-medium text-slate-700 mb-1">
-                Beds (min)
-              </label>
-              <select
-                id="minBeds"
-                name="minBeds"
-                class="w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
-              >
-                <option value="" selected={filterMinBeds === ""}>
-                  Any
-                </option>
-                {[1, 2, 3, 4, 5, 6].map((n) => (
-                  <option value={n} selected={filterMinBeds === String(n)}>
-                    {n}+
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label for="minBaths" class="block text-sm font-medium text-slate-700 mb-1">
-                Baths (min)
-              </label>
-              <select
-                id="minBaths"
-                name="minBaths"
-                class="w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
-              >
-                <option value="" selected={filterMinBaths === ""}>
-                  Any
-                </option>
-                {[1, 1.5, 2, 2.5, 3, 4, 5].map((n) => (
-                  <option value={n} selected={filterMinBaths === String(n)}>
-                    {n}+
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Min sqft */}
-          <div class="mb-4">
-            <label for="minSqft" class="block text-sm font-medium text-slate-700 mb-1">
-              Min SqFt
-            </label>
-            <input
-              type="number"
-              id="minSqft"
-              name="minSqft"
-              placeholder="e.g. 2000"
-              value={filterMinSqft || undefined}
-              class="w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
-            />
-          </div>
-
-          {/* City */}
-          <div class="mb-4">
-            <label for="city" class="block text-sm font-medium text-slate-700 mb-1">
-              City
-            </label>
-            <input
-              type="text"
-              id="city"
-              name="city"
-              placeholder="e.g. Edina"
-              value={filterCity || undefined}
-              class="w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
-            />
-          </div>
-
-          {/* Property type */}
-          <div class="mb-4">
-            <label for="propertyType" class="block text-sm font-medium text-slate-700 mb-1">
-              Property Type
-            </label>
-            <select
-              id="propertyType"
-              name="propertyType"
-              class="w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
-            >
-              <option value="" selected={filterPropertyType === ""}>
-                Any
-              </option>
-              <option value="Single Family" selected={filterPropertyType === "Single Family"}>
-                Single Family
-              </option>
-              <option value="Condo" selected={filterPropertyType === "Condo"}>
-                Condo
-              </option>
-              <option value="Townhouse" selected={filterPropertyType === "Townhouse"}>
-                Townhouse
-              </option>
-            </select>
-          </div>
-
-          {/* Garage */}
-          <div class="mb-4">
-            <label for="minGarageStalls" class="block text-sm font-medium text-slate-700 mb-1">
-              Garage (min stalls)
-            </label>
-            <select
-              id="minGarageStalls"
-              name="minGarageStalls"
-              class="w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
-            >
-              <option value="" selected={filterMinGarage === ""}>
-                Any
-              </option>
-              {[1, 2, 3, 4].map((n) => (
-                <option value={n} selected={filterMinGarage === String(n)}>
-                  {n}+
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Year built */}
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-slate-700 mb-1">Year Built</label>
-            <div class="grid grid-cols-2 gap-2">
-              <input
-                type="number"
-                name="minYearBuilt"
-                placeholder="From"
-                value={filterMinYear || undefined}
-                class="rounded border border-slate-300 px-2 py-1.5 text-sm"
-              />
-              <input
-                type="number"
-                name="maxYearBuilt"
-                placeholder="To"
-                value={filterMaxYear || undefined}
-                class="rounded border border-slate-300 px-2 py-1.5 text-sm"
-              />
-            </div>
-          </div>
-
-          {/* Checkboxes */}
-          <div class="space-y-2 mb-6">
-            <label class="flex items-center text-sm cursor-pointer">
-              <input
-                type="checkbox"
-                name="waterfront"
-                value="true"
-                checked={filterWaterfront}
-                class="rounded border-slate-300 mr-2"
-              />
-              Waterfront only
-            </label>
-            <label class="flex items-center text-sm cursor-pointer">
-              <input
-                type="checkbox"
-                name="pool"
-                value="true"
-                checked={filterPool}
-                class="rounded border-slate-300 mr-2"
-              />
-              Pool
-            </label>
-          </div>
-
-          {/* Sort */}
-          <div class="mb-6">
-            <label for="sortBy" class="block text-sm font-medium text-slate-700 mb-1">
-              Sort By
-            </label>
-            <select
-              id="sortBy"
-              name="sortBy"
-              class="w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
-            >
-              <option value="price_desc" selected={filterSortBy === "price_desc"}>
-                Price (High to Low)
-              </option>
-              <option value="price_asc" selected={filterSortBy === "price_asc"}>
-                Price (Low to High)
-              </option>
-              <option value="newest" selected={filterSortBy === "newest"}>
-                Newest First
-              </option>
-              <option value="dom_asc" selected={filterSortBy === "dom_asc"}>
-                Fewest Days on Market
-              </option>
-              <option value="sqft_desc" selected={filterSortBy === "sqft_desc"}>
-                Largest First
-              </option>
-            </select>
-          </div>
-
-          {/* Actions */}
-          <div class="space-y-2">
-            <button
-              type="submit"
-              class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded transition-colors"
-            >
-              Apply Filters
-            </button>
-            <a
-              href="/search"
-              class="block text-center text-sm text-slate-500 hover:text-slate-700 py-2"
-            >
-              Clear All
-            </a>
-          </div>
-        </form>
-      </aside>
-
-      <script>
-        // Mobile filter toggle. On lg+ the form is always shown via `lg:block`.
-        const filtersToggle = document.getElementById("filters-toggle");
-        const filtersForm = document.getElementById("filters-form");
-        filtersToggle?.addEventListener("click", () => {
-          const open = filtersForm?.classList.toggle("hidden") === false;
-          filtersToggle.setAttribute("aria-expanded", String(open));
-          filtersToggle.querySelector("[data-chevron]")?.classList.toggle("rotate-180", open);
-        });
-      </script>
-      {/* === RESULTS PANEL ============================================== */}
-      <section class="flex-1 min-h-0 lg:overflow-y-auto">
-        {fetchError && (
-          <div class="bg-red-50 border border-red-200 text-red-800 p-4 rounded mb-4">
-            <p class="font-medium">Couldn't load listings</p>
-            <p class="text-sm mt-1">{fetchError}</p>
-          </div>
-        )}
-
-        {results && (
-          <>
-            <div class="mb-4 text-sm text-slate-600 flex-shrink-0">
-              {results.totalElements === 0
-                ? "No listings match your filters."
-                : `Showing ${results.numberOfElements} of ${results.totalElements} ${results.totalElements === 1 ? "listing" : "listings"}`}
-            </div>
-
-            {results.content.length > 0 && (
-              <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {results.content.map((listing) => (
-                  <ListingCard listing={listing} />
-                ))}
-              </div>
-            )}
-
-            {results.content.length === 0 && (
-              <div class="bg-white rounded-lg shadow-sm p-12 text-center">
-                <h3 class="text-lg font-medium text-slate-900">No listings match your filters</h3>
-                <p class="text-slate-600 mt-2">
-                  Try widening the price range or removing some criteria.
-                </p>
-                <a href="/search" class="inline-block mt-4 text-blue-600 hover:text-blue-700">
-                  Clear all filters
-                </a>
-              </div>
-            )}
-
-            {results.totalPages > 1 && (
-              <nav class="mt-8 mb-4 flex justify-center items-center gap-4">
-                {!results.first && (
-                  <a
-                    href={pageUrl(currentPage - 1)}
-                    class="px-4 py-2 bg-white rounded shadow-sm hover:shadow text-sm font-medium"
-                  >
-                    ← Previous
-                  </a>
-                )}
-                <span class="text-sm text-slate-600">
-                  Page {results.number + 1} of {results.totalPages}
-                </span>
-                {!results.last && (
-                  <a
-                    href={pageUrl(currentPage + 1)}
-                    class="px-4 py-2 bg-white rounded shadow-sm hover:shadow text-sm font-medium"
-                  >
-                    Next →
-                  </a>
-                )}
-              </nav>
-            )}
-          </>
-        )}
-      </section>
-    </div>
-  </div>
+  <MapSearch
+    client:load
+    initialListings={initialListings}
+    initialBbox={{ minLat, maxLat, minLng, maxLng }}
+    initialFilters={filters}
+    apiBaseUrl={apiBase}
+    mapboxToken={mapboxToken}
+  />
 </Layout>
