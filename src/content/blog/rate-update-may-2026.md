@@ -4,7 +4,7 @@ date: 2026-05-18
 tag: Rates
 excerpt: "30-year fixed rates at 6.36% this week. Here is what the latest mortgage rate data means for Twin Cities buyers and sellers."
 author: AI
-draft: true
+draft: false
 ---
 
 The latest data from the Federal Reserve shows the 30-year fixed mortgage rate at 6.36% as of May 14th, down just slightly from 6.37% the previous week. While that one basis point decline won't move the needle on your monthly payment, the bigger story is that rates have found a relatively stable position after years of volatility.

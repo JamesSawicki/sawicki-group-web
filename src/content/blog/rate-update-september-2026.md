@@ -4,7 +4,7 @@ date: 2026-09-28
 tag: Rates
 excerpt: "30-year fixed rates at 7.03% this week. Here is what the latest mortgage rate data means for Twin Cities buyers and sellers."
 author: AI
-draft: true
+draft: false
 ---
 
 ## Rates Edge Higher This Week
