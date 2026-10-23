@@ -13,6 +13,7 @@
 import type { Listing } from "../types/listing";
 import { agent, brokerage, mls, site } from "../lib/site.config";
 import { formatDataFreshness, formatMlsId } from "../lib/listing-utils";
+import { mlsDataAsOf } from "../lib/api";
 
 // ─── Props ───────────────────────────────────────────────────────────────────
 interface Props {
@@ -34,6 +35,19 @@ const ACCURACY_DISCLAIMER = "Data believed to be accurate but should be independ
 // "compare it to similar properties sold or for sale" clause the old text left out.
 const LIMITED_USE_NOTICE =
   "Listing information is provided for your personal, non-commercial use. You may not use it for any purpose other than to identify a property you may wish to purchase and to compare it with similar properties sold or for sale.";
+
+// VERIFY-IDX (MLS Grid): we receive NorthstarMLS data through MLS Grid. This is the
+// disclaimer MLS Grid licensees show (e.g. Redfin's NorthstarMLS block). Jim asked for it
+// on 2026-10-23 ("can't hurt") while MLS Grid's official display rules are confirmed with
+// the go-live notice; swap in their exact text if it differs.
+const MLS_GRID_DISCLAIMER =
+  "All data is obtained from various sources and may not have been verified by broker or MLS GRID. Supplied Open House Information is subject to change without notice. All information should be independently reviewed and verified for accuracy. Properties may or may not be listed by the office/agent presenting the information.";
+const MLS_GRID_DMCA_EMAIL = "DMCAnotice@MLSGrid.com";
+
+// ─── Data fetching ───────────────────────────────────────────────────────────
+// When our data was last updated from MLS Grid (cached; null if unknown, then the
+// "as of" phrase is left out rather than guessed).
+const dataAsOf = await mlsDataAsOf();
 
 // ─── Derived values ──────────────────────────────────────────────────────────
 // VERIFY-IDX: §5.8(c): the "source" is the MLS (not the listing brokerage). Shown on the
@@ -103,6 +117,22 @@ const errorHref = `mailto:${agent.email}?subject=${encodeURIComponent(errorSubje
   {/* ── Disclaimer + limited-use notice ── */}
   <p class="mb-2 font-medium text-stone-800">{ACCURACY_DISCLAIMER}</p>
   <p class="mb-4">{LIMITED_USE_NOTICE}</p>
+
+  {/* ── MLS Grid ── */}
+  <p class="mb-2">
+    Based on information submitted to the MLS GRID
+    {dataAsOf && <> as of {formatDataFreshness(dataAsOf)}</>}. {MLS_GRID_DISCLAIMER}
+  </p>
+  <p class="mb-4">
+    Copyright concerns about listing content (DMCA notices) may be sent to MLS Grid at{" "}
+    <a
+      href={`mailto:${MLS_GRID_DMCA_EMAIL}`}
+      class="inline-block py-2 underline hover:text-stone-900"
+    >
+      {MLS_GRID_DMCA_EMAIL}
+    </a>
+    .
+  </p>
 
   {/* ── Fair housing ── */}
   <div class="flex items-start gap-3 mb-4">

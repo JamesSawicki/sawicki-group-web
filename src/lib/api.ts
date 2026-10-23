@@ -108,3 +108,31 @@ export function serviceUnavailableResponse(message?: string): Response {
     headers: { "Content-Type": "text/html; charset=utf-8", "Retry-After": "30" },
   });
 }
+
+// ─── MLS Grid "data as of" ───────────────────────────────────────────────────
+
+let dataAsOfCache: { value: string | null; fetchedAt: number } | null = null;
+const DATA_AS_OF_TTL_MS = 5 * 60 * 1000;
+
+/**
+ * When our listing data was last updated from MLS Grid (ISO 8601, the newest MLS change the
+ * API holds), for the MLS Grid disclaimer. Cached 5 minutes per server instance so pages
+ * don't add an API call each; a failed lookup returns the last known value (or null), never
+ * an error, so the disclaimer can't break a page.
+ */
+export async function mlsDataAsOf(): Promise<string | null> {
+  if (dataAsOfCache && Date.now() - dataAsOfCache.fetchedAt < DATA_AS_OF_TTL_MS) {
+    return dataAsOfCache.value;
+  }
+  const apiBase = process.env.PUBLIC_API_BASE_URL || import.meta.env.PUBLIC_API_BASE_URL;
+  if (!apiBase) return null;
+  try {
+    const res = await fetchWithTimeout(`${apiBase}/api/listings/data-as-of`, { timeoutMs: 1500 });
+    if (!res.ok) return dataAsOfCache?.value ?? null;
+    const { asOf } = (await res.json()) as { asOf: string | null };
+    dataAsOfCache = { value: asOf, fetchedAt: Date.now() };
+    return asOf;
+  } catch {
+    return dataAsOfCache?.value ?? null;
+  }
+}

@@ -63,8 +63,8 @@ const jsonLd = [
       <div>
         <h2 class="text-xl font-semibold text-stone-900 mb-3">Using the site</h2>
         <p>
-          You may use the site to look for a home and to learn about the local market. You agree not
-          to:
+          You must be 18 or older to use this site. You may use it to look for a home and to learn
+          about the local market. You agree not to:
         </p>
         <ul class="list-disc pl-6 mt-3 space-y-2">
           <li>
@@ -249,6 +249,14 @@ const jsonLd = [
           The site's design, text, and articles belong to {site.name} or our licensors; you may
           share links to them. Links to other websites are for convenience; we don't control those
           sites and aren't responsible for them.
+        </p>
+        <p class="mt-3">
+          If you believe something on this site infringes your copyright, email us at{" "}
+          <a href={`mailto:${agent.email}`} class="underline">
+            {agent.email}
+          </a>{" "}
+          with a description of the work, where it appears here, and how to reach you. For listing
+          photos and descriptions, you can also notify MLS Grid at DMCAnotice@MLSGrid.com.
         </p>
       </div>
 

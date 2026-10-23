@@ -346,8 +346,9 @@ export function formatMlsId(mlsId: string | null | undefined): string {
 }
 
 /**
- * Format an ISO timestamp as a short human-readable "data freshness" line.
- * Used in the IDX disclosure block. "2026-06-04T16:12:47Z" -> "Jun 4, 2026 at 4:12 PM"
+ * Format an ISO timestamp as a short human-readable "data freshness" line, in Central time
+ * (the server runs in UTC on Cloud Run, so the zone must be explicit).
+ * Used in the IDX disclosure block. "2026-06-04T16:12:47Z" -> "Jun 4, 2026, 11:12 AM CDT"
  */
 export function formatDataFreshness(iso: string | null | undefined): string {
   if (!iso) return "—";
@@ -360,6 +361,8 @@ export function formatDataFreshness(iso: string | null | undefined): string {
       year: "numeric",
       hour: "numeric",
       minute: "2-digit",
+      timeZone: "America/Chicago",
+      timeZoneName: "short",
     });
   } catch {
     return "—";
