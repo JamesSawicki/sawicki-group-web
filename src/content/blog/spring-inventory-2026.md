@@ -4,7 +4,7 @@ date: 2026-05-01
 tag: Buyers
 excerpt: "After a historically tight winter, Twin Cities inventory is finally moving. Here is what the data shows and how to position yourself as a buyer right now."
 author: Jim
-draft: false
+draft: true
 ---
 
 After one of the tightest winters in recent memory, something shifted in April. New listings in the Twin Cities metro are up roughly 12% compared to the same period last year, and active inventory — the total number of homes available at any given moment — is climbing for the first time since 2022.
