@@ -7,24 +7,41 @@ author: Jim
 draft: true
 ---
 
+<!--
+TODO-JIM: no public source publishes Crocus Hill numbers by quarter, and the figures the
+earlier draft used couldn't be traced. Pull them from NorthstarMLS and fill in every
+[bracket] below, then fill in the criteria line at the end exactly as you searched.
+Remove this comment before publishing. Search to run (one for Q1 2026, one for Q1 2025):
+  Area: Crocus Hill (say how you defined it: MLS area/subdivision, or a map boundary)
+  Property types: single-family (+ condos/townhomes if you include them, and say so)
+  Closed dates: 01/01/2026 – 03/31/2026 (and 01/01/2025 – 03/31/2025)
+  Report: median sale price, average cumulative days on market, median close-to-list %,
+  and average active listings during the quarter.
+NorthstarMLS §5.5 requires the criteria and the sentence at the end.
+-->
+
 Crocus Hill continues to be one of the most resilient submarkets in Saint Paul. Here's a look at how Q1 2026 played out.
 
 ## The numbers
 
-Median sale price came in at $672,000 for Q1, up approximately 4% year-over-year. Days on market averaged 11 — meaning well-priced homes are still moving in under two weeks. The list-to-sale ratio held at 101.2%, indicating buyers are regularly paying over asking price on competitive properties.
+Median sale price came in at [$___] for Q1, [up/down] [__]% from Q1 2025. Days on market averaged [__]. The median sale price was [___]% of the list price.
 
-Inventory remains the defining constraint. Active listings in the neighborhood averaged just 8 at any given point during the quarter, down from 11 in Q1 2025.
+Inventory remains the defining constraint. Active listings in the neighborhood averaged [__] during the quarter, compared with [__] in Q1 2025.
 
 ## What's selling
 
-The strongest demand continues to be for move-in ready homes in the $550,000–$750,000 range with updated kitchens and baths. Properties that need significant work are sitting longer and seeing more price reductions than they did a year ago — buyers are more selective about what they'll take on given current financing costs.
+The strongest demand continues to be for move-in ready homes with updated kitchens and baths. Properties that need significant work tend to sit longer and see more price reductions, as buyers are more selective about what they'll take on given current financing costs.
 
-The sweet spot is a well-maintained original home with at least one updated bathroom and a functional kitchen. Full gut renovations aren't necessary, but deferred maintenance is being priced in more aggressively than it was during the frenzy years.
+The sweet spot is a well-maintained original home with at least one updated bathroom and a functional kitchen. Full gut renovations aren't necessary, but deferred maintenance is being priced in.
 
 ## Looking ahead to Q2
 
-Spring typically brings more inventory to Crocus Hill, and 2026 appears to be following that pattern. A handful of significant properties are expected to list in April and May. If you're a buyer targeting this neighborhood, the next 60 days will likely offer the best selection you'll see all year.
+Spring typically brings more inventory to Crocus Hill. If you're a buyer targeting this neighborhood, the spring months usually offer the best selection of the year.
 
-If you're a seller, the conditions remain favorable — but pricing discipline matters more than it did two years ago. Overpriced listings are sitting. Correctly priced listings are moving fast with multiple offers.
+If you're a seller, pricing discipline matters. Overpriced listings tend to sit, while correctly priced listings can move quickly.
 
 Questions about a specific property or what your home might be worth in this market? Reach out and I'll pull the comps.
+
+---
+
+*Criteria: [area definition], [property types], closed sales [01/01/2026–03/31/2026], compared with [01/01/2025–03/31/2025]. Based on information from the REGIONAL MULTIPLE LISTING SERVICE OF MINNESOTA, INC for the period [01/01/2025] through [03/31/2026].*
