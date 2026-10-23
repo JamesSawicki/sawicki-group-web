@@ -24,17 +24,33 @@ const links = [
 
 <header class="border-b border-stone-200 relative">
   <nav class="max-w-6xl mx-auto px-6 py-3 md:py-4 flex items-center justify-between gap-4">
-    {/* Our brokerage sits under the team name on every page (Minn. Stat. 82.69;
-        NorthstarMLS §5.8(a)(ii): at least as prominent as any listing brokerage). */}
-    <a href="/" class="flex flex-col whitespace-nowrap py-2">
-      <span class="text-xl font-semibold tracking-tight text-stone-900">
+    {/* Our brokerage sits right beside the team name on every page (under it on phones) (Minn. Stat. 82.69:
+        a team name only with the brokerage conspicuous; NorthstarMLS §5.8(a)(ii): at least
+        as prominent as any listing brokerage). Jim: "a small logo is fine". */}
+    <a
+      href="/"
+      class="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:gap-3 whitespace-nowrap py-2 min-w-0"
+    >
+      <span class="text-base min-[360px]:text-lg sm:text-xl font-semibold tracking-tight text-stone-900">
         <Logo
           variant={site.headerLogo}
           loading="eager"
           class={site.headerLogo === "wordmark" ? undefined : "h-10 w-auto"}
         />
       </span>
-      <span class="text-xs sm:text-sm text-stone-600">{brokerage.name}</span>
+      <span class="hidden sm:block h-7 w-px bg-stone-300 shrink-0" aria-hidden="true"></span>
+      {brokerage.logo ? (
+        <img
+          src={brokerage.logo.src}
+          width={brokerage.logo.width}
+          height={brokerage.logo.height}
+          alt={brokerage.logo.alt}
+          loading="eager"
+          class="h-5 sm:h-7 w-auto shrink-0"
+        />
+      ) : (
+        <span class="text-xs sm:text-sm text-stone-600">{brokerage.name}</span>
+      )}
     </a>
 
     {/* ── Desktop: single row (md and up) ── */}
