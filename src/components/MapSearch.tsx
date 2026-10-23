@@ -427,7 +427,7 @@ export default function MapSearch({
         // setListings triggers useMemo → displayedListings recomputes →
         // useEffect above syncs map markers. No manual source.setData needed here.
         setListings(data.content);
-        setTotalInView(data.totalElements);
+        setTotalInView(data.page.totalElements);
       } catch {
         // Swallow fetch errors silently — map will retry on next moveend
       } finally {

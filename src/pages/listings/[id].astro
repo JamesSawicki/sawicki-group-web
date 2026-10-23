@@ -215,5 +215,11 @@ const amenitiesList = parseList(listing.amenities);
   )}
 
   {/* ── AI chat: floating bubble (phones) / docked bar (desktop) ── */}
-  <ListingChat client:load listingId={listing.id} apiBaseUrl={apiBase} />
+  <ListingChat
+    client:load
+    listingId={listing.id}
+    apiBaseUrl={apiBase}
+    listingAddress={[listing.address, listing.city].filter(Boolean).join(", ")}
+    listingPath={canonicalPath}
+  />
 </Layout>

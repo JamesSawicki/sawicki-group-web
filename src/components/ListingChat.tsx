@@ -9,6 +9,7 @@
  * still there when it's reopened. The launcher labels are placeholders for the logo.
  */
 import { useState, useRef, useEffect } from "react";
+import ContactRequestCard, { type ContactRequest } from "./listing/ContactRequestCard";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -17,6 +18,9 @@ interface Props {
    *  sends prompt text (see ChatController on the API for the why). */
   listingId: number;
   apiBaseUrl: string;
+  /** Street address and page path, attached to contact requests sent from the chat. */
+  listingAddress: string;
+  listingPath: string;
 }
 
 /**
@@ -27,13 +31,21 @@ interface Props {
 interface Message {
   role: "user" | "assistant";
   content: string;
+  /** A contact request the AI prepared with this reply (shown as an editable card). */
+  contactRequest?: ContactRequest;
+}
+
+/** POST /api/chat response from listing-agent-api. */
+interface ChatReply {
+  reply: string;
+  contactRequest?: ContactRequest;
 }
 
 const PANEL_ID = "listing-chat-panel";
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export default function ListingChat({ listingId, apiBaseUrl }: Props) {
+export default function ListingChat({ listingId, apiBaseUrl, listingAddress, listingPath }: Props) {
   const [open, setOpen] = useState<boolean>(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState<string>("");
@@ -85,7 +97,8 @@ export default function ListingChat({ listingId, apiBaseUrl }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           listingId,
-          messages: updatedMessages,
+          // Text only: contact cards stay in the browser.
+          messages: updatedMessages.map(({ role, content }) => ({ role, content })),
         }),
       });
 
@@ -97,11 +110,15 @@ export default function ListingChat({ listingId, apiBaseUrl }: Props) {
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-      const data = await res.json();
-      const assistantContent: string =
-        data?.content?.[0]?.text ?? "Sorry, I couldn't generate a response.";
-
-      setMessages([...updatedMessages, { role: "assistant", content: assistantContent }]);
+      const data = (await res.json()) as ChatReply;
+      setMessages([
+        ...updatedMessages,
+        {
+          role: "assistant",
+          content: data.reply || "Sorry, I couldn't generate a response.",
+          contactRequest: data.contactRequest,
+        },
+      ]);
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -208,7 +225,7 @@ export default function ListingChat({ listingId, apiBaseUrl }: Props) {
               className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
             >
               <div
-                className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
+                className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-line ${
                   msg.role === "user"
                     ? "bg-stone-900 text-white rounded-br-sm"
                     : "bg-stone-100 text-stone-800 rounded-bl-sm"
@@ -218,6 +235,18 @@ export default function ListingChat({ listingId, apiBaseUrl }: Props) {
               </div>
             </div>
           ))}
+          {/* Contact requests the AI prepared: the visitor reviews and sends them. */}
+          {messages.map(
+            (msg, i) =>
+              msg.contactRequest && (
+                <ContactRequestCard
+                  key={`contact-${i}`}
+                  draft={msg.contactRequest}
+                  listingAddress={listingAddress}
+                  listingPath={listingPath}
+                />
+              ),
+          )}
 
           {/* Loading indicator */}
           {isLoading && (

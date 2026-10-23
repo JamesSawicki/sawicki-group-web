@@ -48,8 +48,10 @@ npm run build    # local production build; does not deploy
   `src/lib/listing-utils.ts`; reuse it rather than formatting inline.
 - **Photos:** use `src/lib/photo-utils.ts`. `photoIds` may be the current
   `[{key, cfId}]` format or the legacy `[cfId]` format; the parser handles both.
-- **Chat island** (`ListingChat.tsx`) sends `{ listingId, messages }` only; the API owns the
-  prompt.
+- **Chat island** (`ListingChat.tsx`) sends `{ listingId, messages }` (text only); the API
+  owns the prompt (listing details + Close to Home) and replies `{ reply, contactRequest? }`.
+  A `contactRequest` (the AI's request_contact tool) renders as `listing/ContactRequestCard.tsx`:
+  the visitor edits and sends it via `/api/contact`, so the AI never sends anything itself.
 - **Types** for API data are in `src/types/listing.ts`; keep them in sync with the API's
   `Listing` entity.
 - **MLS/IDX compliance:** listing disclosures (`ListingDisclosure.astro`) and anything marked

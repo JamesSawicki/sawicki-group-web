@@ -55,7 +55,7 @@ Transfer sizes are what Chrome received (HTML compressed; `/_astro` JS not yet �
 | Listing photos + lightbox | `PhotoGallery.tsx` | 5 mosaic / carousel images up front; lightbox loads on demand; strip uses 120 px thumbs | Cloudflare Images deliveries | Avoid full-size thumbnails (the old plugin loaded 2048 px). |
 | Summary card + mini header | `ListingSummary.tsx` | loads only the current photo ± 1 | Cloudflare Images deliveries | Scroll handler is rAF-throttled. |
 | Neighborhood map | `map-utils.ts`, `NeighborhoodMap.tsx` | 1 static image per listing view; interactive map only when opened | Mapbox Static Images; Mapbox map load on open | Never put an interactive map on page load (~1.7 MB JS + a map load per view). |
-| Listing AI chat | `ListingChat.tsx`, API `/api/chat` | 1 Anthropic call per message (~650 in + ~70 out tokens, measured) | Anthropic tokens | Haiku 4.5 (`app.chat.model`); last 10 messages; 400-token cap; 10 messages / IP / hour. Usage logged per message. |
+| Listing AI chat | `ListingChat.tsx`, API `/api/chat` | 1 Anthropic call per message (~2,150 in + ~100 out tokens, measured: full features + Close to Home + contact tool; was ~650 in) | Anthropic tokens | Haiku 4.5 (`app.chat.model`); last 10 messages; 400-token cap; 10 messages / IP / hour. Usage logged per message. |
 | Close to Home (amenity scores) | API `amenity/` | per listing every 90 days: 3 Mapbox isochrone calls + Overpass (shared tiles in batches) | Mapbox Isochrone API | Resumable batches; ~1,000 listings ≈ 1,000 isochrone calls/month. |
 | Structured data, sitemaps, RSS, robots, llms.txt | `structured-data.ts`, `src/pages/*.ts` | sitemap-listings: 1 slim API call per crawl (cached 1 h) | none | JSON-LD adds ~5–15 KB per page. |
 | Logging & monitoring | API `logging/`, Actuator; site `middleware.ts` | 1 access line per request; 1 line per outbound call (media downloads/uploads at DEBUG); metrics in memory | none (log storage: Railway plan / Cloud Logging 50 GiB free) | Prod INFO + JSON; all-SQL logging off (was on in every profile), slow SQL > 200 ms only. ~1 KB of logs per request. |
@@ -84,7 +84,7 @@ neighborhood map, 2% of listing views start a chat averaging 4 messages:
 | Mapbox map loads | 5,000 + 2,000 = 7,000 | $0 (free tier) |
 | Mapbox static images | 20,000 | $0 (free tier) |
 | Mapbox isochrones | ~1,000 | $0 (free tier) |
-| Chat messages (Haiku 4.5, measured tokens) | 1,600 × ~$0.001 | **~$1.60** |
+| Chat messages (Haiku 4.5, measured tokens) | 1,600 × ~$0.0027 | **~$4.30** |
 | Bandwidth: map search pans (say 10 per visit) | 50,000 × 10 KB | ~0.5 GB (was ~245 GB at 4.9 MB each) |
 
 Everything stays inside free tiers at this traffic; the remaining lever is CDN

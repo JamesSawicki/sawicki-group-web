@@ -60,7 +60,7 @@ try {
   if (res.ok) {
     const data = (await res.json()) as Page<Listing>;
     initialListings = data.content;
-    initialTotal = data.totalElements;
+    initialTotal = data.page.totalElements;
   }
 } catch {
   // Non-fatal: the map still renders with no pins and refetches client-side as the

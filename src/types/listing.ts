@@ -170,15 +170,15 @@ export interface Listing {
  * Page<T> — Spring Data's pagination wrapper.
  * Spring's PageImpl serializes to JSON in this exact shape, so we mirror it.
  */
+/** A page of API results (Spring Data's stable "via DTO" JSON shape). */
 export interface Page<T> {
   content: T[];
-  totalElements: number;
-  totalPages: number;
-  number: number; // current page (0-indexed)
-  size: number; // page size requested
-  first: boolean;
-  last: boolean;
-  numberOfElements: number; // results on this page (may be less than size on last page)
+  page: {
+    size: number; // page size requested
+    number: number; // current page (0-indexed)
+    totalElements: number; // matches across all pages
+    totalPages: number;
+  };
 }
 
 /**
