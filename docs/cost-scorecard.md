@@ -68,7 +68,7 @@ Transfer sizes are what Chrome received (HTML compressed; `/_astro` JS not yet �
 | Summary card + mini header | `ListingSummary.tsx` | loads only the current photo ± 1 | Cloudflare Images deliveries | Scroll handler is rAF-throttled. |
 | Neighborhood map | `map-utils.ts`, `NeighborhoodMap.tsx` | 1 static image per listing view; interactive map only when opened | Mapbox Static Images; Mapbox map load on open | Never put an interactive map on page load (~1.7 MB JS + a map load per view). |
 | Listing AI chat | `ListingChat.tsx`, API `/api/chat` | 1 Anthropic call per message (~2,150 in + ~100 out tokens, measured: full features + Close to Home + contact tool; was ~650 in) | Anthropic tokens | Haiku 4.5 (`app.chat.model`); last 10 messages; 400-token cap; 10 messages / IP / hour. Usage logged per message. |
-| Close to Home (amenity scores) | API `amenity/` | per listing every 90 days: 3 Mapbox isochrone calls + Overpass (shared tiles in batches) | Mapbox Isochrone API | Resumable batches; ~1,000 listings ≈ 1,000 isochrone calls/month. |
+| Close to Home (amenity scores) | API `amenity/` | per listing every 90 days: 3 Mapbox isochrone calls + Overpass (shared tiles in batches) + Matrix lookups for the nearest lists (measured 45 suburban, ~65 city; ≤70 elements) | Mapbox Isochrone API, Mapbox Matrix API | Resumable batches; ~1,000 listings ≈ 1,000 isochrone calls/month. Matrix: each batch stops at `amenity.scoring.batch-matrix-budget` (90,000) and the next run resumes, so even 5,000+ production listings (~300k elements) roll out over ~3–4 months inside the free tier instead of a ~$400 first rescore. Self-hosted Valhalla (~$15–25/mo) if that's too slow. |
 | Structured data, sitemaps, RSS, robots, llms.txt | `structured-data.ts`, `src/pages/*.ts` | sitemap-listings: 1 slim API call per crawl (cached 1 h) | none | JSON-LD adds ~5–15 KB per page. |
 | Phone chat nudge + greeting | `ListingChat.tsx`, `lib/chat-events.ts` | a 1 s timer + scroll/photo listeners until it fires (once per visit) | none: the greeting is written in, not generated; an AI call only happens when the visitor asks | ~1 KB of JS. |
 | Logging & monitoring | API `logging/`, Actuator; site `middleware.ts` | 1 access line per request; 1 line per outbound call (media downloads/uploads at DEBUG); metrics in memory | none (log storage: Railway plan / Cloud Logging 50 GiB free) | Prod INFO + JSON; all-SQL logging off (was on in every profile), slow SQL > 200 ms only. ~1 KB of logs per request. |
@@ -81,6 +81,8 @@ Transfer sizes are what Chrome received (HTML compressed; `/_astro` JS not yet �
 | Mapbox GL JS (web map loads) | map search; neighborhood map when opened | 50,000 loads | ~$5 per 1,000 |
 | Mapbox Static Images | listing neighborhood image | 50,000 requests | ~$1 per 1,000 |
 | Mapbox Isochrone | amenity scoring | 100,000 requests | ~$2 per 1,000 |
+| Mapbox Matrix | Close to Home nearest lists (travel distance/time) | 100,000 elements (origins × destinations) | $2.00 per 1,000 to 500k, then $1.60, then $1.20 (checked 2026-10-23) |
+| Mapbox Directions | (Phase 2, tabled: routes on the neighborhood map) | 100,000 requests | $2.00 per 1,000 to 500k (checked 2026-10-23) |
 | Cloudflare Images | listing photos | — | ~$5 per 100k stored, ~$1 per 100k delivered |
 | Anthropic Claude Haiku 4.5 | listing chat | — | ~$1 / M input tokens, ~$5 / M output tokens (Sonnet 4.5: ~$3 / ~$15) |
 | Overpass API (public) | amenity POIs | free (fair use) | — |
@@ -97,7 +99,8 @@ neighborhood map, 2% of listing views start a chat averaging 4 messages:
 | Mapbox map loads | 5,000 + 2,000 = 7,000 | $0 (free tier) |
 | Mapbox static images | 20,000 | $0 (free tier) |
 | Mapbox isochrones | ~1,000 | $0 (free tier) |
-| Chat messages (Haiku 4.5, measured tokens) | 1,600 × ~$0.0027 | **~$4.30** |
+| Mapbox Matrix (nearest lists, 90-day refresh) | ~1,000 listings × ~55 / 3 ≈ 18k elements | $0 (free tier) |
+| Chat messages (Haiku 4.5, measured tokens; +~600 tokens for the nearest lists) | 1,600 × ~$0.0033 | **~$5.30** |
 | Bandwidth: map search pans (say 10 per visit) | 50,000 × 10 KB | ~0.5 GB (was ~245 GB at 4.9 MB each) |
 
 Everything stays inside free tiers at this traffic; the remaining lever is CDN

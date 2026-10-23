@@ -216,8 +216,26 @@ export interface SearchSuggestions {
   listings: Listing[];
 }
 
+/** One of the nearest places in a category, measured along real routes for one travel mode. */
+export interface NearbyPlace {
+  name: string;
+  /** OSM type within mixed categories (e.g. "cafe" among restaurants). */
+  subtype?: string;
+  /** Route distance, meters. */
+  meters: number;
+  /** Travel time, seconds. */
+  seconds: number;
+  /** The point routed to (a park's nearest edge for parks). */
+  latitude: number;
+  longitude: number;
+}
+
 export interface AmenityScores {
   generatedAt: string;
+  /** Scoring rules version (3 = includes `nearest`). */
+  schemaVersion?: number;
   scores: Record<string, Record<string, CategoryScore>>;
   // scores["walk_10min"]["grocery"] = CategoryScore
+  /** Up to 3 nearest per mode and category by real route: nearest["drive"]["grocery"]. Absent before v3. */
+  nearest?: Record<"walk" | "bike" | "drive", Record<string, NearbyPlace[]>>;
 }
