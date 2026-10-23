@@ -22,7 +22,7 @@ export const GET: APIRoute = async () => {
 > ${site.tagline}.
 
 The site offers a map search of homes for sale and pending in the Twin Cities and
-Minnesota (listing data from ${brokerage.name}'s MLS, NorthstarMLS, under IDX rules),
+Minnesota (listing data from NorthstarMLS, in which ${brokerage.name} participates),
 a detail page per listing with neighborhood access ("Close to Home": nearby groceries,
 parks, transit and more), and weekly market updates.
 

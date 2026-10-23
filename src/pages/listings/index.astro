@@ -16,6 +16,7 @@ import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
 
 import Layout from "../../layouts/Layout.astro";
 import MapSearch from "../../components/MapSearch.tsx";
+import ListingDisclosure from "../../components/ListingDisclosure.astro";
 import type { Listing, Page } from "../../types/listing";
 import { fetchWithTimeout } from "../../lib/api";
 import { applyFiltersToParams, filtersFromParams, MAP_API_SORT } from "../../lib/search-filters";
@@ -112,6 +113,9 @@ const jsonLd = [
     mapboxToken={mapboxToken}
     photoAccountHash={photoAccountHash}
   />
+
+  {/* ── MLS disclosure (VERIFY-IDX: §5.4(e) disclaimer, §5.11(f) notice, source) ── */}
+  <ListingDisclosure />
 </Layout>
 
 <style is:global>

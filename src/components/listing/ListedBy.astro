@@ -14,7 +14,8 @@ const { brokerName, listDate } = Astro.props;
 ---
 
 <div class="bg-stone-50 rounded-xl p-4 text-sm">
-  <div class="text-stone-400 text-xs uppercase tracking-widest mb-1">Listed by</div>
-  <div class="font-semibold text-stone-900">{brokerName}</div>
-  {listDate && <div class="text-stone-400 text-xs mt-2">Listed {listDate}</div>}
+  {/* Plain weight on purpose: the listing brokerage may not outrank ours (§5.8(a)(ii)). */}
+  <div class="text-stone-500 text-xs uppercase tracking-widest mb-1">Listed by</div>
+  <div class="text-stone-900">{brokerName}</div>
+  {listDate && <div class="text-stone-500 text-xs mt-2">Listed {listDate}</div>}
 </div>

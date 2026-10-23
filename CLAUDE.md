@@ -58,11 +58,46 @@ npm run build    # local production build; does not deploy
   the visitor edits and sends it via `/api/contact`, so the AI never sends anything itself.
 - **Types** for API data are in `src/types/listing.ts`; keep them in sync with the API's
   `Listing` entity.
-- **MLS/IDX compliance:** listing disclosures (`ListingDisclosure.astro`) and anything marked
-  `VERIFY-IDX` in `site.config.ts` follow NorthstarMLS display rules; don't change that
-  wording casually.
+- **MLS/IDX compliance:** see "Compliance" below; anything marked `VERIFY-IDX` follows the
+  NorthstarMLS rules; don't change that wording casually.
+- **Brand items** (names, logos, bios, phones, emails, licenses, brokerage/office, social
+  links, brand colors) live only in `src/lib/site.config.ts`; never hardcode them in markup.
+  Render them with `src/components/brand/` (`Logo`, `ContactLine`, `BrokerageCredit`,
+  `TeamMemberProfile`); islands import the plain exports (`chatBubble`, `primaryContact`,
+  `site`). Use `primaryContact`, not the deprecated `agent`. Unknown values stay empty with
+  `TODO-JIM:` and are omitted, never guessed. Accent/brand colors are Tailwind tokens in
+  `src/styles/global.css` (`text-accent`, `brand-navy`, `brand-gold`). See `docs/brand.md`.
 - **Blog posts** in `src/content/blog/` arrive as `draft: true`; publishing means flipping
   that to `false`.
+
+## Compliance (NorthstarMLS Rules eff. 2026-07-01, Minn. Stat. ch. 82)
+
+The rules and a website digest are in `docs/compliance/` (README = digest;
+`gap-analysis.md` = open gaps and go-live blockers). Treat the PDF as the authority.
+
+- **One disclosure block:** `ListingDisclosure.astro` holds the exact §5.4(e) disclaimer
+  ("Data believed to be accurate but should be independently verified."), the §5.11(f)
+  limited-use notice, source (NorthstarMLS), our brokerage + contact, EHO, copyright and the
+  error-report link (§5.8(h): fix within 48 h). Use it (with or without `listing`) on every
+  page showing MLS data (listing pages, `/listings`, `/disclaimers`); never retype that wording.
+- **Our brokerage** (Coldwell Banker Realty) is named on every page (header + footer), at
+  least as prominent as any listing brokerage or third party (Minn. Stat. 82.69; §5.8(a)(ii)).
+  `ListedBy` stays plain weight for that reason.
+- **Source label** ("Source: NorthstarMLS · MLS #") sits beside each listing (§5.8(c)).
+  **Supplemental data** (Close to Home, AI chat, maps) is visually separated from the MLS
+  record and labeled with its source (§5.8(e)); the chat is always labeled as AI.
+- **Never show** the listing agreement type, sold listings (public), or Incomplete/Withheld/
+  Canceled/Expired/TNAS listings; never filter by compensation or listing brokerage (§5.4(a)).
+- **Market stats** in posts state their criteria and, for MLS data, "Based on information
+  from the REGIONAL MULTIPLE LISTING SERVICE OF MINNESOTA, INC for the period (date) through
+  (date)." (§5.5). Never "free" (§7.2); never suggest we are/run an MLS (§6.14).
+- **Fair housing:** no content (pages, posts, chat answers) that describes residents or
+  suggests who a home suits; Close to Home counts places only.
+- **Legal pages:** `/privacy`, `/terms` (`EULA_URL` and `ACCOUNTS_LAUNCHED` switches),
+  `/disclaimers`, `/accessibility`, linked from the footer and in `sitemap-pages.xml`. Bump
+  their "Last updated" dates on change.
+- **Pending before go-live:** EULA click-through each session (§5.8(j)), 18-month audit trail
+  (§5.9(b)), 2-day notice to NorthstarMLS (§5.8(g)), broker consent (§5.4(f)).
 
 ## Logging
 

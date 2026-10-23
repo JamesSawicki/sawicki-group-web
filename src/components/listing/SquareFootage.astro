@@ -22,25 +22,25 @@ const { listing } = Astro.props;
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
       {isPositive(listing.sqftAboveGrade) && (
         <div>
-          <div class="text-stone-400 mb-0.5 text-xs">Above Grade</div>
+          <div class="text-stone-500 mb-0.5 text-xs">Above Grade</div>
           <div class="font-semibold text-stone-800">{formatSqft(listing.sqftAboveGrade)}</div>
         </div>
       )}
       {listing.sqftBelowGrade != null && (
         <div>
-          <div class="text-stone-400 mb-0.5 text-xs">Below Grade</div>
+          <div class="text-stone-500 mb-0.5 text-xs">Below Grade</div>
           <div class="font-semibold text-stone-800">{formatSqft(listing.sqftBelowGrade)}</div>
         </div>
       )}
       {isPositive(listing.sqftMainLevel) && (
         <div>
-          <div class="text-stone-400 mb-0.5 text-xs">Main Level</div>
+          <div class="text-stone-500 mb-0.5 text-xs">Main Level</div>
           <div class="font-semibold text-stone-800">{formatSqft(listing.sqftMainLevel)}</div>
         </div>
       )}
       {isPositive(listing.sqftTotal) && (
         <div>
-          <div class="text-stone-400 mb-0.5 text-xs">Total Finished</div>
+          <div class="text-stone-500 mb-0.5 text-xs">Total Finished</div>
           <div class="font-semibold text-stone-800">{formatSqft(listing.sqftTotal)}</div>
         </div>
       )}

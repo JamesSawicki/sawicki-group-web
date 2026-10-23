@@ -1,7 +1,7 @@
 /** /rss.xml — RSS 2.0 feed of published blog posts, newest first (linked from every page's <head>). */
 import type { APIRoute } from "astro";
 import { getCollection } from "astro:content";
-import { site } from "../lib/site.config";
+import { primaryContact, site } from "../lib/site.config";
 import { absoluteUrl, blogPostPath } from "../lib/structured-data";
 import { xmlEscape, xmlResponse } from "../lib/sitemap";
 
@@ -12,7 +12,7 @@ export const GET: APIRoute = async () => {
   const items = posts
     .map((post) => {
       const url = absoluteUrl(blogPostPath(post));
-      const author = post.data.author === "AI" ? `${site.name} AI` : "Jim Sawicki";
+      const author = post.data.author === "AI" ? site.aiAuthorName : primaryContact.name;
       return `<item>
   <title>${xmlEscape(post.data.title)}</title>
   <link>${xmlEscape(url)}</link>
@@ -29,7 +29,7 @@ export const GET: APIRoute = async () => {
     `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/">
 <channel>
-  <title>${xmlEscape(`${site.name} — Market Updates`)}</title>
+  <title>${xmlEscape(`${site.name} — ${site.blogName}`)}</title>
   <link>${xmlEscape(absoluteUrl("/blog"))}</link>
   <atom:link href="${xmlEscape(absoluteUrl("/rss.xml"))}" rel="self" type="application/rss+xml" />
   <description>Twin Cities real estate market updates from ${xmlEscape(site.name)}.</description>

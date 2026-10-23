@@ -60,7 +60,7 @@ const cityLine = listing.city
       <h1 class="text-3xl font-semibold text-stone-900">{listing.address}</h1>
       <div class="text-stone-500 mt-1">{cityLine}</div>
       {listing.neighborhood && (
-        <div class="text-xs text-stone-400 uppercase tracking-widest mt-1">
+        <div class="text-xs text-stone-500 uppercase tracking-widest mt-1">
           {listing.neighborhood}
         </div>
       )}
@@ -68,11 +68,12 @@ const cityLine = listing.city
     <div class="text-right shrink-0">
       <div class="text-3xl font-semibold text-stone-900">{priceDisplay}</div>
       {priceReduced && (
-        <div class="text-sm text-stone-400 line-through mt-0.5">
+        <div class="text-sm text-stone-500 line-through mt-0.5">
           {formatPrice(listing.originalListPrice)}
         </div>
       )}
-      {mlsID && <div class="text-xs text-stone-400 mt-1">MLS #{mlsID}</div>}
+      {/* VERIFY-IDX §5.8(c): the listing's source sits right beside it. */}
+      {mlsID && <div class="text-xs text-stone-500 mt-1">Source: NorthstarMLS · MLS #{mlsID}</div>}
     </div>
   </div>
 

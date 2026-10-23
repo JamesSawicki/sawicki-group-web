@@ -44,6 +44,7 @@ import {
 import { parsePhotoIds, parseVirtualTourUrls, photoUrl } from "../../lib/photo-utils";
 import { listingNodes } from "../../lib/structured-data";
 import { fetchWithTimeout, serviceUnavailableResponse } from "../../lib/api";
+import { site } from "../../lib/site.config";
 
 // CSS for React islands is imported here in the .astro frontmatter, not inside the island,
 // so Vite resolves and bundles it through Astro's build (same pattern as Mapbox's CSS).
@@ -177,7 +178,6 @@ const amenitiesList = parseList(listing.amenities);
   <div class="max-w-6xl mx-auto px-6 py-10 grid grid-cols-1 lg:grid-cols-5 gap-12">
     <div class="lg:col-span-3 space-y-10">
       <Description listing={listing} />
-      <AmenityScorecard listing={listing} />
       <RoomDimensions listing={listing} />
       <SquareFootage listing={listing} />
       <BathroomDetail listing={listing} />
@@ -191,6 +191,15 @@ const amenitiesList = parseList(listing.amenities);
       <Schools listing={listing} />
       <Directions listing={listing} />
       <ListedBy brokerName={listingBrokerDisplay} listDate={listing.listDate} />
+
+      {/* ── Supplemental data ── VERIFY-IDX §5.8(e): our own additions sit after the MLS
+          record, visually separated and labeled with their source. */}
+      <section class="border border-amber-200 bg-amber-50/40 rounded-xl p-4 sm:p-6">
+        <p class="text-xs text-stone-600 mb-4">
+          Close to Home is added by {site.name}, not part of the MLS listing.
+        </p>
+        <AmenityScorecard listing={listing} />
+      </section>
     </div>
 
     <SummarySidebar

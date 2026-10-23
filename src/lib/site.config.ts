@@ -133,6 +133,10 @@ export const brandColors = {
  */
 export const brokerage: {
   name: string;
+  /** Licensed entity name, if it differs from the trade name (Minn. Stat. 82.69). */
+  legalName: string;
+  /** Primary managing broker, if the broker wants it shown. */
+  primaryBroker: string;
   serviceArea: string;
   state: string;
   stateName: string;
@@ -142,6 +146,10 @@ export const brokerage: {
   url: string;
 } = {
   name: "Coldwell Banker Realty",
+  /** TODO-JIM: the brokerage's exact licensed entity name (ask the broker). */
+  legalName: "",
+  /** TODO-JIM: primary managing broker's name, if it should be shown. */
+  primaryBroker: "",
   serviceArea: "Twin Cities, Minnesota",
   state: "MN",
   stateName: "Minnesota",
@@ -253,23 +261,23 @@ export const chatBubble: { label: string; image: BrandImage | null } = {
 };
 
 // ─── MLS IDX compliance ──────────────────────────────────────────────────────
-// Every string marked // VERIFY-IDX is currently industry-standard placeholder
-// text — defensible but not authoritative. When the NorthstarMLS IDX Display
-// Manual arrives, grep "VERIFY-IDX" across the codebase and swap each string
-// for the exact required wording. Do this BEFORE flipping on real MLS
-// ingestion to production.
+// Strings marked // VERIFY-IDX follow the NorthstarMLS Rules (eff. 2026-07-01) in
+// docs/compliance/. The listing disclaimer and limited-use notice live in
+// ListingDisclosure.astro. When a new rules edition arrives, grep "VERIFY-IDX" and
+// re-check each string against it.
 export const mls = {
   name: "NorthstarMLS",
   /** Short name used in inline attribution. */
   shortName: "NorthstarMLS",
   /** Year for the copyright notice — bump every January. */
   copyrightYear: 2026,
-  /** VERIFY-IDX: NAR-standard reliability disclaimer. NorthstarMLS may require alternate wording. */
-  reliabilityDisclaimer:
-    "The information being provided is for consumers' personal, non-commercial use and may not be used for any purpose other than to identify prospective properties consumers may be interested in purchasing. Information is deemed reliable but is not guaranteed accurate by the MLS.",
-  /** VERIFY-IDX: standard IDX copyright/attribution. */
+  /**
+   * VERIFY-IDX: copyright/attribution. The 2026 rules replaced the old "Broker Reciprocity
+   * Program" with limited electronic advertising (§5.10–5.11); the compilation copyright
+   * belongs to the Regional Multiple Listing Service of Minnesota, Inc. (§8.3).
+   */
   copyrightNotice:
-    "© 2026 NorthstarMLS. All rights reserved. The data relating to real estate for sale on this web site comes in part from the Broker Reciprocity Program of NorthstarMLS.",
+    "© 2026 Regional Multiple Listing Service of Minnesota, Inc. All rights reserved. Listing data from NorthstarMLS; listings of other brokerages are displayed under NorthstarMLS limited electronic advertising rules.",
   /** VERIFY-IDX: Coldwell Banker franchise + NAR Fair Housing wording. */
   fairHousingStatement:
     "The Sawicki Group and Coldwell Banker Realty are committed to the principles of the Fair Housing Act and the Equal Opportunity Act.",

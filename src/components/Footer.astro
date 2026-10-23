@@ -17,6 +17,12 @@ const navLinks = [
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
 ];
+const legalLinks = [
+  { href: "/privacy", label: "Privacy Policy" },
+  { href: "/terms", label: "Terms of Use" },
+  { href: "/disclaimers", label: "Disclaimers" },
+  { href: "/accessibility", label: "Accessibility" },
+];
 const socialLinks = (Object.keys(social) as (keyof typeof social)[]).map((key) => ({
   href: social[key],
   label: socialLabels[key],
@@ -58,9 +64,15 @@ const linkClass = "py-1.5 hover:text-stone-900 transition-colors";
     <div>
       <div class="font-semibold text-stone-900 mb-3">Legal</div>
       <div class="flex flex-col">
-        <a href="/privacy" class={linkClass}>
-          Privacy Policy
-        </a>
+        {legalLinks.map((link) => (
+          <a href={link.href} class={linkClass}>
+            {link.label}
+          </a>
+        ))}
+        {/* NorthstarMLS §7.3: compensation is negotiable. */}
+        <span class="py-1.5">
+          Brokerage compensation is not set by law and is fully negotiable.
+        </span>
         <span class="py-1.5">
           {agent.licenseText}
           {primaryContact.licenseNumber && ` · License #${primaryContact.licenseNumber}`}

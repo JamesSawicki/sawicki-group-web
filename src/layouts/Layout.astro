@@ -83,10 +83,17 @@ const fullTitle = `${title} | ${site.name}`;
     <script type="application/ld+json" set:html={JSON.stringify(jsonLdDocument(jsonLd))} />
   </head>
   <body class="bg-white text-stone-800 font-sans antialiased">
+    {/* Skip link (WCAG 2.4.1): hidden until a keyboard user tabs to it. */}
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-white focus:px-4 focus:py-2 focus:rounded-lg focus:shadow"
+    >
+      Skip to content
+    </a>
     <Header />
 
     <!-- PAGE CONTENT -->
-    <main>
+    <main id="main">
       <slot />
     </main>
 

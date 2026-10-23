@@ -36,6 +36,8 @@ import ContactLine from "./ContactLine.astro";
       brokerage.name
     )}
   </div>
+  {brokerage.legalName && <div>{brokerage.legalName}</div>}
+  {brokerage.primaryBroker && <div>Broker: {brokerage.primaryBroker}</div>}
   <div>{brokerage.serviceArea}</div>
   {brokerage.licenseNumber && <div>License #{brokerage.licenseNumber}</div>}
   <ContactLine phone={brokerage.phone} />

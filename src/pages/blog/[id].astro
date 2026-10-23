@@ -2,6 +2,7 @@
 import Layout from "../../layouts/Layout.astro";
 import { getCollection, render } from "astro:content";
 import { blogPostNodes } from "../../lib/structured-data";
+import { site } from "../../lib/site.config";
 
 export const prerender = true;
 
@@ -29,7 +30,7 @@ const { Content } = await render(post);
   <article class="max-w-3xl mx-auto px-6 py-20">
     <div class="mb-12">
       <div class="flex items-center gap-3 mb-4">
-        <span class="text-xs font-semibold text-amber-700 uppercase tracking-widest">
+        <span class="text-xs font-semibold text-accent uppercase tracking-widest">
           {post.data.tag}
         </span>
         {post.data.author === "AI" && (
@@ -49,7 +50,7 @@ const { Content } = await render(post);
             year: "numeric",
           })}
         </span>
-        <span>By {post.data.author === "AI" ? "The Sawicki Group AI" : post.data.author}</span>
+        <span>By {post.data.author === "AI" ? site.aiAuthorName : post.data.author}</span>
       </div>
     </div>
 
@@ -57,7 +58,7 @@ const { Content } = await render(post);
       class="prose prose-stone prose-lg max-w-none
                 prose-headings:font-semibold prose-headings:text-stone-900
                 prose-p:text-stone-600 prose-p:leading-relaxed
-                prose-a:text-amber-700 prose-a:no-underline hover:prose-a:underline
+                prose-a:text-accent prose-a:no-underline hover:prose-a:underline
                 prose-strong:text-stone-900"
     >
       <Content />

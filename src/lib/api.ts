@@ -26,6 +26,7 @@
 export const DEFAULT_FETCH_TIMEOUT_MS = 8000;
 
 import { currentRequestId, REQUEST_ID_HEADER } from "./request-context";
+import { site } from "./site.config";
 
 export interface FetchWithTimeoutOptions extends RequestInit {
   /** Milliseconds before the request is aborted. Defaults to DEFAULT_FETCH_TIMEOUT_MS. */
@@ -73,7 +74,7 @@ export function serviceUnavailableResponse(message?: string): Response {
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="robots" content="noindex" />
-<title>Temporarily unavailable — The Sawicki Group</title>
+<title>Temporarily unavailable — ${site.name}</title>
 <style>
   :root { color-scheme: light; }
   body { margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
