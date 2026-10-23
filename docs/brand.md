@@ -26,6 +26,26 @@ contact detail.
 | The logo colors                      | `--color-brand-navy` / `--color-brand-gold` in `src/styles/global.css`, and `brandColors` in `site.config.ts` for code that can't use classes |
 | MLS disclaimers                      | `mls` — VERIFY-IDX wording; follow NorthstarMLS rules, don't reword casually                                                                  |
 
+## Logo files
+
+Brokerage logos (supplied by Jim, 2026-10-23) live in `public/brand/coldwell-banker/` and are
+served at `/brand/coldwell-banker/<file>`. Use them only as Coldwell Banker's brand rules allow
+(TODO-JIM: confirm the approved lockup and minimum size with the broker).
+
+| File | Layout | Color / background | Size (px) |
+| --- | --- | --- | --- |
+| `cbr-horizontal-black.png` | Boxed mark beside two-line wordmark | Black, transparent | 1709×400 |
+| `cbr-horizontal-black.jpg` | Same | Black on white | 1709×400 |
+| `cbr-vertical-black.png` | Boxed mark above wordmark | Black, transparent | 2000×1144 |
+| `cbr-vertical-black.jpg` | Same | Black on white | 2000×1144 |
+| `cbr-horizontal-white.png` | Mark beside two-line wordmark | White, transparent (dark backgrounds) | 1642×440 |
+| `cbr-oneline-white.png` | Mark + "COLDWELL BANKER \| REALTY" on one line | White, transparent | 2150×220 |
+| `cbr-vertical-white.png` | Mark above one-line wordmark | White, transparent | 2000×1210 |
+| `cbr-stacked-white.png` | Mark above two-line wordmark | White, transparent | 1100×1386 |
+
+On our white pages the horizontal black PNG is the natural choice (header/footer credit);
+the white versions are for dark backgrounds (e.g. a dark footer or photo overlays).
+
 ## Components
 
 Markup that shows brand items uses these (in `src/components/brand/`), so it never repeats:
