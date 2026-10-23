@@ -1,5 +1,6 @@
 import { isIP } from "node:net";
 import type { APIContext, MiddlewareHandler, MiddlewareNext } from "astro";
+import { site } from "./lib/site.config";
 import {
   REQUEST_ID_HEADER,
   currentRequestId,
@@ -249,7 +250,7 @@ function rejection(rule: Rule, status: number, message: string, retryAfterS = 0)
   if (retryAfterS > 0) headers["Retry-After"] = String(retryAfterS);
   const body = rule.json
     ? JSON.stringify({ success: false, error: message })
-    : `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><title>Please slow down — The Sawicki Group</title></head><body style="font-family:system-ui,sans-serif;max-width:32rem;margin:4rem auto;padding:0 1rem;color:#1c1917"><h1 style="font-size:1.5rem">Please slow down</h1><p>${message}</p><p><a href="/" style="display:inline-block;padding:0.75rem 0">Home</a></p></body></html>`;
+    : `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><title>Please slow down — ${site.name}</title></head><body style="font-family:system-ui,sans-serif;max-width:32rem;margin:4rem auto;padding:0 1rem;color:#1c1917"><h1 style="font-size:1.5rem">Please slow down</h1><p>${message}</p><p><a href="/" style="display:inline-block;padding:0.75rem 0">Home</a></p></body></html>`;
   return new Response(body, { status, headers });
 }
 

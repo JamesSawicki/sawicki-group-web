@@ -43,7 +43,11 @@ import {
 } from "../../lib/listing-utils";
 import { parsePhotoIds, parseVirtualTourUrls, photoUrl } from "../../lib/photo-utils";
 import { listingNodes } from "../../lib/structured-data";
-import { fetchWithTimeout, serviceUnavailableResponse } from "../../lib/api";
+import {
+  fetchWithTimeout,
+  serviceUnavailableResponse,
+  tooManyRequestsResponse,
+} from "../../lib/api";
 import { site } from "../../lib/site.config";
 
 // CSS for React islands is imported here in the .astro frontmatter, not inside the island,
@@ -85,6 +89,10 @@ try {
   const res = await fetchWithTimeout(`${apiBase}/api/listings/mls/${listingNumber}`);
   if (res.status === 404) {
     return Astro.rewrite("/404");
+  }
+  // The API's abuse protection limited this visitor: say so, rather than "unavailable".
+  if (res.status === 429) {
+    return tooManyRequestsResponse(res.headers.get("Retry-After"));
   }
   if (!res.ok) {
     return serviceUnavailableResponse();

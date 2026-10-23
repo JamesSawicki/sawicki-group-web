@@ -68,22 +68,27 @@ export async function fetchWithTimeout(
 }
 
 /**
- * A minimal, self-contained, on-brand HTML response for transient backend
- * failures on pages that cannot render without data (e.g. the listing detail
- * page). Returns a real 503 so monitoring and crawlers see the truth, while
- * the visitor gets a styled page with a way forward instead of a stack trace.
+ * A minimal, self-contained, on-brand HTML error page for pages that cannot render without
+ * API data (e.g. the listing detail page). Real status codes, so monitoring and crawlers see
+ * the truth, while the visitor gets a styled page with a way forward instead of a stack trace.
  *
  * Kept inline (no Layout import) so it works even if the failure happened
  * before/around layout data was available.
  */
-export function serviceUnavailableResponse(message?: string): Response {
+function errorPageResponse(
+  status: number,
+  title: string,
+  heading: string,
+  message: string,
+  retryAfterSeconds: number,
+): Response {
   const body = `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="robots" content="noindex" />
-<title>Temporarily unavailable — ${site.name}</title>
+<title>${title} — ${site.name}</title>
 <style>
   :root { color-scheme: light; }
   body { margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
@@ -97,16 +102,45 @@ export function serviceUnavailableResponse(message?: string): Response {
 </head>
 <body>
   <div class="card">
-    <h1>This page is temporarily unavailable</h1>
-    <p>${message ?? "We couldn't load this listing right now. Please try again in a moment."}</p>
+    <h1>${heading}</h1>
+    <p>${message}</p>
     <a href="/listings">Back to listings</a>
   </div>
 </body>
 </html>`;
   return new Response(body, {
-    status: 503,
-    headers: { "Content-Type": "text/html; charset=utf-8", "Retry-After": "30" },
+    status,
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      "Retry-After": String(retryAfterSeconds),
+    },
   });
+}
+
+/** 503 for transient backend failures (API down, timeout, unexpected status). */
+export function serviceUnavailableResponse(message?: string): Response {
+  return errorPageResponse(
+    503,
+    "Temporarily unavailable",
+    "This page is temporarily unavailable",
+    message ?? "We couldn't load this listing right now. Please try again in a moment.",
+    30,
+  );
+}
+
+/**
+ * 429 when the API rate-limited this visitor (abuse protection): tells a real person to slow
+ * down for a moment, and passes the API's Retry-After on (default 60 s).
+ */
+export function tooManyRequestsResponse(retryAfter: string | null): Response {
+  const seconds = Math.min(Math.max(Number(retryAfter) || 60, 1), 3600);
+  return errorPageResponse(
+    429,
+    "Please slow down",
+    "Please slow down",
+    `You've viewed a lot of listings very quickly. Please wait about ${seconds < 120 ? `${seconds} seconds` : `${Math.ceil(seconds / 60)} minutes`} and try again.`,
+    seconds,
+  );
 }
 
 // ─── MLS Grid "data as of" ───────────────────────────────────────────────────
