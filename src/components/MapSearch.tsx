@@ -640,14 +640,13 @@ export default function MapSearch({
       map.on("click", "clusters", (e) => {
         if (drawRef.current) return;
         const [feature] = map.queryRenderedFeatures(e.point, { layers: ["clusters"] });
-        if (!sourceRef.current) return;
+        // Clusters are points; checking narrows the geometry type (and skips a missed tap).
+        if (!sourceRef.current || feature?.geometry.type !== "Point") return;
+        const [lng, lat] = feature.geometry.coordinates;
         sourceRef.current.getClusterExpansionZoom(
           feature.properties!["cluster_id"] as number,
-          (err: Error | null, zoom: number | null) => {
-            if (!err && zoom !== null) {
-              const coords = feature.geometry.coordinates;
-              map.easeTo({ center: [coords[0], coords[1]], zoom });
-            }
+          (err, zoom) => {
+            if (!err && zoom != null) map.easeTo({ center: [lng, lat], zoom });
           },
         );
       });
