@@ -1,6 +1,15 @@
+/**
+ * POST /api/contact: emails the team a contact-form or chat contact-card request (Resend).
+ *
+ * Every send is a billable, reputation-bearing email, so it's guarded in layers:
+ * middleware.ts checks the Origin and declared size and rate-limits per visitor; here the
+ * body read is capped, a hidden honeypot field catches form-filling bots, fields are
+ * length-capped, and a daily cap on sends bounds the total however many visitors there are.
+ */
 import type { APIRoute } from "astro";
 import { Resend } from "resend";
 import { agent, site } from "../../lib/site.config";
+import { clientIpFrom, logAbuse } from "../../middleware";
 
 const resend = new Resend(import.meta.env.RESEND_API_KEY);
 
@@ -11,14 +20,79 @@ const esc = (s: string): string =>
     (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!,
   );
 
+// ─── Limits ──────────────────────────────────────────────────────────────────
+
+/** Largest body read; the middleware rejects bigger declared sizes before this. */
+const MAX_BODY_BYTES = 16 * 1024;
+
+/**
+ * Emails per UTC day across all visitors (per server instance). Real inquiries are a few a
+ * day; Resend's free tier is 100/day. Over the cap the visitor is asked to call or email.
+ */
+const DAILY_SEND_CAP =
+  Number(process.env.CONTACT_DAILY_SEND_CAP || import.meta.env.CONTACT_DAILY_SEND_CAP) || 50;
+let sendDay = "";
+let sentToday = 0;
+
+/** Field length caps (characters). */
+const MAX = { name: 120, email: 200, phone: 40, intent: 100, message: 5000 };
+
+const json = (status: number, body: object): Response =>
+  new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
+
+/** Reads the body as form data, or null if it's over MAX_BODY_BYTES or unreadable. */
+async function readForm(request: Request): Promise<FormData | null> {
+  const reader = request.body?.getReader();
+  if (!reader) return null;
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    size += value.byteLength;
+    if (size > MAX_BODY_BYTES) {
+      await reader.cancel();
+      return null;
+    }
+    chunks.push(value);
+  }
+  const body = new Uint8Array(size);
+  let offset = 0;
+  for (const chunk of chunks) {
+    body.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  try {
+    return await new Response(body, { headers: request.headers }).formData();
+  } catch {
+    return null;
+  }
+}
+
+// ─── Handler ─────────────────────────────────────────────────────────────────
+
 export const POST: APIRoute = async ({ request }) => {
-  // Parse the form data from the request body
-  const data = await request.formData();
-  const name = data.get("name")?.toString().trim();
-  const email = data.get("email")?.toString().trim();
-  const phone = data.get("phone")?.toString().trim();
-  const intent = data.get("intent")?.toString().trim();
-  const message = data.get("message")?.toString().trim();
+  const ip = clientIpFrom(request);
+  const data = await readForm(request);
+  if (!data) {
+    logAbuse({ abuseType: "bad_request", rule: "contact", status: 413, ip });
+    return json(413, { success: false, error: "That message is too long. Please shorten it." });
+  }
+
+  // Honeypot: a field people never see (hidden in the form), which bots fill in. Answer
+  // "sent" so the bot learns nothing, and send nothing.
+  if (data.get("website")?.toString().trim()) {
+    logAbuse({ abuseType: "bad_request", rule: "contact_honeypot", status: 200, ip });
+    return json(200, { success: true });
+  }
+
+  const field = (key: keyof typeof MAX): string | undefined =>
+    data.get(key)?.toString().trim() || undefined;
+  const name = field("name");
+  const email = field("email");
+  const phone = field("phone");
+  const intent = field("intent");
+  const message = field("message");
   // Sent by the listing chat's contact card: which listing the request is about. Only a
   // site listing path is accepted, so the email can't carry an arbitrary link.
   const listingAddress = data.get("listingAddress")?.toString().trim().slice(0, 200);
@@ -29,14 +103,39 @@ export const POST: APIRoute = async ({ request }) => {
 
   // Basic validation — return 400 if required fields are missing
   if (!name || !email || !message) {
-    return new Response(
-      JSON.stringify({ success: false, error: "Name, email, and message are required." }),
-      { status: 400, headers: { "Content-Type": "application/json" } },
-    );
+    return json(400, { success: false, error: "Name, email, and message are required." });
+  }
+  const tooLong = (Object.keys(MAX) as (keyof typeof MAX)[]).find(
+    (k) => (field(k)?.length ?? 0) > MAX[k],
+  );
+  if (tooLong || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+    logAbuse({ abuseType: "bad_request", rule: "contact", status: 400, ip });
+    return json(400, {
+      success: false,
+      error: tooLong
+        ? `Please shorten the ${tooLong} field (up to ${MAX[tooLong]} characters).`
+        : "Please enter a valid email address.",
+    });
   }
 
+  // Daily cap on emails sent (spend + sender reputation), counted before sending.
+  const today = new Date().toISOString().slice(0, 10);
+  if (today !== sendDay) {
+    sendDay = today;
+    sentToday = 0;
+  }
+  if (sentToday >= DAILY_SEND_CAP) {
+    logAbuse({ abuseType: "spend_cap", rule: "resend", status: 503, ip });
+    return json(503, {
+      success: false,
+      error: `We couldn't send your message right now. Please call or email us at ${agent.email}.`,
+    });
+  }
+  sentToday++;
+
   try {
-    await resend.emails.send({
+    // Resend reports most failures in `error` rather than throwing.
+    const { error } = await resend.emails.send({
       from: `${site.name} <onboarding@resend.dev>`, // Resend's test sender — works without a verified domain
       to: agent.email,
       replyTo: email,
@@ -88,16 +187,12 @@ export const POST: APIRoute = async ({ request }) => {
         </div>
       `,
     });
+    if (error) throw new Error(error.name);
 
-    return new Response(JSON.stringify({ success: true }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return json(200, { success: true });
   } catch (error) {
-    console.error("Resend error:", error);
-    return new Response(
-      JSON.stringify({ success: false, error: "Failed to send message. Please try again." }),
-      { status: 500, headers: { "Content-Type": "application/json" } },
-    );
+    // The error only: never the form's content.
+    console.error("Resend error:", error instanceof Error ? error.message : "unknown");
+    return json(500, { success: false, error: "Failed to send message. Please try again." });
   }
 };
