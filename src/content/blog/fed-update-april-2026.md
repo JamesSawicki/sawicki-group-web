@@ -46,3 +46,7 @@ If rates drop meaningfully after you buy, you refinance. That optionality exists
 The Fed holding steady is neither good nor bad news for buyers in the short term. It means the rate environment is likely to remain roughly where it is for the foreseeable future. Plan accordingly, buy what you can afford at today's rates, and let time do its work.
 
 Want to run the numbers on a specific purchase scenario? Reach out — I'm happy to walk through the math with you.
+
+---
+
+*Sources: Federal Reserve, [FOMC meeting calendar and statements](https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm) (March 17–18, 2026: target range held at 3.50%–3.75%); [Freddie Mac Primary Mortgage Market Survey](https://www.freddiemac.com/pmms), via FRED: [30-year](https://fred.stlouisfed.org/series/MORTGAGE30US) and [15-year](https://fred.stlouisfed.org/series/MORTGAGE15US) fixed rates. Monthly payments are our own calculation: principal and interest on a 30-year fixed-rate loan.*

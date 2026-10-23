@@ -43,3 +43,7 @@ Consider this: you can always refinance if rates drop meaningfully in the next f
 Rate headlines only matter in the context of your specific plans and timeline. Whether you're thinking about buying your first home, moving up, or selling to downsize, we'd love to discuss what these market conditions mean for you personally.
 
 Reach out to our team at The Sawicki Group - we'll walk you through the numbers, show you what's realistic in your target neighborhoods, and help you make a decision based on facts rather than headlines.
+
+---
+
+*Sources: [Freddie Mac Primary Mortgage Market Survey](https://www.freddiemac.com/pmms), via FRED: [30-year](https://fred.stlouisfed.org/series/MORTGAGE30US) and [15-year](https://fred.stlouisfed.org/series/MORTGAGE15US) fixed rates. Monthly payments are our own calculation: principal and interest on a 30-year fixed-rate loan.*

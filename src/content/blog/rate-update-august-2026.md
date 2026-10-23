@@ -13,7 +13,7 @@ Mortgage rates barely budged this week, with the 30-year fixed rate ticking up j
 
 ## What This Means for Your Monthly Payment
 
-Let's put this in practical terms. On a $450,000 home in the Minneapolis-Saint Paul metro - right around our current median price - a buyer putting 20% down ($90,000) would finance $360,000. At this week's 6.66% rate, that translates to a principal and interest payment of about $2,310 per month.
+Let's put this in practical terms. On a $450,000 home, a buyer putting 20% down ($90,000) would finance $360,000. At this week's 6.66% rate, that translates to a principal and interest payment of about $2,310 per month.
 
 Compare that to the same scenario at 3% (which we saw as recently as early 2022), and the monthly payment would have been around $1,520. That's a difference of nearly $800 per month, or $9,500 per year. This is the reality our buyers are navigating right now.
 
@@ -38,3 +38,7 @@ We're also seeing creative deal structures work well - seller credits toward clo
 Every real estate decision is personal. Whether you're wondering if now is the right time to buy, curious about what your home might sell for in this environment, or just want to understand how these rates affect your specific situation, we're here to help.
 
 Reach out to our team at The Sawicki Group. We'll walk through the numbers with you, show you what's actually happening in your specific neighborhood, and help you make a decision you'll feel confident about for years to come.
+
+---
+
+*Sources: [Freddie Mac Primary Mortgage Market Survey](https://www.freddiemac.com/pmms), via FRED: [30-year](https://fred.stlouisfed.org/series/MORTGAGE30US) and [15-year](https://fred.stlouisfed.org/series/MORTGAGE15US) fixed rates. Monthly payments are our own calculation: principal and interest on a 30-year fixed-rate loan.*

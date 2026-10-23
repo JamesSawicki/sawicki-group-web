@@ -7,13 +7,13 @@ author: AI
 draft: false
 ---
 
-The latest data from the Federal Reserve shows the 30-year fixed mortgage rate at 6.36% as of May 14th, down just slightly from 6.37% the previous week. While that one basis point decline won't move the needle on your monthly payment, the bigger story is that rates have found a relatively stable position after years of volatility.
+Freddie Mac's weekly survey shows the 30-year fixed mortgage rate at 6.36% as of May 14th, down just slightly from 6.37% the previous week. While that one basis point decline won't move the needle on your monthly payment, the bigger story is that rates have found a relatively stable position after years of volatility.
 
 ## What This Means for Your Monthly Payment
 
 Let's put 6.36% into practical terms. On a $450,000 home purchase with 20% down (a $360,000 loan), you're looking at a principal and interest payment of about $2,240 per month. Compare that to the 3% rates we saw in 2021, where the same loan would have cost you $1,520 monthly - that's a $720 difference.
 
-For buyers working with tighter budgets, that payment difference translates to real purchasing power. The home you could afford at 3% for $450,000 would only cost about $315,000 at today's 6.36% rate if you wanted to keep the same monthly payment.
+For buyers working with tighter budgets, that payment difference translates to real purchasing power. The home you could afford at 3% for $450,000 would be about $305,000 at today's 6.36% rate if you wanted to keep the same monthly payment.
 
 ## Historical Context: Where Do We Stand?
 
@@ -36,3 +36,7 @@ Consider getting pre-approved now and locking your rate if you're actively shopp
 Every real estate decision depends on personal circumstances, not just market conditions. Whether you're trying to determine if now is your time to buy, wondering if you should sell before rates potentially shift again, or figuring out if you can afford to move up, we're here to run the numbers specific to your situation.
 
 Reach out to our team at The Sawicki Group to discuss how current rates and market conditions affect your particular real estate goals. We'll give you straight answers based on real data, not pressure.
+
+---
+
+*Sources: [Freddie Mac Primary Mortgage Market Survey](https://www.freddiemac.com/pmms), via FRED: [30-year](https://fred.stlouisfed.org/series/MORTGAGE30US) and [15-year](https://fred.stlouisfed.org/series/MORTGAGE15US) fixed rates. Monthly payments are our own calculation: principal and interest on a 30-year fixed-rate loan.*

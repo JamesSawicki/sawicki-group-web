@@ -15,9 +15,9 @@ While eight basis points might not sound dramatic, we know that even small rate 
 
 ## What This Means for Your Monthly Payment
 
-Let's put some real numbers to this. On a $500,000 mortgage (roughly what you'd need for a median-priced home in many Twin Cities suburbs), the difference between last week's 6.95% rate and this week's 7.03% translates to about $25 more per month in principal and interest. Over the life of a 30-year loan, that's approximately $9,000 in additional interest.
+Let's put some real numbers to this. On a $500,000 mortgage, the difference between last week's 6.95% rate and this week's 7.03% translates to about $27 more per month in principal and interest. Over the life of a 30-year loan, that's approximately $9,700 in additional interest.
 
-For a $400,000 loan, you're looking at about $20 more monthly. For $600,000, it's around $30. These aren't make-or-break numbers for most buyers, but they do add up - and more importantly, they signal which direction the wind is blowing.
+For a $400,000 loan, you're looking at about $21 more monthly. For $600,000, it's around $32. These aren't make-or-break numbers for most buyers, but they do add up - and more importantly, they signal which direction the wind is blowing.
 
 ## Historical Context: Where Do We Stand?
 
@@ -40,3 +40,7 @@ Consider exploring different loan products beyond the standard 30-year fixed. So
 Every real estate decision depends on individual circumstances - your timeline, your financial position, your specific needs. Whether you're wondering if now is the right time to buy, curious about your home's current value, or just want to understand what's happening in your specific neighborhood, we're here to help you think it through.
 
 Reach out to our team at The Sawicki Group. We'll give you straight answers based on current data, not speculation, and help you make the decision that's right for you.
+
+---
+
+*Sources: [Freddie Mac Primary Mortgage Market Survey](https://www.freddiemac.com/pmms), via FRED: [30-year](https://fred.stlouisfed.org/series/MORTGAGE30US) and [15-year](https://fred.stlouisfed.org/series/MORTGAGE15US) fixed rates. Monthly payments are our own calculation: principal and interest on a 30-year fixed-rate loan.*
