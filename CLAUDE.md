@@ -250,6 +250,11 @@ Many visitors browse on phones, and map search is the primary way people look fo
   inside), with a Map | Photos frame whose photos slide in once the gallery scrolls past
   `#listing-hero-end`, then price/stats and the embedded chat. Phones: price/stats + Contact
   button and click-to-call at the end of the page.
+- **Close to Home** (`listing/AmenityScorecard.astro`): phones get a compact list with a
+  Walk/Bike/Drive switch; desktop (lg+) gets the time strip (`CloseToHomeTimeStrip.astro`:
+  one lane per mode, 0–15 min, an icon per category at the minutes to its nearest place;
+  picking one shows the three nearest). Both are CSS-only (radio inputs + `:has`), no JS.
+  The strip needs `nearest` (scores v3+); older scores show the list on desktop too.
 - **Listing neighborhood map:** the page shows only static Mapbox images
   (`lib/map-utils.ts`: the summary card's Map tab on desktop, the Neighborhood button by
   "Back to map" on phones); `listing/NeighborhoodMap.tsx` loads mapbox-gl only when one

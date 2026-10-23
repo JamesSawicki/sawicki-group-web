@@ -1,0 +1,255 @@
+---
+/**
+ * Close to Home, desktop view (option C, Jim 2026-10-23): one lane per travel mode, from this
+ * home (0) to 15 minutes, with an icon per category at the travel time to its nearest place.
+ * Picking an icon shows that category's three nearest (name, route distance, minutes).
+ *
+ * No JavaScript: each icon is a radio input, and a small generated stylesheet shows the
+ * matching details for the checked one (Tailwind can't generate per-id :has() classes).
+ * Icons closer than about a minute apart stack upward so they never overlap. Needs the
+ * `nearest` lists (amenity schema v3+); AmenityScorecard shows the list view without them.
+ */
+// ─── Imports ─────────────────────────────────────────────────────────────────
+import type { AmenityScores, NearbyPlace } from "../../types/listing";
+import { categoryLabel, formatDistance } from "../../lib/listing-utils";
+
+// ─── Props ───────────────────────────────────────────────────────────────────
+interface Props {
+  /** Parsed scores; only `nearest` is read. */
+  scores: AmenityScores;
+  /** Categories for every mode, in display order. */
+  categories: readonly string[];
+  /** Extra categories scored for walking only (transit). */
+  walkOnlyCategories: readonly string[];
+}
+
+const { scores, categories, walkOnlyCategories } = Astro.props;
+
+// ─── Derived values ──────────────────────────────────────────────────────────
+/** The lane runs a little past 15 minutes so a place at exactly 15 isn't on the edge. */
+const MAX_MIN = 15.5;
+/** Icons whose times are closer than this stack (≈ one icon width on a desktop lane). */
+const STACK_MIN = 1.0;
+const ROW_PX = 30;
+const VERBS = { walk: "walk", bike: "bike ride", drive: "drive" } as const;
+const MODES = [
+  { key: "walk", label: "Walk" },
+  { key: "bike", label: "Bike" },
+  { key: "drive", label: "Drive" },
+] as const;
+
+/** Lane position as a CSS length: 16px for the home badge, then 0–MAX_MIN across the rest. */
+const leftAt = (minutes: number) =>
+  `calc(16px + (100% - 30px) * ${(Math.min(minutes, MAX_MIN) / MAX_MIN).toFixed(4)})`;
+const minutesOf = (p: NearbyPlace) => Math.max(1, Math.round(p.seconds / 60));
+
+const lanes = MODES.map((mode) => {
+  const cats = mode.key === "walk" ? [...categories, ...walkOnlyCategories] : [...categories];
+  const entries = cats
+    .map((cat) => {
+      const places = [...(scores.nearest?.[mode.key]?.[cat] ?? [])].sort(
+        (a, b) => a.seconds - b.seconds,
+      );
+      return { cat, places };
+    })
+    .filter((e) => e.places.length > 0)
+    .sort((a, b) => a.places[0].seconds - b.places[0].seconds);
+
+  // Stack icons that would overlap: each takes the lowest row whose last icon is far enough.
+  const lastAtRow: number[] = [];
+  const markers = entries.map(({ cat, places }) => {
+    const minutes = places[0].seconds / 60;
+    let row = 0;
+    while (lastAtRow[row] !== undefined && minutes - lastAtRow[row] < STACK_MIN) row++;
+    lastAtRow[row] = minutes;
+    const id = `cts-${mode.key}-${cat}`;
+    return {
+      id,
+      cat,
+      row,
+      left: leftAt(minutes),
+      aria: `${categoryLabel(cat)}: ${places[0].name}, ${minutesOf(places[0])} min ${VERBS[mode.key]}`,
+      title: `${categoryLabel(cat)} · by ${VERBS[mode.key]}`,
+      rows: places.slice(0, 3).map((p) => ({
+        name: p.name,
+        info: `${formatDistance(p.meters)} · ${minutesOf(p)} min`,
+      })),
+    };
+  });
+  const rows = Math.max(1, lastAtRow.length);
+  return { ...mode, markers, height: 64 + rows * ROW_PX };
+}).filter((lane) => lane.markers.length > 0);
+
+const allMarkers = lanes.flatMap((lane) => lane.markers);
+// Start on driving to groceries, as in the mockup, else the first icon.
+const defaultId =
+  allMarkers.find((m) => m.id === "cts-drive-grocery")?.id ?? allMarkers[0]?.id ?? "";
+
+// One rule pair per icon: show its details and darken its stem when it's checked.
+const css = allMarkers
+  .map(
+    (m) =>
+      `.cts:has(#${m.id}:checked) [data-detail="${m.id}"]{display:flex}` +
+      `.cts:has(#${m.id}:checked) [data-stem="${m.id}"]{background:#1c1917}`,
+  )
+  .join("");
+
+const TICKS = [5, 10, 15];
+---
+
+{allMarkers.length > 0 && (
+  <div class="cts">
+    <style is:inline set:html={css} />
+
+    {/* ── Lanes ── */}
+    <div role="radiogroup" aria-label="Nearest places by travel time">
+      {lanes.map((lane) => (
+        <div class="flex gap-3 items-end">
+          <div class="w-16 shrink-0 flex flex-col pb-5">
+            <span class="text-sm font-semibold text-stone-900">{lane.label}</span>
+            <span class="text-xs text-stone-500">minutes</span>
+          </div>
+          <div class="relative flex-1" style={`height: ${lane.height}px`}>
+            {/* the line from this home (0) to 15 minutes */}
+            <div class="absolute left-4 right-0 bottom-[22px] h-0.5 bg-stone-300" />
+            <div
+              class="absolute left-0.5 bottom-3 w-[22px] h-[22px] rounded-md bg-stone-900 text-white flex items-center justify-center"
+              title="This home"
+            >
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M4 11l8-7 8 7" />
+                <path d="M6 10v10h12V10" />
+              </svg>
+            </div>
+            {TICKS.map((t) => (
+              <>
+                <div
+                  class="absolute bottom-[18px] w-px h-2.5 bg-stone-400"
+                  style={`left: ${leftAt(t)}`}
+                />
+                <span
+                  class="absolute bottom-0 -translate-x-1/2 text-xs text-stone-600 whitespace-nowrap"
+                  style={`left: ${leftAt(t)}`}
+                >
+                  {t} min
+                </span>
+              </>
+            ))}
+            {lane.markers.map((m) => (
+              <div
+                data-stem={m.id}
+                class="absolute bottom-[23px] w-px bg-stone-300"
+                style={`left: ${m.left}; height: ${10 + m.row * ROW_PX}px`}
+              />
+            ))}
+            {lane.markers.map((m) => (
+              <label
+                class="absolute -translate-x-1/2 cursor-pointer"
+                style={`left: ${m.left}; bottom: ${32 + m.row * ROW_PX}px`}
+              >
+                <input
+                  type="radio"
+                  name="cts-pick"
+                  id={m.id}
+                  checked={m.id === defaultId}
+                  aria-label={m.aria}
+                  class="peer sr-only"
+                />
+                <span
+                  class="flex items-center justify-center w-7 h-7 rounded-full border border-stone-400 bg-white text-stone-700
+                      hover:border-stone-900 peer-checked:bg-stone-900 peer-checked:border-stone-900 peer-checked:text-white
+                      peer-focus-visible:ring-2 peer-focus-visible:ring-offset-1 peer-focus-visible:ring-stone-500"
+                  title={m.aria}
+                >
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    {m.cat === "grocery" && (
+                      <>
+                        <path d="M3 4h2l2.4 10.2a1 1 0 0 0 1 .8h8.9a1 1 0 0 0 1-.8L20 8H6.2" />
+                        <circle cx="9.5" cy="19" r="1.3" />
+                        <circle cx="17" cy="19" r="1.3" />
+                      </>
+                    )}
+                    {m.cat === "restaurants" && (
+                      <>
+                        <path d="M4 8h12v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V8z" />
+                        <path d="M16 9.5h1.5a2.5 2.5 0 0 1 0 5H16" />
+                        <path d="M7 3.5v2M10 3.5v2M13 3.5v2" />
+                      </>
+                    )}
+                    {m.cat === "parks" && (
+                      <>
+                        <path d="M12 21v-5" />
+                        <path d="M12 3l-5.5 7.5h3L6 15.5h12l-3.5-5h3L12 3z" />
+                      </>
+                    )}
+                    {m.cat === "pharmacy" && (
+                      <>
+                        <rect x="4" y="4" width="16" height="16" rx="3" />
+                        <path d="M12 8v8M8 12h8" />
+                      </>
+                    )}
+                    {m.cat === "hardware" && (
+                      <path d="M14.5 5.5a4 4 0 0 0-5 5L4 16l4 4 5.5-5.5a4 4 0 0 0 5-5l-2.5 2.5-2.5-.5-.5-2.5z" />
+                    )}
+                    {m.cat === "transit_stations" && (
+                      <>
+                        <rect x="6" y="3.5" width="12" height="13" rx="3" />
+                        <path d="M6 10h12" />
+                        <path d="M8.5 20.5l2-4M15.5 20.5l-2-4" />
+                      </>
+                    )}
+                    {m.cat === "bus_stops" && (
+                      <>
+                        <rect x="5" y="3.5" width="14" height="14" rx="2.5" />
+                        <path d="M5 11h14" />
+                        <circle cx="8.5" cy="14.3" r=".9" />
+                        <circle cx="15.5" cy="14.3" r=".9" />
+                        <path d="M7.5 17.5v2.5M16.5 17.5v2.5" />
+                      </>
+                    )}
+                  </svg>
+                </span>
+              </label>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+
+    {/* ── Details for the picked icon ── */}
+    {allMarkers.map((m) => (
+      <div
+        data-detail={m.id}
+        class="hidden flex-col gap-1.5 mt-3 px-3.5 py-3 border border-stone-200 rounded-xl bg-stone-50"
+      >
+        <div class="text-sm font-semibold text-stone-900">{m.title}</div>
+        {m.rows.map((r) => (
+          <div class="flex justify-between gap-4 text-sm text-stone-700">
+            <span class="truncate">{r.name}</span>
+            <span class="text-stone-500 tabular-nums whitespace-nowrap">{r.info}</span>
+          </div>
+        ))}
+      </div>
+    ))}
+  </div>
+)}

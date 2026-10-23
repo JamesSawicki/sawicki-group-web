@@ -1,9 +1,10 @@
 ---
 /**
  * "Close to Home": what's a short trip from the listing — groceries, food, parks,
- * pharmacies, hardware, and (on foot) transit — as one compact list with a
- * Walk / Bike / Drive switch. Each row shows the closest place and how many are within
- * 5 / 10 / 15 minutes. Renders nothing when the listing has no amenity scores yet.
+ * pharmacies, hardware, and (on foot) transit. Phones (and listings scored before route
+ * data) get one compact list with a Walk / Bike / Drive switch: each row shows the closest
+ * place and how many are within 5 / 10 / 15 minutes. Desktop (lg+) gets the time strip
+ * (CloseToHomeTimeStrip.astro). Renders nothing when the listing has no amenity scores yet.
  *
  * Scores come with the listing from the API's amenity pipeline (Mapbox isochrones +
  * OpenStreetMap, plus stores and restaurants OSM lacks from Overture Maps). Reachability
@@ -13,6 +14,7 @@
 // ─── Imports ─────────────────────────────────────────────────────────────────
 import type { Listing } from "../../types/listing";
 import { categoryLabel, formatDistance, parseAmenityScores } from "../../lib/listing-utils";
+import CloseToHomeTimeStrip from "./CloseToHomeTimeStrip.astro";
 
 // ─── Props ───────────────────────────────────────────────────────────────────
 interface Props {
@@ -58,6 +60,11 @@ const panels = amenityScores
     })
   : [];
 
+// The desktop time strip needs the route-based `nearest` lists (scores v3+); without them
+// desktop shows the list view too.
+const hasStrip = !!amenityScores?.nearest;
+const listOnly = hasStrip ? "lg:hidden" : "";
+
 const updated = amenityScores
   ? new Date(amenityScores.generatedAt).toLocaleDateString("en-US", {
       year: "numeric",
@@ -77,7 +84,7 @@ const updated = amenityScores
 
       {/* ── Mode switch ── */}
       <div
-        class="inline-flex rounded-lg bg-stone-100 p-1"
+        class={`inline-flex rounded-lg bg-stone-100 p-1 ${listOnly}`}
         role="radiogroup"
         aria-label="Travel mode"
       >
@@ -103,43 +110,63 @@ const updated = amenityScores
       </div>
     </div>
 
-    {/* ── One list per mode; the checked radio shows its list ── */}
-    {panels.map((panel) => (
-      <div class={`hidden ${panel.panelClass}`}>
-        <div class="flex justify-end gap-1 pb-1 text-xs text-stone-500" aria-hidden="true">
-          {BANDS.map((min) => (
-            <span class="w-12 text-center">{min} min</span>
-          ))}
-        </div>
-        <ul class="divide-y divide-stone-100 border-y border-stone-100">
-          {panel.rows.map((row) => (
-            <li class="flex items-center gap-3 py-2.5">
-              <div class="min-w-0 flex-1 sm:flex sm:items-baseline sm:gap-3">
-                <div class="text-sm font-medium text-stone-900 sm:w-28 sm:shrink-0">
-                  {row.label}
-                </div>
-                <div class="text-xs sm:text-sm text-stone-500 truncate">{row.closest}</div>
-              </div>
-              <div class="flex gap-1 text-sm tabular-nums">
-                {row.counts.map((n, i) => (
-                  <span
-                    class={`w-12 text-center ${n ? "text-stone-900" : "text-stone-300"}`}
-                    aria-label={`${n} within ${BANDS[i]} minutes`}
-                  >
-                    {n || "–"}
-                  </span>
-                ))}
-              </div>
-            </li>
-          ))}
-        </ul>
+    {/* ── Desktop: time strip ── */}
+    {amenityScores && hasStrip && (
+      <div class="hidden lg:block">
+        <CloseToHomeTimeStrip
+          scores={amenityScores}
+          categories={CATEGORIES}
+          walkOnlyCategories={WALK_ONLY_CATEGORIES}
+        />
+        <p class="text-xs text-stone-500 mt-3">
+          Each icon sits at the minutes from this home to the nearest one, on real streets and
+          paths; pick one for the three nearest. Transit: walking only.
+        </p>
       </div>
-    ))}
+    )}
 
-    <p class="text-xs text-stone-500 mt-3">
+    {/* ── One list per mode; the checked radio shows its list ── */}
+    {/* The wrapper carries lg:hidden: on a panel it would lose to the :has() "show" rule. */}
+    <div class={listOnly}>
+      {panels.map((panel) => (
+        <div class={`hidden ${panel.panelClass}`}>
+          <div class="flex justify-end gap-1 pb-1 text-xs text-stone-500" aria-hidden="true">
+            {BANDS.map((min) => (
+              <span class="w-12 text-center">{min} min</span>
+            ))}
+          </div>
+          <ul class="divide-y divide-stone-100 border-y border-stone-100">
+            {panel.rows.map((row) => (
+              <li class="flex items-center gap-3 py-2.5">
+                <div class="min-w-0 flex-1 sm:flex sm:items-baseline sm:gap-3">
+                  <div class="text-sm font-medium text-stone-900 sm:w-28 sm:shrink-0">
+                    {row.label}
+                  </div>
+                  <div class="text-xs sm:text-sm text-stone-500 truncate">{row.closest}</div>
+                </div>
+                <div class="flex gap-1 text-sm tabular-nums">
+                  {row.counts.map((n, i) => (
+                    <span
+                      class={`w-12 text-center ${n ? "text-stone-900" : "text-stone-300"}`}
+                      aria-label={`${n} within ${BANDS[i]} minutes`}
+                    >
+                      {n || "–"}
+                    </span>
+                  ))}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </div>
+
+    <p class={`text-xs text-stone-500 mt-3 ${listOnly}`}>
       Counts: places reachable within 5, 10 and 15 minutes. Distance: straight-line to the closest
-      one. Data via Mapbox, © OpenStreetMap contributors and Overture Maps Foundation; updated{" "}
-      {updated}.
+      one.
+    </p>
+    <p class="text-xs text-stone-500 mt-1">
+      Data via Mapbox, © OpenStreetMap contributors and Overture Maps Foundation; updated {updated}.
     </p>
   </section>
 )}
