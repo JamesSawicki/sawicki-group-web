@@ -125,23 +125,20 @@ export function formatSqft(sqft: number | undefined): string {
 // Status badges need both a human-readable label and a Tailwind color class.
 // We centralize both here so every component renders status the same way.
 //
-// Color choices:
+// The public site only ever receives Active, Coming Soon and Pending (VERIFY-IDX: TNAS,
+// sold, expired, canceled and withdrawn listings never reach it; the API stores TNAS as
+// Hold). Color choices:
 //   Active       — green (positive, available)
 //   Pending      — yellow/amber (transitional, attention)
 //   Coming Soon  — purple (anticipation)
-//   TNAS         — red (cannot show)
-//   Sold         — gray (closed, archival)
-//   Withdrawn/Expired/Cancelled — muted slate
+//   anything else — muted slate
 // -------------------------------------------------------------------
 
 export function statusLabel(status: string | undefined): string {
   if (!status) return "Unknown";
-  // Map raw MLS status codes to buyer-friendly wording. "TNAS" (Temporarily
-  // Not Available for Showing) is internal MLS jargon that means nothing to a
-  // consumer, so it must be translated. Unknown/other codes fall through to
+  // Map raw MLS status codes to buyer-friendly wording. Unknown codes fall through to
   // the raw value rather than being hidden.
   const labels: Record<string, string> = {
-    TNAS: "Temporarily off-market",
     "Coming Soon": "Coming soon",
     Pending: "Sale pending",
   };
@@ -177,10 +174,6 @@ export function statusBadgeClasses(status: string | undefined): string {
       return `${base} bg-amber-100 text-amber-800`;
     case "Coming Soon":
       return `${base} bg-purple-100 text-purple-800`;
-    case "TNAS":
-      return `${base} bg-red-100 text-red-800`;
-    case "Sold":
-      return `${base} bg-slate-200 text-slate-700`;
     default:
       return `${base} bg-slate-100 text-slate-600`;
   }

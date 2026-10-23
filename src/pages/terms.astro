@@ -54,8 +54,10 @@ const jsonLd = [
         <h2 class="text-xl font-semibold text-stone-900 mb-3">Who we are</h2>
         <p>
           This website is operated by {site.name}, a team of real estate licensees with{" "}
-          {brokerage.name}, a {brokerage.stateName} real estate brokerage (together, "we" or "us").
-          By using the site you agree to these terms. If you don't agree, please don't use the site.
+          {brokerage.name}
+          {brokerage.legalName && <> ({brokerage.legalName})</>}, a {brokerage.stateName} real
+          estate brokerage (together, "we" or "us"). By using the site you agree to these terms. If
+          you don't agree, please don't use the site.
         </p>
       </div>
 

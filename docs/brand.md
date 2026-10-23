@@ -46,6 +46,12 @@ served at `/brand/coldwell-banker/<file>`. Use them only as Coldwell Banker's br
 On our white pages the horizontal black PNG is the natural choice (header/footer credit);
 the white versions are for dark backgrounds (e.g. a dark footer or photo overlays).
 
+HUD's official Equal Housing Opportunity logo (public domain, from
+[hud.gov/contactus/hudgraphics](https://www.hud.gov/contactus/hudgraphics)) is in
+`public/brand/hud/`: `equal-housing-opportunity.png` (120×128 web copy, used by
+`ListingDisclosure.astro`) and the original 2-inch GIF. HUD's rule: the house picture never
+appears without the words "Equal Housing Opportunity".
+
 ## Components
 
 Markup that shows brand items uses these (in `src/components/brand/`), so it never repeats:

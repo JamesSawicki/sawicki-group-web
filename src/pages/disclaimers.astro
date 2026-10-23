@@ -53,6 +53,7 @@ const officeAddress = [
         <h2 class="text-xl font-semibold text-stone-900 mb-3">Who we are</h2>
         <p>
           {site.name} is a real estate team with <strong>{brokerage.name}</strong>
+          {brokerage.legalName && <span> (licensed as {brokerage.legalName})</span>}
           {officeAddress && <span>, {officeAddress}</span>}. {agent.name} is a real estate licensee
           ({agent.licenseText}) with {brokerage.name}. You can reach us at{" "}
           <a href={`tel:${agent.phone}`} class="underline">
@@ -64,9 +65,8 @@ const officeAddress = [
           </a>
           .
         </p>
-        {/* TODO-JIM: add the brokerage's MN license number and primary broker once they're
-            in site.config.ts (requested fields: brokerage.licenseNumber,
-            brokerage.primaryBroker), if the broker wants them shown. */}
+        {/* License numbers aren't required (brokerage, 2026-10-23); BrokerageCredit shows them
+            and the primary broker automatically if they're ever set in site.config.ts. */}
       </div>
 
       {/* ── Listing information ── */}

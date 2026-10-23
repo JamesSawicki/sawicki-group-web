@@ -146,8 +146,11 @@ export const brokerage: {
   url: string;
 } = {
   name: "Coldwell Banker Realty",
-  /** TODO-JIM: the brokerage's exact licensed entity name (ask the broker). */
-  legalName: "",
+  /**
+   * The licensed entity Coldwell Banker Realty operates under in Minnesota (Jim, 2026-10-23;
+   * Minn. Stat. 82.68: business is conducted in the broker's licensed name).
+   */
+  legalName: "Burnet Realty LLC",
   /** TODO-JIM: primary managing broker's name, if it should be shown. */
   primaryBroker: "",
   serviceArea: "Twin Cities, Minnesota",
@@ -163,7 +166,7 @@ export const brokerage: {
     height: 80,
     alt: "Coldwell Banker Realty",
   },
-  /** TODO-JIM: the brokerage's Minnesota license number, if it should be shown. */
+  /** License numbers aren't required on the site (the brokerage confirmed, 2026-10-23). */
   licenseNumber: "",
   /** TODO-JIM: brokerage/office main phone (or leave null to show only ours). */
   phone: null,
@@ -203,7 +206,7 @@ const jim = {
   jobTitle: "REALTOR®",
   email: "jsawicki@CBRealty.com",
   phone: { tel: "9522121586", display: "(952) 212-1586" },
-  /** TODO-JIM: Minnesota license number (shown in the footer and JSON-LD once set). */
+  /** Optional: not required by the brokerage (2026-10-23); shown in the footer and JSON-LD if set. */
   licenseNumber: "",
   // TODO-JIM: headshot — add `headshot: { src: "/team/jim-sawicki.jpg", width, height, alt }`.
   bio: [

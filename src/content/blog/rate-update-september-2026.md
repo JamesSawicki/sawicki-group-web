@@ -25,7 +25,7 @@ Here's the perspective that matters: yes, 7.03% is significantly higher than the
 
 In the 1990s, rates frequently sat in the 7-8% range during a healthy housing market. In the early 2000s, they bounced between 5-7%. The difference today is that home prices are also elevated, creating a double affordability challenge that the rate alone doesn't fully capture.
 
-The reality is we're in a higher-rate environment than we've seen in 15 years, and we need to plan accordingly rather than waiting for a dramatic reversal that may not materialize.
+The reality is we're in a higher-rate environment than buyers saw a few years ago, and we need to plan accordingly rather than waiting for a dramatic reversal that may not materialize.
 
 ## Tactical Advice for Right Now
 
