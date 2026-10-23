@@ -1,0 +1,1852 @@
+NorthstarMLS
+           Rules
+
+                                                          Effective 07/01/2026
+TABLE OF CONTENTS
+
+Part 1. Definitions and usage........................................................................................... 6
+      Section 1.1. Definitions. .......................................................................................... 6
+      Section 1.2. Usage principles................................................................................... 8
+
+Part 2. Statement of purpose and principles .................................................................. 10
+      Section 2.1. Purpose of service .............................................................................. 10
+      Section 2.2. Compensation ................................................................................... 10
+      Section 2.3. Listing agreements brokerage users accept ......................................... 10
+      Section 2.4. Service does not require exclusivity ..................................................... 10
+      Section 2.5. Listing brokerage's rights in listing........................................................ 10
+      Section 2.6. Compliance with law .......................................................................... 10
+      Section 2.7. No direct access for non-users............................................................ 10
+
+Part 3. Classes of user .................................................................................................. 11
+      Section 3.1. Brokerage users.................................................................................. 11
+      Section 3.2. Seeking to cooperate .......................................................................... 11
+      Section 3.3. Appraisal firm users............................................................................ 11
+
+Part 4. Submission and maintenance of listing records................................................... 14
+      Section 4.1. Definitions ......................................................................................... 14
+
+   Permitted and required listings .................................................................................. 14
+      Section 4.2. Listings subject to these rules ............................................................. 14
+      Section 4.3. Filing eligible listings ........................................................................... 14
+      Section 4.4. Filing .................................................................................................. 14
+      Section 4.5. Seller authorization ............................................................................ 14
+      Section 4.6. Net listings ......................................................................................... 15
+      Section 4.7. Single active listing record................................................................... 15
+      Section 4.8. Service's right to reject certain listings ................................................. 15
+
+   Complete and accurate information .......................................................................... 15
+      Section 4.9. Complete and accurate information .................................................... 15
+      Section 4.10. Content required .............................................................................. 15
+      Section 4.11. Where there is no property address ................................................... 16
+      Section 4.12. Content required subject to seller opt out .......................................... 16
+      Section 4.13. Content prohibited in the service....................................................... 16
+
+                                                                  Page 1
+      Section 4.14. Content permitted in the service ....................................................... 17
+      Section 4.15. Updating listing records .................................................................... 17
+      Section 4.16. Reporting ......................................................................................... 17
+      Section 4.17. Expired............................................................................................. 18
+   Administrative matters .............................................................................................. 18
+      Section 4.18. Automatic ........................................................................................ 18
+      Section 4.19. Withdrawing and canceling listings .................................................... 18
+      Section 4.20. Removal of record if status not updated............................................. 18
+      Section 4.21. Changes requiring seller authorization............................................... 18
+Part 5. Data use and protection ..................................................................................... 20
+      Section 5.1. Definitions ......................................................................................... 20
+   Use and disclosure in general .................................................................................... 21
+      Section 5.2. Information of service restricted to users ............................................. 21
+      Section 5.3. Disclosures permitted ........................................................................ 21
+      Section 5.4. Requirements for all disclosures ......................................................... 22
+      Section 5.5. Disclosure of user-composite reports.................................................. 22
+      Section 5.6. Reasonable disclosure to customers................................................... 23
+   Automated disclosures ............................................................................................. 23
+      Section 5.7. Automated disclosures in general........................................................ 23
+      Section 5.8. Requirements for LEA and VB .............................................................. 23
+      Section 5.9. Technology required for LEA and VB..................................................... 24
+   Limited electronic advertising (LEA) of other brokers' listings ...................................... 25
+      Section 5.10. Blanket consent to LEA ..................................................................... 26
+      Section 5.11. Requirements for LEA ....................................................................... 26
+   Virtual brokerage ...................................................................................................... 26
+      Section 5.12. Virtual brokerage .............................................................................. 27
+   Technical and administrative matters......................................................................... 27
+      Section 5.13. Minimal ............................................................................................ 29
+      Section 5.14. Third ................................................................................................ 29
+      Section 5.15. Seller instructions ............................................................................ 29
+      Section 5.16. Use of service-internal data prohibited .............................................. 30
+Part 6. User relations with the service............................................................................ 30
+      Section 6.1. Definitions ......................................................................................... 31
+
+                                                                  Page 2
+      Section 6.2. Fees................................................................................................... 31
+      Section 6.3. User offices within firm jurisdiction ..................................................... 31
+      Section 6.4. Waivers .............................................................................................. 13
+      Section 6.5. Service use of listing and roster records............................................... 33
+      Section 6.6. Users ................................................................................................. 34
+      Section 6.7. Brokerage entitled to data feed ............................................................ 34
+      Section 6.8. Firm ................................................................................................... 34
+      Section 6.9. User to provide documentation ........................................................... 35
+      Section 6.10. Consideration................................................................................... 35
+      Section 6.11. Allegations of Code of Ethics violations.............................................. 36
+      Section 6.12. Treatment......................................................................................... 36
+      Section 6.13. Treatment......................................................................................... 37
+      Section 6.14. Use .................................................................................................. 37
+      Section 6.15. Cooperation with service investigations ............................................. 38
+      Section 6.16. Orientation ....................................................................................... 38
+Part 7. User relations with others................................................................................... 39
+   User relations with customers ................................................................................... 39
+      Section 7.1. Seller instructions form....................................................................... 39
+      Section 7.2. No ..................................................................................................... 39
+      Section 7.3. User................................................................................................... 39
+      Section 7.4. Agreement ......................................................................................... 39
+      Section 7.5. Presentation of offers to seller and buyer ............................................. 40
+   User relations with other users .................................................................................. 40
+      Section 7.6. User with interest in purchasing .......................................................... 40
+      Section 7.7. For-sale and sold signs ....................................................................... 40
+      Section 7.8. Solicitation of active listings ................................................................ 40
+      Section 7.9. Brokerages in cooperative transactions ............................................... 41
+      Section 7.10. Compensation.................................................................................. 42
+Part 8. Risk management .............................................................................................. 43
+      Section 8.1. Limits................................................................................................. 43
+      Section 8.2. Filing user's grant of license ................................................................ 43
+      Section 8.3. Compilation ....................................................................................... 43
+      Section 8.4. Filing .................................................................................................. 43
+
+                                                                  Page 3
+      Section 8.5. Indemnification .................................................................................. 43
+      Section 8.6. No warranty by service........................................................................ 44
+      Section 8.7. No legal action against other ............................................................... 44
+      Section 8.8. Alleged............................................................................................... 44
+Part 9. Process for revision ............................................................................................ 46
+      Section 9.1. Amendment process .......................................................................... 46
+      Section 9.2. Notice of amendment ......................................................................... 46
+Part 10. Process for revision .......................................................................................... 46
+
+                                                                  Page 4
+PART 1. DEFINITIONS AND USAGE
+
+Section 1.1. Definitions. In these rules:
+
+    (a) "Active listing record" means a record for a listed property that is on the market.
+
+    (b) "Active under contract" means an active listing record for which the seller has
+           accepted an offer of purchase.
+
+    (c) "Advertising," relating to a listed property, is disclosure by a user of data content
+           relating to the property to any person who is not a customer of the user, except that
+           "advertising" a listed property does not include any of the following:
+
+           (i) Disclosure of the data content by a user to any associate of the user.
+
+           (ii) Disclosure of the data content by one brokerage's associate to another
+                  brokerage's associate (whether the other brokerage is a user or not) in a one-
+                  to-one communication.
+
+    (d) "Appraisal firm" means a natural person or entity licensed or certified to perform
+           appraisals.
+
+    (e) "Associate" means a natural-person user affiliated with a brokerage or another
+           associate as an employee, independent contractor, officer, director, principal, or
+           office manager. For a brokerage, associates include licensed salespeople and
+           licensed and unlicensed assistants.
+
+    (f) "Authorization" means permission or direction in writing.
+
+    (g) "Brokerage" means a sole proprietorship or business entity licensed to engage in
+           residential real estate brokerage.
+
+    (h) "Buy," and the derivative terms "buyer," "purchase," "bought," etc., includes an
+           exchange or lease of property.
+
+    (i) "Cooperation," in relation to brokerage activity, means any of the following:
+
+           (i) Sharing a listing record with brokerage users in the service.
+
+           (ii) Making a listed property in an active listing record available to brokerage users
+                  pursuant to Section 7.9.
+
+           (iii) Attempting to sell a property listed by another brokerage user in the service.
+
+    (j) "Cooperating brokerage" means a brokerage bringing a prospective buyer to a
+           transaction on a property listed by another brokerage.
+
+                                                                  Page 5
+(k) "Customer" means a natural person or entity the identity of which a user has
+      confirmed and the contact information of which the user has obtained:
+
+      (i) In relation to a brokerage, a "customer" is a natural person or entity that a
+             brokerage reasonably believes is interested in selling or purchasing a property
+             of an eligible property type or in obtaining a valuation of a property of an
+             eligible property type in anticipation of selling or purchasing property. A
+             customer relationship exists only where the brokerage and person or entity
+             has completed all actions required by law to permit the brokerage to provide
+             services to the customer, including any agency or other disclosure and
+             execution of any required agreement.
+
+      (ii) In relation to an appraisal firm, a "customer" is a natural person or entity the
+             appraisal firm reasonably believes is interested in obtaining a valuation of a
+             property of an eligible property type for purposes of making a business
+             decision about the property. The federal government, a state, or a subdivision
+             of either of them is not a customer unless it seeks to purchase or sell a
+             property of an eligible property type in its own right. A government entity
+             seeking valuation purely for purposes of assessing the value of a property for
+             tax purposes is not a customer.
+
+(l) "Data content" means text, photographs, images, graphics, audio and video
+      recordings, virtual tours, floor plans, drawings, descriptions, remarks, narratives,
+      pricing information, and other details or information.
+
+(m) "Disclosure" of data content by a user means printing, displaying, delivering,
+      reading aloud, or otherwise conveying data content to a natural person or entity.
+
+(n) "Dissemination" of a listing or roster record means the service's distribution of the
+      listing record to users.
+
+(o) "Entity" means a sole proprietorship, partnership, association, corporation, limited
+      liability company, other unincorporated body, or other business entity, legal
+      representative, trustee, trustee in bankruptcy, or receiver.
+
+(q) "File," in relation to a listing agreement, means the listing brokerage's submission,
+      insertion, or modification of any part of the associated listing record in the service.
+
+(r) "General jurisdiction" means the states of Minnesota, North Dakota, and
+      Wisconsin.
+
+(s) "Listing agreement" means a written authorization by a seller that permits a
+      brokerage to engage in an activity that requires a brokerage license and that is
+      directed at marketing a property on behalf of the seller.
+
+(t) "Listing brokerage" means a brokerage who is party to a listing agreement.
+
+                                                            Page 6
+    (u) "Listed property" means a real property that is subject to a listing agreement.
+
+    (v) "Listing record" means all data content--and any previous versions of it--relating
+           to a listing agreement and its listed property in the service. A listing record includes
+           data content relating to the listing record itself. Reference in these rules to a listing
+           record includes any part of a listing record.
+
+    (w) "Off-market listing record" means a listing record that is not an active listing record.
+
+    (x) A "one-to-one communication" is one that satisfies all the following conditions:
+
+           (i) The communication is not the result of an automated tool that is designed to
+                  deliver substantively the same data content to multiple persons.
+
+           (ii) The associate initiating the communication must include a notice to the
+                  recipient that the recipient may not share the communication with anyone
+                  other than the customers of the recipient.
+
+    (y) "Principal," in relation to any entity, means a person with an ownership interest or
+           significant decision-making power in the entity.
+
+    (z) "Purchase." See "buy."
+
+    (aa) "REALTOR®," applied to an appraisal firm or brokerage, means a firm of which the
+           natural-person principals are members of the National Association of REALTORS®.
+
+    (bb) "Retained listing" means a listing record that the seller has authorized the listing
+           brokerage to file but that the seller has directed the service not to disseminate.
+           Retained listings are in Withheld status.
+
+    (cc) "Roster record" means all data content--and any previous versions of it--relating
+           to a user in the service. A roster record includes data content relating to the roster
+           record itself. Reference in these rules to a roster record includes any part of a roster
+           record.
+
+    (dd) "Sell," and the derivative terms "seller," "sale," "sold," etc., includes an exchange or
+           lease of property.
+
+    (ee) The "service" means the multiple listing service of NorthstarMLS.
+
+    (ff) "User" means any natural person or entity allowed to access the service under
+           these rules.
+
+Section 1.2. Usage principles. The following principles of usage and interpretation apply
+to these rules:
+
+                                                                  Page 7
+(a) If a rule permits or requires an action by a user, an associate of the user may take
+      the action if the user permits the associate to do so.
+
+(b) If a rule prohibits an action by a user and an associate of the user takes the action,
+      the user is accountable as if the user had taken the action.
+
+(c) The word "shall" imposes an obligation on a natural person or entity.
+(d) The words "may not" impose a prohibition on a natural person or entity.
+(e) The word "may" grants permission to a natural person or entity.
+(f) The singular includes the plural, and these rules use the plural where only the plural
+
+      is intended.
+(g) The word "includes" means "includes, without limitation."
+(h) If a defined term is in one part of speech, its definition applies to other, derived,
+
+      parts of speech. (For example, the definition of "disseminate," applies to
+      "dissemination" and other derivatives of "disseminate.")
+
+                                                            Page 8
+PART 2. STATEMENT OF PURPOSE AND PRINCIPLES
+
+Section 2.1. Purpose of service. The service is a "multiple listing service," with the
+purpose of functioning in each of the following ways:
+
+    (a) As a facility for the orderly correlation and dissemination of listing records so that
+           users may better serve their clients and customers and the public.
+
+    (b) As a means of enhancing cooperation among users.
+    (c) As a means to accumulate and disseminate information to enable users to prepare
+
+           appraisals, analyses, and other valuations of property for clients and customers.
+    (d) As a means by which users appraising properties contribute to common databases.
+Section 2.2. Compensation. The service plays no role in setting, determining, or
+recommending the compensation a user receives from a client or customer or the division
+of compensation, if any, between users. The service neither encourages nor discourages a
+listing brokerage to share compensation with another brokerage; any such arrangement is
+subject to negotiation between the brokerages and their customers.
+Section 2.3. Listing agreements brokerage users accept. A brokerage may execute a
+listing agreement that is not an eligible agreement under Part 4.
+Section 2.4. Service does not require exclusivity. A user's relationship with the service is
+not exclusive, and a user may purchase services similar to those of this service from
+another provider in addition to the services under these rules.
+Section 2.5. Listing brokerage's rights in listing. Subject to Section 8.1, a brokerage may
+share or disclose any listing record for which it is the listing brokerage at any time and in
+any way that it chooses.
+Section 2.6. Compliance with law. These rules never permit or require a user or the
+service to violate the law.
+Section 2.7. No direct access for non-users. The service is for the exclusive use of the
+types of user defined in Part 3. No other person or entity, as a buyer or seller of property or
+in any other role, is entitled to access the service except through the mediation of a user.
+
+                                                                  Page 9
+PART 3. CLASSES OF USER
+
+Section 3.1. Brokerage users. The service shall designate a brokerage as a user (or
+"brokerage user") so long as it meets the following requirements:
+
+    (a) The brokerage holds an active real estate brokerage license in any part of the general
+           jurisdiction.
+
+    (b) Subject to Section 3.2, the brokerage seeks to cooperate.
+    (c) The brokerage agrees to be subject to these rules and pays all fees required of it
+
+           under these rules and any agreements with the service.
+Section 3.2. Seeking to cooperate. A brokerage's duty to seek to cooperate is subject to
+the following qualifications:
+
+    (a) "Seeking" means on a continual and ongoing basis.
+    (b) "Seeking" does not:
+
+           (i) preclude a brokerage cooperating on a part-time or seasonal basis or a
+                  brokerage that experiences periods of relative inactivity occasioned by market
+                  conditions;
+
+           (ii) impose a requirement on a brokerage to engage in a minimum number of
+                  transactions on a periodic basis; or
+
+           (iii) impose a requirement on a brokerage to provide a level of service above that
+                  required by law.
+
+    (c) A brokerage may seek to cooperate solely by virtual brokerage as provided in Part 5.
+Section 3.3. Appraisal firm users. The service shall designate an appraisal firm as a user
+(or "appraisal user") so long as it meets the following requirements:
+
+    (a) The appraisal firm holds an active appraisal certification or license in any part of the
+           general jurisdiction.
+
+    (b) The appraisal firm agrees to be subject to these rules and pays all fees required of
+           it under these rules and any agreements with the service.
+
+                                                                 Page 10
+PART 4. SUBMISSION AND MAINTENANCE OF LISTING RECORDS
+
+Section 4.1. Definitions. In this part:
+    (a) "Eligible agreement type" means a listing agreement that is of one of the following
+           agreement types:
+           (i) Exclusive agency.
+           (ii) Exclusive right to sell.
+    (b) "Eligible listing" means a listing agreement that meets the following requirements:
+           (i) The listing brokerage is a user.
+           (ii) The agreement is of an eligible agreement type.
+           (iii) The agreement bears a definite termination date.
+           (iv) The listed property is of an eligible property type.
+           (v) The property is at least partially located in the general jurisdiction.
+           (vi) The agreement includes a listing price.
+    (c) "Eligible property type" means a property of any of the following types:
+           (i) Single-family residence.
+           (ii) Vacant lot or acreage.
+           (iii) Duplex, triplex, or quadruplex residential building.
+           (iv) Condominium, Townhouse, or Twin Home.
+           (v) New construction in the appropriate category no later than when the property
+                  is ready for trimming. Builder models and floor plans, as well as structures
+                  being built but which have not reached the trimming stage, may at the
+                  Participant's option, be listed in the category designated by the Service for
+                  "models" and "to be builts";
+           (vi) Hobby farm with residence thereon
+           (vii) Commercial properties
+           (viii) Business only opportunities
+           (viv) Manufactured home with real estate or on leased land
+
+                                                                 Page 11
+(d) "Entry-only listing" means a listing agreement in which the listing brokerage and
+      seller have agreed that the brokerage need not perform any of the services identified
+      in the definition of "limited-service listing."
+
+(e) "Exclusive agency" means a listing agreement that provides that the listing
+      brokerage is the sole brokerage (whether in an agency or legally recognized non-
+      agency role) marketing the listed property on the seller's behalf. An exclusive
+      agency may provide for payment from seller to brokerage upon listing, sale, or other
+      condition negotiated between the brokerage and seller. An exclusive agency may
+      provide that the seller pays the listing brokerage a different compensation--
+      including potentially no compensation--depending on whether the seller procures
+      a buyer or a brokerage procures the buyer.
+
+(f) "Exclusive right to sell" means a listing agreement that forms an exclusive agency,
+      except that the seller must pay compensation to the listing brokerage regardless of
+      whether the seller or a brokerage procures the buyer. In an exclusive right to sell
+      agreement, the seller may name one or more natural persons or entities as
+      exemptions, meaning that if the seller sells the property to any exempted person or
+      entity, the seller owes no compensation to the listing brokerage.
+
+(g) "Limited-service listing" means a listing agreement in which the listing brokerage
+      and seller have agreed that the brokerage need not perform at least one of the
+      following services:
+
+      (i) Arrange a showing appointment for the listed property with another brokerage.
+
+      (ii) Accept or present to the seller an offer to purchase procured by another
+             brokerage.
+
+      (iii) Advise the seller regarding the merits of an offer to purchase that another
+             brokerage has procured.
+
+      (iv) Assist the seller in preparing and communicating a counteroffer to the buyer.
+
+      (v) Represent the seller in negotiations with another brokerage or a buyer.
+
+(h) "Required jurisdiction" means the state of Minnesota, the state of North Dakota,
+      and the following counties in Wisconsin: Buffalo, Pepin, Pierce, Polk, and St. Croix.
+
+(i) "Required property" means a property for sale, located in the required jurisdiction,
+      of any of the following types:
+
+      (i) Single family homes.
+
+      (ii) Vacant lots and acreage.
+
+                                                           Page 12
+           (iii) Two-family, three-family, and four-family residential buildings.
+
+           (iv) Condominium, Townhouse, or Twin Home.
+
+           (v) New construction in the appropriate category no later than when the property
+                  is ready for trimming. Builder models and floor plans, as well as structures
+                  being built but which have not reached the trimming stage, may at the
+                  Participant's option, be listed in the category designated by the Service for
+                  "models" and "to be builts";
+
+         (vi) Hobby farm with residence thereon
+
+(j) Listing a buyer's equitable title in a property: The brokerage listing a buyer's equitable
+title in a property must file the listing with the MLS and the contingency must be noted. The
+brokerage must have the current property owner's written permission to show the property
+to perspective buyers for the listing to display an active status. If the current property owner
+does not grant written permission, the listing must display a temporarily-not-available-for-
+showing status.
+
+Permitted and required listings
+
+Section 4.2. Listings subject to these rules. An eligible listing is subject to these rules
+when the listing agreement is executed.
+
+Section 4.3. Filing eligible listings. Subject to the other sections of this Part, a brokerage
+may file an eligible listing.
+
+Section 4.4. Filing required listings. Subject to the other sections of this Part, a listing
+brokerage shall file a listing no later than two business days, excluding federal holidays,
+after execution of the listing agreement if both the following are true:
+
+    (a) The listing is an eligible listing.
+
+    (b) The listed property is a required property.
+
+Section 4.5. Seller authorization. A brokerage that files a listing shall obtain one of the
+following authorizations from the seller in the listing agreement or on the service's Seller
+Instructions form. The authorization must include the seller's permission and instruction to
+the brokerage to file all information, corrections, and status changes required by the
+service, including sale price and terms.
+
+    (a) If the seller wishes the listing record to be disseminated, the brokerage shall obtain
+           the seller's authorization to disseminate the listing.
+
+                                                                 Page 13
+    (b) If the seller does not wish the listing to be disseminated, the brokerage shall obtain
+           authorization from the seller to prevent dissemination of the listing, which includes
+           the seller's authorization for dissemination if the brokerage later advertises the
+           listed property. In this case, the listing is a retained listing.
+
+Section 4.6. Net listings.
+
+    (a) "Net listing" means a listing agreement under which the seller sets a target price for
+           the sale of the property, and the listing brokerage's compensation is any amount
+           over that target that the seller receives for the sale. "Net listing" can apply to
+           exclusive agency, exclusive right to sell, and open listings, depending on their
+           compensation terms.
+
+    (b) A brokerage may not file a net listing.
+
+Section 4.7. Single active listing record. A brokerage may not file an active listing record if
+there is already an active listing record in the service relating to the listed property, unless
+the listing records are of different property types.
+
+Section 4.8. Service's right to reject certain listings. The service may reject an
+otherwise-eligible listing upon advice of counsel that the listing agreement suffers from any
+of these defects:
+
+    (a) It fails to adequately protect the interests of the public, the users, or the service.
+
+    (b) It establishes, directly or indirectly, any contractual relationship between the
+           service and a buyer or seller.
+
+Complete and accurate information
+
+Section 4.9. Complete and accurate information. When filing with the service, a listing
+brokerage shall satisfy all the following requirements:
+
+    (a) The brokerage shall file information for every required field in the listing record.
+
+    (b) The brokerage shall file information that is in all respects accurate and not
+           misleading.
+
+Section 4.10. Content required on listing records. The listing brokerage shall disclose
+each of the following in a listing record:
+
+    (a) The gross listing price provided in the listing agreement.
+
+    (b) Subject to Section 4.11, the listed property's address.
+
+    (c) That the listing brokerage or its associate has an ownership interest in the listed
+           property.
+
+                                                                 Page 14
+    (d) That the listing agreement is a limited-service or entry-only agreement.
+
+    (e) That the listing agreement provides for a sale by auction. The listing for a property
+           to be auctioned must specify the type of auction (Absolute, Minimum Bid, or
+           Reserve) and the license number of the auctioneer.
+
+    (f) The potential that the sale of the listed property will be a short sale, if the listing
+           brokerage has or should have knowledge of the potential that the sale price of the
+           property will likely be less than the encumbrances on the property and the costs of
+           its sale.
+
+    (g) That a buyer may purchase a part of the listed property separately and which parts
+           are available for a partial sale.
+
+    (h) The existence of a contingent sale that allows the property to remain on the active
+           market must be disclosed without revealing price or terms in the designated
+           contingency field. The listing broker shall report to the Service within twenty-four
+           (24) hours, excepting weekends and state or federal holidays, that a contingency on
+           file with the Service has been fulfilled or renewed, or the agreement cancelled.
+
+Section 4.11. Where there is no property address. If a listed property has no address, the
+listing brokerage shall provide its government-assigned parcel number. If the property has
+no parcel number, the brokerage shall provide a legal description of the property sufficient
+to distinguish it from other properties and to indicate its location.
+
+Section 4.12. Photo required subject to seller opt out. The listing brokerage shall file at
+least one photograph or drawing of the property if it includes a building.
+
+Section 4.13. Content prohibited in the service.
+
+    (a) A user may not communicate in the service any offer of compensation to any other
+           brokerage.
+
+    (b) A brokerage may not file on a listing record the total compensation in a listing
+           agreement between listing brokerage and seller or the total compensation third
+           parties pay the listing brokerage and any other brokerage in a transaction.
+
+    (c) A user may not communicate in the service any offer of a concession from a seller
+           to the buyer specifically for buyer's payment of fees to a brokerage.
+
+Section 4.14. Content permitted in the service.
+
+    (a) A listing brokerage may disclose on a listing record the potential that the sale of the
+           listed property will be a short sale, if the listing brokerage has or should have
+           knowledge of the potential that the sale price of the property will likely be less than
+           the encumbrances on the property and the costs of its sale.
+
+                                                                 Page 15
+Section 4.15. Updating listing records.
+
+    (a) The brokerage shall file an update of a retained listing to an active or Coming Soon
+           listing record no later than 1 business day after the brokerage advertises the
+           property.
+
+    (b) The brokerage shall file updated or corrected information on a record no later than
+           48 hours after discovering any inaccuracy or misleading representation in the
+           record.
+
+    (c) The listing brokerage shall file updated information regarding the changed status of
+           a listing record no later than two business days after the change takes effect,
+           including any of the following changes:
+
+           (i) Existence of a pending purchase agreement on active listing.
+
+           (ii) Cancelation of a pending sale and reinstatement to active status or the
+                  applicable off-market status.
+
+           (iii) Satisfaction of any contingency on a pending sale.
+
+Section 4.16. Reporting sales.
+
+    (a) Definitions. In this section:
+
+           (i) "Nondisclosure jurisdiction" means a state or territory, the laws of which do
+                  not require reporting to a government authority of the sale price of a property
+                  sold in the jurisdiction or where the prices of previous sales of listed properties
+                  are not publicly available.
+
+           (ii) "Seller-direct transaction" means a sale resulting from negotiations between
+                  the seller and a cooperating brokerage permitted under Section 7.9(d).
+
+    (b) In a seller-direct transaction, the cooperating brokerage shall report the status
+           change, closing date and time, and final sale price to the listing brokerage no later
+           than two business days after the sale closes.
+
+    (c) The listing brokerage shall file the listing record's change to sold status, along with
+           the final sale price, no later than two business days after the closing or receiving
+           notice of the closing from the cooperating brokerage.
+
+    (d) If a portion of a listed property is sold, the listing brokerage shall file information
+           regarding the partial sale according to the requirements in subsection (c). The
+           listing brokerage shall file a new listing record with the service, describe in one of
+           the two records the part of the original listing that is sold, and describe in the other
+           record the part that remains for sale.
+
+                                                                 Page 16
+    (e) If the listed property is in a nondisclosure jurisdiction, the listing brokerage is not
+           required to report the sale price unless the service categorizes that field as a
+           "sensitive field" under Section 5.1(e).
+
+Section 4.17. Expired listings back on market. Except as provided in this section, the
+listing brokerage may not change the status of a listing record from expired to any active
+listing status.
+
+    (a) If the listing brokerage has negotiated a renewal or extension of an existing
+           agreement or a new listing agreement with the same seller for the same listed
+           property before the listing record has automatically changed to expired status
+           under Section 4.18 or within seven days after the automatic expiration, the
+           brokerage shall update the existing listing record with a new expiration date and
+           change its status to active.
+
+    (b) If the listing brokerage has negotiated a renewal or extension of an existing
+           agreement or a new listing agreement with the same seller for the same listed
+           property at any time other than that specified in subsection (a), the brokerage must
+           file it with the service as a new listing record.
+
+Administrative matters
+
+Section 4.18. Automatic status changes.
+
+    (a) On the expiration date of any listing record in active status, the service will
+           automatically remove the listing record from active status to expired status.
+
+Section 4.19. Canceling listings. A listing brokerage may cancel a listing in active status
+with the seller's authorization. When the listing agreement is terminated, the brokerage
+shall change the record's status to canceled.
+
+Section 4.20. Removal of record if status not updated. The service may, after notice to
+the listing brokerage, remove from the service any listing record for which the brokerage has
+not updated status information according to these rules.
+
+Section 4.21. Changes requiring seller authorization. Before making any of the following
+changes to a listing record, the listing brokerage shall obtain the seller's authorization.
+
+    (a) Change to the listing price.
+
+    (b) Change to the status of the listing record, including an extension or renewal of the
+           listing record.
+
+                                                                 Page 17
+PART 5. DATA USE AND PROTECTION
+
+Section 5.1. Definitions. In this Part:
+
+    (a) "Adjacent," relating to any display of information, means without any other
+           intervening text or graphics.
+
+    (b) "Automated disclosure" of a listing record means disclosure of the record by a
+           brokerage user's technology platform without the intervention of an associate of the
+           brokerage.
+
+    (c) "Customer relationship and transaction management services" means a
+           technology platform that allows a brokerage to manage the relationship it has with
+           a customer, including managing all necessary forms and contracts, facilitating
+           communications between brokerage and customer, managing contracts of sale for
+           listed properties, scheduling appointments and closings, etc. "Customer
+           relationship and transaction management service" does not include the ability for
+           the customer to search listing records as in limited electronic advertising or virtual
+           brokerage.
+
+    (d) "Limited electronic advertising," or "LEA," means an automated disclosure of listing
+           records and related roster records by a user other than the listing brokerage where
+           the technology platform allows a customer or prospective customer to enter the
+           customer's search criteria and the platform discloses listing records of consenting
+           listing brokers in response.
+
+    (e) "Service-internal data" means any of the following:
+
+           (i) A retained listing.
+
+           (ii) A listing record in any of the following statuses: Withheld, Delete, Incomplete.
+
+    (g) "Static automated disclosure" means automated disclosure of a listing record and
+           related roster records where a brokerage associate has set up a search or
+           prospecting tool to "push" listing information to a customer or prospective
+           customer, but where the associate and not the customer controls the search
+           criteria in the technology platform. (For example, consider an automated email to a
+           prospect of listings the prospect may be interested in based on search criteria
+           entered by the associate.)
+
+    (h) "Technology platform" means any website, mobile application, email server, audio
+           device, or other means of communication other than the service between a
+           brokerage user and another natural person or entity. Where these rules describe the
+           actions of a brokerage user, they apply to the actions of the brokerage's technology
+           platform.
+
+                                                                 Page 18
+    (i) "Virtual brokerage" means an automated disclosure of a listing record and
+           associated roster records where the technology platform allows a registered
+           customer to enter the customer's search criteria and the platform discloses listing
+           records in response without regard to the consent of listing brokers. (This form of
+           disclosure is conventionally known as "VOW" or "Virtual Office Website" in the
+           industry.)
+
+    (j) "User-composite report" means a user's summary of the contents of listing records
+           for informing the public about market conditions, advertising the user's business,
+           and similar purposes, in which individual listing records other than those of the user
+           are not identifiable.
+
+Use and disclosure in general
+
+Section 5.2. Information of service restricted to users. A user may not disclose any
+information of the service to any natural person or entity who is not a user except as
+expressly provided in this Part. In general, a user may disclose a listing or roster record to
+another user.
+
+    (a) Except as otherwise provided in these rules, a brokerage user or appraisal firm user
+           may use a listing or roster record only for the activities that the brokerage's or
+           appraisal firm's licensure or certification permits.
+
+    (b) If Part 3 provides for any other type of user, that user's rights and duties are defined
+           in the user's access or license agreement with the service.
+
+    (c) Any other disclosure of a listing or roster record is subject to this Part.
+
+    (d) Any other use is prohibited, and in all other cases, the data content of the service is
+           strictly confidential.
+
+Section 5.3. Disclosures permitted.
+
+    (a) Subject to Section 5.4 and Section 5.5, a user may disclose a user-composite
+           report.
+
+    (b) Subject to Section 5.4 and Section 5.6, a user firm's associate may make a
+           reasonable disclosure to a customer or potential customer by any means where the
+           associate initiates the disclosure (that is, by means that are not an automated
+           disclosure), including orally, in print, and via electronic transmission.
+
+    (c) Subject to Section 5.4, Section 5.6, Section 5.7, a user may make a static
+           automated disclosure.
+
+                                                                 Page 19
+    (d) Subject to Section 5.4, Section 5.6, and Section 5.7, a user may make an automated
+           disclosure on one or more customer relationship and transaction management
+           services.
+
+    (e) Subject to Section 5.4, Section 5.6, Section 5.7, and Section 5.8 through Section
+           5.11, a user may engage in limited electronic advertising.
+
+    (f) Subject to Section 5.4, Section 5.6, Section 5.7, Section 5.8, Section 5.9, and
+           Section 5.12, a user may engage in virtual brokerage.
+
+    (g) All other disclosures are prohibited.
+
+Section 5.4. Requirements for all disclosures. A disclosure permitted under this Part
+must meet the following requirements.
+
+    (a) Prohibited filters. The disclosing user may not select, or allow a third party to select,
+           listing records to disclose based on any compensation offered by the listing
+           brokerage or seller or based on the identity of the listing brokerage or associate,
+           except that a disclosing brokerage may choose to display only listing records
+           relating to its own listings.
+
+    (b) Excluded data. The disclosing user shall exclude any service-internal data.
+
+    (c) No advertising. A brokerage user may not advertise a listed property or listing record
+           unless the user is the listing brokerage or has the listing brokerage's permission in
+           writing.
+
+    (d) No support of compensation platforms. A user may not disclose listing or roster
+           records to any natural person or entity attempting to establish a platform or
+           mechanism for listing brokerages or sellers to make offers of compensation to
+           brokerages working with buyers.
+
+    (e) Service disclaimer. The disclosing user shall include in any disclosure the service's
+           accuracy disclaimer: "Data believed to be accurate but should be independently
+           verified."
+
+    (f) Brokerage supervision. A brokerage may permit its technology platforms and
+           associates to engage in the disclosures described in this Part. A brokerage
+           associate making an automated disclosure must have the consent of the brokerage
+           to do so and for the associate to use any third-party technology provider described
+           in Section 5.14. The brokerage is accountable for supervising any disclosure it
+           authorizes and for ensuring its compliance with these rules.
+
+Section 5.5. Disclosure of user-composite reports. A disclosure of a user-composite
+report must meet the following requirements.
+
+                                                                 Page 20
+    (a) The user shall disclose that the summary is based in part (or in whole, where
+           applicable) on the service's data content and any criteria used to filter listing
+           records for the analysis, including time range, price range, etc., and must include
+           the following, Based on information from the REGIONAL MULTIPLE LISTING
+           SERVICE OF MINNESOTA, INC for the period (date) through (date).
+
+    (b) A user may prepare a summary that includes comparisons between the user and
+           other users on bases such as market share, average characteristics of listed
+           properties, listing agreements, and listing outcomes.
+
+Section 5.6. Reasonable disclosure to customers. A disclosure under this Part must
+meet the following requirements.
+
+    (a) A brokerage user may disclose to a customer only a number of listing records
+           reasonably necessary to promote the customer's interest in selling or purchasing
+           property, to assist the customer in making a decision whether to sell or purchase a
+           property, or to manage a customer's ongoing transaction.
+
+    (b) An appraisal firm user may disclose to a customer only a number of listing records
+           reasonably necessary to support a valuation of a property for the customer's
+           purpose of making a business decision about the property, or to manage a
+           customer's ongoing transaction.
+
+    (c) A "reasonably" necessary number is a limited number, taking into account all
+           relevant factors, including the total number of listing records in the service and
+           whether the listing records disclosed are consistent with professional judgment
+           regarding their relevance to the customer's needs.
+
+Automated disclosures
+
+Section 5.7. Automated disclosures in general. An automated disclosure must meet the
+following requirements.
+
+    (a) Excluded records. The brokerage may not disclose a listing record if the seller has
+           directed that the listed property be excluded from automated disclosures.
+
+    (b) Excluded fields.
+
+           (i) A brokerage may not display the listed property's address if the seller has
+                  directed that the listed property's address be excluded from automated
+                  disclosures.
+
+           (ii) A brokerage may not display a listed property's sale price if sale prices of
+                  completed transactions are not available in the public records applicable to
+                  the listed property.
+
+                                                                 Page 21
+           (iii) The brokerage may not display the type of listing agreement, i.e., exclusive
+                  right-to-sell or exclusive agency.
+
+    (c) Frequency of updates. The brokerage shall ensure that the disclosure occurs no
+           more than 12 hours after the last update of listing records from the service to the
+           brokerage's technology platform.
+
+    (d) Other services. The brokerage's technology platform may provide any services
+           permitted under these rules.
+
+Section 5.8. Requirements for LEA and VB. If a brokerage technology platform permits
+limited electronic advertising or virtual brokerage, it must meet the following requirements.
+
+    (a) Brokerage control and branding. The displaying brokerage shall have control of the
+           technology platform where listing records of other brokerages appear.
+
+           (i) The disclosing brokerage must be able to add, change, and remove listing
+                  records appearing on the platform as required by these rules.
+
+           (ii) The disclosing brokerage's name, logo, and contact information must be
+                  displayed in a manner at least as prominent as any other brokerage or third
+                  party. At a minimum, contact information must include an email address or
+                  telephone/voicemail number monitored no less frequently than every 48
+                  hours.
+
+           (iii) Subject to paragraph (ii), the disclosing brokerage may display the identity,
+                  branding, and advertising of a third party on a disclosure.
+
+    (b) Comingling. The platform may display data content regarding listed properties not
+           appearing in the service, whether received from another multiple listing service or
+           from any other source. In response to a search by a visitor to the platform, the
+           platform may display listing records from the service on the same search-results
+           page as information about other properties.
+
+    (c) Sources of data records. Subject to Section 5.13, the platform shall identify the
+           source of each listing record for each property immediately adjacent to the display
+           of the property information. ("Source" here does not refer to the listing brokerage,
+           unless the brokerage technology platform received the listing directly from another
+           brokerage.)
+
+    (d) Modifying records. The displaying brokerage may not modify the data content in a
+           listing record received from the service.
+
+    (e) Supplementing records. The displaying brokerage may supplement a listing record
+           with information from the listing brokerage or third parties.
+
+                                                                 Page 22
+      (i) The brokerage shall visually separate the supplemental information from the
+             listing record.
+
+      (ii) The brokerage shall clearly identify the source of the supplemental
+             information on or adjacent to it.
+
+(f) Comments and automated estimates of value. A technology platform may include
+      functionality that permits third parties to write comments or reviews regarding a
+      listed property or permits a visitor to the platform to obtain an automated valuation
+      of the property.
+
+      (i) If the comment, review, or valuation appears--or can be reached by a link that
+             appears--immediately adjacent to the listing record, it is subject to this
+             subsection.
+
+      (ii) Subject to paragraphs (iii) and (iv), the platform may not disclose a comment,
+             review, or valuation if the seller has requested it not be displayed on the listing
+             record.
+
+      (iii) The platform may communicate on any listing record the disclosing
+             brokerage's good-faith professional judgment regarding the listed property.
+
+      (iv) The platform may disclose that a comment, review, or valuation is unavailable
+             at the request of the seller.
+
+(g) Notice and access for service and other users.
+
+      (i) The brokerage shall give the service notice of its intent to operate the platform
+             and of the services permitted under this Part that the brokerage will deliver
+             with the platform at least 2 days before the brokerage begins making
+             automated disclosures with the platform.
+
+      (ii) The brokerage shall allow the service and other users to access the platform
+             and to pose as visitors or customers using the platform to ensure the
+             platform's compliance with these rules.
+
+(h) Correction of errors. The disclosing brokerage shall correct errors in data or
+      comments displayed under subsection (e) and (f).
+
+      (i) The disclosing brokerage shall be prepared to receive corrections at the
+             contact location identified in paragraph (a)(ii) or at a contact location specified
+             on the display of the listing record.
+
+      (ii) The disclosing brokerage is required to correct an alleged error only when the
+             party bringing the alleged error to the brokerage's attention explains the basis
+             for considering it an error.
+
+                                                           Page 23
+           (iii) Unless the disclosing brokerage concludes the alleged error is not an error, the
+                  disclosing brokerage shall correct it no later than 48 hours after receiving
+                  notice or explanation of it.
+
+           (iv) If the alleged error appears in the data record that the service has provided,
+                  the disclosing brokerage may refer the party identifying the error to the service
+                  or to the listing brokerage.
+
+           (v) The disclosing brokerage's good-faith professional judgment regarding the
+                  listed property is not subject to this subsection.
+
+    (i) Privacy policy. The platform must have a privacy policy that explains the data it will
+           collect from visitors and how the platform and brokerage will use the data.
+
+    (j) End User License Agreement: Once during each viewing session, the technology
+           platform must require the visiting consumer to assent to the terms of the End User
+           License Agreement (EULA), promulgated by the Service. The technology platform
+           must obtain the consumer's assent by means of the consumer's affirmative act
+           before the consumer views any portion MLS data. The Service may in its sole
+           discretion amend the EULA at any time; each technology platform shall begin using
+           the most recent version of the EULA within 30 days of the date that the Service
+           adopts it.
+
+Section 5.9. Technology required for LEA and VB. A brokerage engaging in limited
+electronic advertising or virtual brokerage shall ensure that its technology platform
+satisfies the requirements of this section and has completed a license agreement with
+NorthstarMLS and the technology platform.
+
+    (a) The platform shall employ security measures at least as robust as those used by
+           the service, such as firewalls and software, to detect unusual activity and to prevent
+           misappropriation, "scraping," and other unauthorized uses of data content. If the
+           service requires specific measures, it shall give notice of them to users.
+
+    (b) The platform shall maintain an audit trail of each user's activities for at least 18
+           months.
+
+Limited electronic advertising (LEA) of other brokers' listings
+
+Section 5.10. Blanket consent to LEA. A listing brokerage consents to all other brokerage
+users engaging in limited electronic advertising of the listing brokerage's listings under this
+Part unless the listing brokerage gives notice to the service that it refuses to consent.
+
+Section 5.11. Requirements for LEA. If a brokerage technology platform provides limited
+electronic advertising, it must meet the following requirements.
+
+                                                                 Page 24
+    (a) Consent. The platform may disclose a record of another brokerage that has
+           consented to limited electronic advertising under Section 5.10.
+
+    (b) Reciprocity. The disclosing brokerage may not have withheld consent for other
+           brokerages' display under Section 5.10.
+
+    (c) Search engines. The platform may, but is not required to, prevent indexing of listing
+           records by recognized search engines.
+
+    (d) Permitted fields. The platform may display only those fields permitted by the service
+           to appear in LEA disclosures.
+
+    (e) Required fields. Subject to Section 5.13, the platform shall display all fields
+           required by the service to appear in LEA disclosures.
+
+    (f) Notice of limited use. The platform shall display a notice that listing records are for
+           the viewer's personal, non-commercial use and that the viewer may not use the
+           listing records for any purpose other than identifying a property the viewer may wish
+           to purchase and comparing it to similar properties sold or for sale.
+
+    (g) Excluded records. The platform may not disclose listing records in the following
+           statuses: Incomplete, Withheld, Canceled, Expired, or TNAS.
+
+Virtual brokerage
+
+Section 5.12. Virtual brokerage. If a brokerage technology platform permits virtual
+brokerage, it must meet the following requirements.
+
+    (a) Definition. In this section, "registrant" means the person or entity to whom the
+           platform makes the disclosure in virtual brokerage.
+
+    (b) Customer relationship. The registrant must be a Customer (as that term is defined
+           in Section 1.1) and meet the following requirements.
+
+           (i) The platform has obtained and confirmed the email address of the registrant,
+                  which must be different from the email of any other registrant.
+
+           (ii) The platform has assigned or permitted the registrant to choose a username
+                  (which may be the same as the registrant's email address) and password.
+
+           (iii) The password of each registrant on the platform must have an expiration date,
+                  but the platform may allow the customer to renew the password.
+
+           (iv) The platform must have a record of the username, email address, and current
+                  password of the registrant and shall retain these records no less than 180 days
+                  after the last expiration of the customer's password.
+
+                                                                 Page 25
+(c) Terms of use required. The brokerage shall enter a contract with the registrant on
+      the platform (sometimes called "terms of use" or an "end-user license agreement"
+      or "EULA"), in which the registrant meets the following requirements:
+
+      (i) The registrant acknowledges the brokerage relationship between the
+             registrant and brokerage.
+
+      (ii) The registrant asserts that the registrant has an interest in purchasing or
+             selling property of the types offered on the platform.
+
+      (iii) The registrant agrees that any information the registrant obtains from the
+             platform is for the registrant's personal, non-commercial use.
+
+      (iv) The registrant promises that the registrant will not disclose any information
+             from the platform to any third party except to the extent the registrant expects
+             such a disclosure to advance a purchase or sale of a listed property.
+
+      (v) The registrant acknowledges the service's ownership and validity of the
+             copyright in the service's compilation.
+
+(d) Terms of use conditions. The contract required in subsection (c) is subject to the
+      following additional requirements.
+
+      (i) It may not impose a financial obligation on the registrant.
+
+      (ii) It may not create any representation relationship between the registrant and
+             the brokerage other than the default relationship provided under law.
+
+      (iii) It must permit the service and any brokerage user, or the representative or
+             associate of either of them, to register and use the platform for purposes of
+             confirming the platform's compliance with these rules.
+
+(e) Separate representation agreement permitted. The platform may require the
+      registrant to enter an agreement separate from the contract required in subsection
+      (c) that imposes a financial obligation on the registrant or that creates a relationship
+      between the brokerage and registrant that is different than the default relationship
+      under law.
+
+      (i) The platform shall conspicuously label the agreement as creating a particular
+             brokerage relationship.
+
+      (ii) The platform shall conspicuously identify any financial obligation the
+             registrant assumes by executing the agreement.
+
+      (iii) The platform shall require more than a mouse click for the registrant to assent
+             to the agreement. The platform may satisfy the requirement of this paragraph
+
+                                                           Page 26
+                  by requiring the registrant to type the registrant's name in a signature box,
+                  unless a different form of assent is required by law.
+
+    (f) Registrant service. The platform shall provide contact information where a
+           registrant may ask questions or seek further information about listed properties
+           appearing on the platform. At a minimum, contact information must include an
+           email address or telephone/voicemail number monitored no less frequently than
+           every 48 hours. A live chat function also satisfies the requirement of this
+           subsection.
+
+    (g) Listing brokerage information. Subject to Section 5.13, the platform shall display,
+           adjacent to each listing record, the name and contact information of the listing
+           brokerage and listing associate as they appear in the listing record. The contact
+           information must at a minimum include an email address. The display must be in a
+           color and location at least as visible as the display of the listing record and in a type
+           size as large as the median type size used to display the listing record.
+
+Technical and administrative matters
+
+Section 5.13. Minimal disclosures. In a disclosure with a display requirement subject to
+this Part, the brokerage's technology platform need not satisfy the display requirement on a
+minimal display of a listing record--a display of 200 or fewer characters in a "thumbnail"
+view, text message, "tweet," or the like.
+
+    (a) The minimal display must link to a disclosure that satisfies all display requirements.
+
+    (b) For audio disclosures, the platform must simultaneously deliver an electronic
+           disclosure that satisfies all display requirements.
+
+Section 5.14. Third-party technology provider.
+
+    (a) A brokerage may retain a third-party technology company to provide a technology
+           platform for the brokerage to make disclosures permitted under this Part.
+
+    (b) The service may require the third party to enter into a license agreement with the
+           service--with the brokerage user as party or guarantor--for any access to data
+           content of the service.
+
+    (c) A third party has no rights in the service other than those it derives by being a
+           contractor to the brokerage.
+
+    (d) A third party may provide a technology platform to more than one brokerage user.
+
+    (e) A brokerage may retain more than one third party to perform each type of disclosure
+           or to perform more than one type of disclosure under this Part.
+
+                                                                 Page 27
+Section 5.15. Seller instructions. A listing brokerage shall collect any instruction from a
+seller pertinent to the rules in this Part on the listing agreement or the service's Seller
+Instructions form, as provided in Section 7.1.
+Section 5.16. Use of service-internal data prohibited. Any user who comes into
+possession of service-internal data (except data relating to a user's own listings) may not
+use or disclose the data to any third party and shall immediately inform the service of the
+breach of data security.
+
+                                                                 Page 28
+PART 6. USER RELATIONS WITH THE SERVICE
+
+Section 6.1. Definitions. In this Part:
+
+    (a) "Distribution" means the service's delivery of a listing or roster record to a user or
+           to a natural person or entity who is not a user, including printing, displaying,
+           delivering, or otherwise conveying data content from the listing or roster record.
+
+    (b) "Firm jurisdiction" means the state of Minnesota, the state of North Dakota, and the
+           following counties in Wisconsin: Buffalo, Pepin, Pierce, Polk, and St. Croix.
+
+Section 6.2. Fees.
+
+Users are required to pay fees set by their association. The Association may discontinue
+service to any user who fails to pay fees when due.
+
+Section 6.3. User offices within firm jurisdiction. Subject to Section 6.4, if any office of a
+brokerage or appraisal firm becomes a user, all offices of the brokerage or appraisal firm
+user within the firm jurisdiction shall become users.
+
+Section 6.4. Waivers.
+
+    (a) ONice waiver. If a brokerage or appraisal firm user has an office in the firm
+           jurisdiction that does not use the service and is affiliated with another multiple
+           listing service, that office is a "waived office," and this subsection applies.
+
+           (i) For purposes of this section, any action prohibited for the waived office is
+                  prohibited for any user or associate of the waived office.
+
+           (ii) The brokerage user or appraisal firm user shall certify that the waived office is
+                  affiliated with another MLS and does not use any part of the service. The
+                  service may require that the brokerage user or appraisal firm user identify the
+                  other MLS, and the user consents to the service confirming the office's
+                  participation with the other MLS.
+
+           (iii) The waived office may not have any access to any information of the service
+                  and may not use any part of the service.
+
+           (iv) No listing record representing a listing agreement on which the waived office
+                  or its user or associate is named may be filed with the service.
+
+           (v) The waived office may not disclose a listing or roster record of the service on
+                  any technology platform that the waived office operates under Part 5.
+
+                                                                 Page 29
+           (vi) The waived office need not be a user under Section 6.3 and is not subject to
+                  fees under Section 6.2.
+
+    (b) Associate user waiver. If a brokerage or appraisal firm user has an office in the firm
+           that participates in the service but an associate user in the office participates in
+           another MLS and does not use the service, the associate user is a "waived
+           associate," and this subsection applies.
+
+           (i) The brokerage user or appraisal firm user shall certify that the waived
+                  associate participates in another MLS and does not use any part of the service.
+                  The service may require that the brokerage user or appraisal firm user identify
+                  the other MLS, and the users consent to the service confirming the associate's
+                  participation with the other MLS.
+
+           (ii) The waived associate may not have any access to any information of the
+                  service and may not use any part of the service.
+
+           (iii) No listing record representing a listing agreement on which the waived
+                  associate is named may be filed with the service.
+
+           (iv) The waived associate may not be named on a contract for sale for any property
+                  listed in the service.
+
+           (v) The waived associate is not subject to fees under Section 6.2.
+
+    (c) Consequences of violation. If a waived office or waived associate makes any use of
+           the service in violation of this section, the brokerage or appraisal firm user is subject
+           to the following consequences for the infraction.
+
+           (i) The service may assess the user for all fees that it would have paid for the
+                  waived office or waived associate but for the waiver, starting on the date the
+                  waiver began an ending on the date of the infraction.
+
+           (ii) The waived office or waived associate may not be subject to any waiver until a
+                  date at least six months after the infraction. During that period, the user shall
+                  pay all fees normally applicable to an office or associate user.
+
+           (iii) After the six-month exclusionary period, the user may re-apply for waiver
+                  status for the waived office or waived associate.
+
+           (iv) If a waived office or waived associate commits a second or subsequent
+                  violation of the provisions of this section, the service may indefinitely decline
+                  to permit a waiver for the office or associate.
+
+Section 6.5. Service use of listing and roster records. The service may make the
+following types of use, dissemination, or distribution of a listing or roster record.
+
+                                                                 Page 30
+(a) Service-internal uses. The service may make any use of a record that distributes it
+      only to employees, contractors, and agents of the service for purposes of operating
+      and managing the service.
+
+(b) Records for users. The service may disseminate a record to a user for any purpose
+      permitted or required by these rules.
+
+(c) Distribution for research. The service may not distribute records to non-users for
+      research and analysis except where the service requires by contract that that the
+      non-user meet all the following requirements:
+
+      (i) The non-user may not publish any report or aggregate analysis that identifies
+             an individual listing record.
+
+      (ii) The non-user may not publish any report collated based on which brokerage
+             was involved in listing or selling listed properties.
+
+(d) Distribution required by law. The service may distribute a listing or roster record if
+      any law or legal process, including subpoena or other governmental investigative
+      demand, requires the distribution.
+
+(e) Other distributions. The service may, but is not required to, distribute listing and
+      roster records to other non-users.
+
+      (i) Any distribution under this subsection, including distributions to users other
+             than brokerages and appraisal firms in Part 3, requires the listing brokerage's
+             consent.
+
+      (ii) The service may obtain a brokerage's consent by giving notice of the
+             distribution to the brokerage unless the brokerage opts out of the distribution
+             by the means the service has provided. Identification of a user type other than
+             a brokerage or appraisal firm in Part 3 constitutes notice to all users of the
+             distributions disclosed in Part 3.
+
+      (iii) If the listing brokerage is no longer a brokerage user, its consent is presumed
+             unless it gave instructions when it terminated its relationship with the service
+             that the service should not distribute its listing records.
+
+      (iv) The service may not make giving consent to any distribution under this
+             subsection a condition of a brokerage user's relationship with the service.
+
+      (v) Subject to paragraph (vi), the service may not exclude a listing record from a
+             distribution based upon the type of listing agreement the record represents.
+
+      (vi) The service may exclude a listing record from a distribution where the listed
+             property's address would appear on a portal and there appears on the
+
+                                                           Page 31
+                  property a "for sale by owner" sign or any other invitation to the public to
+                  contact the seller directly. "Portal" means any means of advertising listed
+                  properties or other products or services.
+
+Section 6.6. Users entitled to access to records. The service shall disseminate listing
+and roster records to users for the purposes permitted under these rules. The service may
+exercise its sole discretion regarding which media and platforms it will use for this purpose,
+but each user is entitled to use a copy of the service's data compilation to the extent that
+the rules permit the use.
+
+Section 6.7. Brokerage entitled to data feed. A brokerage user or associate user of the
+brokerage may obtain a data feed for disclosures and uses permitted under Part 5.
+
+    (a) The service may require that the brokerage execute a license agreement with
+           reasonable provisions to protect the interests of the service, other users, and the
+           public.
+
+    (b) The service may charge a reasonable fee for the data feed.
+
+    (c) If the service has reason to believe that a user has violated these rules or that the
+           user's technology platform has permitted an unauthorized disclosure or
+           distribution of listing or roster records in violation of Part 5, the service may request
+           access to all customer information and audit trails that the user and its technology
+           platform maintain relevant to the alleged breach.
+
+Section 6.8. Firm responsibility for affiliated users. A brokerage user or appraisal firm
+user is responsible for compliance with these rules by users affiliated with the brokerage or
+appraisal firm user.
+
+    (a) As consideration for access to the service, every user agrees that these rules are
+           binding on the user. The service may require each user to execute a separate
+           agreement affirming this fact.
+
+    (b) If the service assesses a fee or other discipline against a user, the user's brokerage
+           or appraisal firm is liable for the discipline.
+
+    (c) The service may treat continued violation of these rules by an associate of a
+           brokerage or appraisal firm user as a violation by the brokerage or appraisal firm
+           user itself.
+
+Section 6.9. User to provide documentation. A user must provide documentation of any
+agreement or authorization required under these rules to the service no later than 48 hours
+after the service's request for the documentation.
+
+Section 6.10. Consideration of violations of these rules. Subject to Section 6.11, the
+service shall consider every allegation that a user has violated these rules
+
+                                                                 Page 32
+(a) In this section:
+
+      (i) "Complainant" means the natural person, entity, or automated agent that
+             identifies an alleged violation of these rules.
+
+      (ii) "Respondent" means the user alleged to have violated these rules.
+
+      (iii) "Service evaluator" means an employee or representative of the service
+             charged with certain roles under this section or an automated data checking
+             system.
+
+      (iv) "Fact finding panel" means the service Rules Committee or other group
+             appointed by the Board of Directors.
+
+      (v) "Review panel" means the Board of Directors.
+
+(b) An allegation may arise from a written complaint from a complainant who is a
+      natural person or entity--including an employee or representative of the service--
+      or it may arise from internal automated monitoring mechanisms put in place by the
+      service, in which case the service is the complainant.
+
+(c) A service evaluator shall evaluate each allegation. There may be more than one
+      service evaluator involved in a given complaint. If there is sufficient evidence in the
+      service evaluator's judgment to sustain a claim that the respondent has violated
+      these rules, the service evaluator shall impose the applicable fee or discipline for
+      the rule violation. Otherwise, the service evaluator shall dismiss the complaint.
+
+(d) If the service evaluator concludes the respondent violated a rule and imposes a fee
+      or other discipline, the respondent may appeal to a fact finding panel. If the service
+      evaluator dismisses a complaint, the complainant may appeal to a fact finding
+      panel.
+
+(e) A fact finding panel shall conclude, based on evidence presented to it by the service
+      evaluator, the complainant, and the respondent, whether the respondent has
+      violated the rules. If the panel concludes there is a violation, the panel shall impose
+      the applicable fee or discipline for the rule violation. Otherwise, the panel shall
+      dismiss the complaint.
+
+(f) The complainant and staff evaluator may not appeal a fact finding panel's
+      determination that there has been no rule violation. The respondent may appeal the
+      determination that the respondent violated the rules to a review panel.
+
+(g) A review panel shall conclude, based on evidence presented to it by the staff
+      evaluator, the complainant, and the respondent, whether the respondent has
+      violated the rules. If the panel concludes there is a violation, the panel shall impose
+
+                                                           Page 33
+           the applicable fee or discipline for the rule violation. Otherwise, the panel shall
+           dismiss the complaint. The review panel's decision is final.
+
+    (h) The service may adopt procedures for carrying out the activity required by this
+           section, including provisions to address complainants who do not wish to be
+           identified, the time a complainant or respondent has for appeal, and selection of
+           panelists.
+
+    (i) The service may adopt a schedule of fees or discipline for violations of particular
+           rules and other forms of discipline.
+
+           (i) Discipline may consist of any combination of a letter of warning, a letter of
+                  reprimand, a requirement to attend training, a fee not to exceed $15,000, and
+                  suspension or termination of status as a user.
+
+           (ii) A user may be placed on probation in lieu of other discipline. The applicable
+                  fee or discipline is suspended provided the user does not commit any other
+                  violations during the probationary period. If the user commits another
+                  violation during the probationary period, the service may impose both the
+                  suspended fee or discipline for the previous violation and the applicable fee
+                  or discipline for the new violation.
+
+Section 6.11. Allegations of Code of Ethics violations. If a complaint under Section 6.10
+alleges that a user who is a REALTOR® has violated the REALTOR® Code of Ethics, the
+service shall refer the complainant to the association of REALTORS® with jurisdiction over
+the user.
+
+Section 6.12. Treatment of suspended, expelled, and resigned brokerages. If the
+service suspends a brokerage's user privileges or expels the brokerage because the
+brokerage has violated these rules, or if a brokerage resigns from the service, the service
+shall give notice to the brokerage that it has the option for its active listing records in the
+service to remain in that status until they are sold, withdrawn, canceled, or expired.
+
+    (a) The brokerage shall make its election no later than 2 business days after the
+           service's notice.
+
+    (b) If the brokerage elects to have the service retain the listing records as active
+           records, the brokerage shall commit to reporting status changes and closed sales
+           as provided in Part 4. The service shall automatically designate any record for a
+           listed property not sold as of its expiration date as expired.
+
+    (c) If the brokerage elects not to have the service retain the active listings or fails to
+           respond to the service's notice, the service shall designate the brokerage's active
+           listings as withdrawn.
+
+                                                                 Page 34
+Section 6.13. Treatment of sellers making demands of the service. Subject to
+subsections (a) and (b), the service shall not accede to the demand of a seller to add,
+change, or remove a listing record.
+
+    (a) If a seller of a property that is the subject of a listing record asserts to the service
+           that the listing brokerage identified on the record has never had the authority to file
+           the listing record with the service, the service shall initiate an inquiry under Section
+           6.10.
+
+    (b) If a seller of a property that is the subject of a listing record asserts to the service
+           that the listing record does not accurately represent the status of the listing
+           agreement or listed property, the service may review documentation from the seller
+           in support of seller's position. If the seller's documentation supports the seller's
+           assertion, the service shall initiate an inquiry under Section 6.10.
+
+    (c) If any inquiry under this section reveals that the seller's assertions are correct, the
+           service may revise or delete the listing record and impose the applicable fee or
+           discipline on the listing broker for its violation of these rules.
+
+Section 6.14. Use of terms "MLS" and "multiple listing service".
+
+    (a) A user may communicate to the public that the user participates in the service and
+           can provide information from the service subject to these rules. (For example, "Our
+           firm has access to complete and timely information from NorthstarMLS.")
+
+    (b) A user may not suggest that the user or any user associate is or operates a multiple
+           listing service.
+
+    (c) A user may not suggest that the user provides direct access to the service.
+
+    (d) The prohibitions of this section apply to users' firm names, web addresses, email
+           addresses, and any other form of communication to the public.
+
+Section 6.15. Cooperation with service investigations. If the service is investigating any
+user's alleged violation of these rules or has reasonable cause to believe that the user has
+allowed a breach of the security or confidentiality of listing or roster records, the service
+may demand that the user deliver to the service any documents, records, contracts, or
+other materials described in these rules or required to be retained under these rules that
+may relate to the alleged violation or breach, including registrant information and audit
+trails the user's technology platforms used for automated disclosures under Part 5. The
+user shall supply the materials to the service no later than 7 days after the service's
+request for them.
+
+                                                                 Page 35
+Section 6.16. Orientation and training.
+    (a) The service may require any associate of a user to complete an orientation program
+           not exceeding eight hours in duration no later than 30 days after the associate gains
+           access to the service.
+    (b) The service may require any associate of a user to complete periodic training, not
+           exceeding four hours in any twelve-month period.
+    (c) The service shall make any orientation or training required under this section
+           available remotely, whether synchronously or asynchronously.
+
+                                                                 Page 36
+PART 7. USER RELATIONS WITH OTHERS
+
+User relations with customers
+
+Section 7.1. Seller instructions form. When executing a listing agreement that is subject
+to Section 4.4, a listing brokerage shall include the contents of the service's Seller
+Instructions form in the listing agreement.
+
+    (a) The brokerage may copy the language of the form into the brokerage's chosen
+           listing-agreement form, attach the form to the listing agreement as an addendum,
+           or combine these two approaches, placing some language from the form in the
+           listing agreement and some in an addendum.
+
+    (b) The brokerage may not vary the language of the form without consulting the service.
+
+    (c) The brokerage shall retain the form, any agreement incorporating its language, or
+           both for at least 1 year after the execution of the listing agreement or the off-market
+           date of the listing record, whichever is later.
+
+Section 7.2. No representation that services are free. A user may not represent to any
+customer or potential customer that the user's services are "free" or available at no cost
+unless the user will receive no compensation from any source for the services at issue.
+
+Section 7.3. User disclosure to buyers and sellers. A user shall disclose to a prospective
+seller or buyer with whom the user interacts that brokerage compensation is not set by law
+and is fully negotiable. The user shall include the disclosure in conspicuous language as
+part of any listing agreement, written buyer agreement, and disclosure document required
+by law.
+
+Section 7.4. Agreement when user works with buyer. A user working with a buyer shall
+enter a written agreement with the buyer before touring any home.
+
+    (a) Definitions. In this section:
+
+           (i) "Working with a buyer" means a user provides services subject to the user's
+                  brokerage license at the buyer's request, whether the user represents the
+                  seller, the buyer, neither, or both. Working with a buyer does not include
+                  communicating with potential buyers attending an open house that is open to
+                  the public (whether hosted by the listing brokerage or another firm), but it
+                  does otherwise apply to showings of properties by the listing brokerage.
+
+           (ii) "Touring a home" means a user enters a home--a residential property
+                  consisting of not less than one or more than four units--with a potential
+                  buyer or the user enters the home to provide a synchronous virtual tour to a
+                  potential buyer not physically present.
+
+                                                                 Page 37
+    (b) Agreement requirements. The agreement must meet the following requirements:
+
+           (i) To the extent the user will receive compensation from any source for working
+                  with the buyer, the agreement will offer a specific and conspicuous disclosure
+                  of the amount or rate of compensation or how the amount will be determined.
+                  The amount of compensation must be objectively ascertainable and not open-
+                  ended.
+
+           (ii) The agreement must prohibit the user from receiving compensation for
+                  brokerage services from any source that exceeds the amount or rate agreed to
+                  in the agreement
+
+           (iii) The agreement must contain a conspicuous statement that brokerage fees
+                  and commissions are not set by law and are fully negotiable.
+
+Section 7.5. Presentation of offers to seller and buyer.
+
+    (a) The fact that there is an existing contract for sale on a listed property does not by
+           itself relieve a brokerage of responsibility under this section.
+
+    (b) A listing brokerage shall present to the seller any written offer or counteroffer of
+           purchase unless the brokerage and seller have agreed otherwise in writing. If the
+           listed property is subject to an existing contract for sale, and a new offer is not
+           contingent on the termination of the existing contract, the listing brokerage shall
+           advise that the seller obtain legal counsel before accepting the new offer.
+
+    (c) A brokerage working with a buyer shall present to the buyer any written offer or
+           counteroffer of purchase unless the brokerage and buyer have agreed otherwise in
+           writing. If there is evidence of a pre-existing contract for sale on the listed property,
+           the brokerage shall advise that the buyer obtain legal counsel before accepting the
+           new offer.
+
+User relations with other users
+
+Section 7.6. User with interest in purchasing. A brokerage user or appraisal firm user, or
+any associate user of it, interested in acquiring a property listed by another brokerage on
+the user's own behalf shall disclose that interest in writing to the listing brokerage no later
+than the time when the user makes an offer to purchase the listed property.
+
+Section 7.7. For-sale and sold signs. A brokerage may not place a for-sale or sold sign on
+a listed property without the listing brokerage's permission.
+
+Section 7.8. Solicitation of active listings. A brokerage may not solicit a listing agreement
+with the seller of any property subject to an active listing record in the service unless the
+solicitation is consistent with law.
+
+                                                                 Page 38
+Section 7.9. Brokerages in cooperative transactions.
+
+    (a) Definition. "Cooperative transaction" means a transaction or prospective
+           transaction where a listing brokerage represents the seller, and a cooperating
+           brokerage is working with a potential buyer or buyer.
+
+    (b) Access for cooperating brokerages. A listing brokerage shall make a listed property
+           with an active listing record available for potential cooperating brokerages to show
+           within 24 hours. The seller may refuse showings, but if the seller does so routinely
+           or repeatedly, the listing brokerage shall change the status of the listing to an
+           applicable off-market listing status.
+
+    (c) Appointments and negotiations through listing brokerage. Subject to subsection (d),
+           a cooperating brokerage shall make an appointment for a showing and conduct
+           negotiations with a seller only through the listing brokerage.
+
+    (d) Direct communications with seller. A cooperating brokerage may communicate
+           directly with the seller if either of the following conditions is true:
+
+           (i) The listing brokerage has consented to direct contact between the
+                  cooperating brokerage and the seller. The listing brokerage may grant blanket
+                  consent for direct contact to all potential cooperating brokerages in Agent
+                  Remarks field.
+
+           (ii) The cooperating brokerage has been unable to contact the listing brokerage
+                  after reasonable effort, provided that the listing brokerage may prohibit direct
+                  contact by any potential cooperating brokerage in the Agent Remarks field.
+
+    (e) Prompt presentation of oNers. The listing brokerage shall arrange to present an offer
+           as soon as possible. The cooperating brokerage may demand an explanation for any
+           failure by the listing brokerage to satisfy this subsection.
+
+    (f) Brokers' rights to present oNers and counteroNers.
+
+           (i) A listing brokerage shall allow a cooperating brokerage to be present for the
+                  presentation to the seller of any offer of sale or purchase that the cooperating
+                  brokerage has delivered to the listing brokerage, unless the seller gives the
+                  listing brokerage written instructions to the contrary.
+
+           (ii) The cooperating brokerage shall allow the listing brokerage to be present for
+                  the presentation to the buyer of any counteroffer from the seller, unless the
+                  buyer gives the cooperating brokerage written instructions to the contrary.
+
+           (iii) If the buyer or seller has given written instructions under paragraph (i) or (ii),
+                  the brokerage receiving the instructions shall provide them to the other
+                  brokerage upon the other brokerage's request.
+
+                                                                 Page 39
+           (iv) The listing brokerage may exclude the cooperating brokerage from the listing
+                  brokerage's discussion with the seller evaluating an offer, and the cooperating
+                  brokerage may exclude the listing brokerage from the cooperating brokerage's
+                  discussion with the buyer evaluating a counteroffer.
+
+           (v) A brokerage retains reasonable discretion to schedule an appointment where
+                  the brokerage will receive an offer or counteroffer.
+
+    (g) Confirmation of delivery of oNers. If a brokerage that procures an offer or
+           counteroffer is not present for the delivery of that offer or counteroffer to the
+           receiving brokerage's customer, it may demand confirmation of delivery from the
+           receiving brokerage.
+           (i) If the receiving brokerage has delivered the offer or counteroffer, the receiving
+                  brokerage shall provide written confirmation as soon as practical after the
+                  demand.
+           (ii) If the receiving brokerage's customer has waived the receiving brokerage's
+                  obligation to present the offer or counteroffer, the receiving brokerage shall
+                  provide written confirmation as soon as practical after the demand.
+
+Section 7.10. Compensation offers to other brokers, if any. Subject to Section 4.13, a
+listing brokerage may make an offer of compensation to a potential cooperating brokerage,
+or other representative (such as an attorney) representing the buyer outside of the service.
+If the listing brokerage does so, it shall provide a conspicuous notice to the seller regarding
+the compensation and obtain the seller's authorization for the compensation on the Seller
+Instructions form required in Section 7.1, including the amount or rate of any such
+payment.
+
+                                                                 Page 40
+PART 8. RISK MANAGEMENT
+
+Section 8.1. Limits on user's use of records that user files. A user's use of a listing or
+roster record the user has filed with the service may be limited to the extent the service or a
+third party under contract with the service supplies some data content in the record. Any
+limitation relates only to the data content the service or third party has provided. The
+service shall inform users of any limitations under this section.
+
+Section 8.2. Filing user's grant of license. A user grants to the service a non-exclusive,
+perpetual, world-wide, royalty-free, license to data content the user files with the service to
+reproduce, prepare derivative works of, distribute, display, perform and license (including
+sublicenses through multiple tiers) the data content in any way consistent these rules. A
+separate user agreement may provide for a more extensive grant or assignment of rights
+from a user under certain circumstances.
+
+Section 8.3. Compilation copyrights.
+
+    (a) Definitions. In this section:
+
+           (i) "Compilation" means the selection, coordination, and arrangement (as those
+                  terms are used in U.S. copyright law) of data content that a user files with the
+                  service, including the choice, classification, categorization, ordering, and
+                  grouping of material or data content.
+
+           (ii) "Intellectual property law" means all law regarding copyrights, moral rights,
+                  trade secret rights, and rights of authorship.
+
+    (b) User compilation contributions. Compilation of a user is a work made for hire by the
+           user for the benefit of the service, which is the compilation's author for purposes of
+           intellectual property law. If for any reason the compilation cannot be a work made
+           for hire, the user shall agree to assign and hereby does assign to the service all right,
+           title and interest in the compilation. If for any reason the compilation cannot be
+           assigned, the user grants to the service a license to the compilation as provided in
+           Section 8.2.
+
+    (c) Original text and photographs. This section does not apply to original text or
+           photographs.
+
+Section 8.4. Filing user's representations and warranties. By filing data content with the
+service, a user represents and warrants that the user has all authorization and permission
+necessary to file the data content and to grant the license in Section 8.2.
+
+Section 8.5. Indemnification. A user--the "indemnifying user"--shall defend and hold
+harmless the service and all other users against any claim by a third party:
+
+                                                                 Page 41
+    (a) that the content the indemnifying user has filed with the service is inaccurate or
+           infringes the rights of any individual person or entity; or
+
+    (b) arising from a violation of these rules by the indemnifying user.
+
+Section 8.6. No warranty by service. A user shall hold the service harmless against any
+claim by the user that the data content is inaccurate or not suitable for the user's purposes.
+The service communicates data content it receives from users and third parties to users
+as-is, except where these rules or applicable license agreements provide otherwise. The
+service cannot verify the accuracy of the data content and makes no warranty as to its
+accuracy.
+
+Section 8.7. No legal action against other user for rule violation. These rules are a
+contract between the service and a user. These rules by themselves do not give a user a
+basis for a lawsuit for breach of contract against another user. The rights a user has under
+these rules are against the service and not against other users. Subject to Section 8.8, a
+user's only recourse for another user's violation of these rules is through the procedure in
+Section 6.10.
+
+Section 8.8. Alleged misuse of another user's data content.
+
+    (a) Definitions. In this section:
+
+           (i) "Alleged misuser" means a user who has allegedly made use of the data
+                  content in a listing brokerage's listing or roster record that is not expressly
+                  permitted in these rules.
+
+           (ii) "Content owner" means a listing brokerage asserting that data content in one
+                  of its listing records or roster records has been misused by an alleged misuser.
+
+    (b) Rights of content owners. Users of the service receive only those rights in other
+           users' data content that these rules provide. A content owner may have legal rights,
+           such as copyrights, in its data content that provide the content owner legal
+           remedies against an alleged misuser.
+
+    (c) Service to determine. The content owner may initiate a complaint of misuse as a
+           rule-violation complaint, and the service shall resolve the complaint under Section
+           6.10. The service shall determine whether an alleged misuse of a content owner's
+           data content is consistent or inconsistent with these rules. The service's
+           determination is final.
+
+    (d) Right of content owner. A content owner may bring suit against an alleged misuser
+           only if, after the parties have exhausted all procedures provided in Section 6.10, the
+           service has determined that the alleged misuse is inconsistent with these rules.
+
+                                                                 Page 42
+(e) Discipline for rule violation. The service may impose a fee or discipline for any rule
+      violation under this section, whether the content owner brings suit or not.
+
+                                                           Page 43
+PART 9. PROCESS FOR REVISION
+
+Section 9.1. Amendment process. The service may amend these rules by approval of the
+board of directors of the service.
+
+Section 9.2. Notice of amendment. The service shall provide advance notice of a rule
+change. The service shall try to provide users no less than 30 days to come into compliance
+with the new or changed provision, but the service may provide a shorter notice period if
+there is an urgent need to implement a change. A user's use of the service after the
+expiration of the notice period constitutes the user's assent to the change.
+
+PART 10. Data Sharing Network
+
+15.1 Definitions.
+
+         15.1.1 "Data Sharing Network" or "DSN" means all the REALTOR® associations and
+multiple listing services (the "DSN MLSs") that provide access to the multiple listing data of
+the Service in return for the Service providing its multiple listing data to the DSN MLSs. For
+purposes of these rules, the Service itself is a DSN MLS.
+
+         15.1.2 "Other MLS" means any DSN MLS, other than the Service, from which
+Participant or its Users wish to obtain access to listing information.
+
+         15.1.3 "Other MLS Database" means all data of Other MLS relating to real estate for
+sale, previously sold, or listed for sale, and data relating to Other MLS's brokers and agents
+(including text, photographs, and all other data formats now known or hereafter invented)
+entered into the Other MLS's database.
+
+         15.1.4 "Other MLS Policies" means the Other MLS's bylaws, policies and procedures
+manual, and rules and regulations, as the Other MLS amends them from time to time.
+These policies may differ from those of the Service.
+
+15.2. Purpose. The purpose of the DSN is to make it possible for participants and
+subscribers of each DSN MLS to disseminate listing information to participants in other
+DSN MLSs. The objective of the DSN is to facilitate the sharing of information among
+participants and subscribers of DSN MLSs.
+
+15.3 Access to Other MLSs. Access to data of Other MLSs is subject to the following
+provisions:
+
+         15.3.1 Access to Listing Data in Other MLSs. Participant and their Users may have
+         access to the listings of an Other MLS through the DSN according to the terms of
+         that Other MLS's rules and regulations. Access to listings in other DSN MLSs is
+         available only to those Participants entitled to access to listings in the Service.
+
+                                                                 Page 44
+         15.3.2 No Input. Neither Participant nor their Users are entitled to input any listing
+         content into an Other MLS Database. These privileges are limited to brokers and
+         licensees who become Participants and Subscribers directly to the Other MLS.
+
+         15.3.3 IDX. Participant may have access to and use IDX data feeds from each Other
+         MLS that has granted permission for IDX sharing, provided its use of that data is
+         subject to the IDX rules of the Other MLS.
+
+15.4 Application of Other MLS rules. If the Participant accesses or allows any of its Users
+to access the listing data of an Other MLS, Participant becomes bound by the rules and
+regulations of that Other MLS with regard to that listing data and with regard to any
+transaction arising from use of that data. The following provisions also apply.
+
+         15.4.1 Priority of Rules and Agreements. Access by Participant and its Users to the
+         Other MLS Database is subject at all times to the limitations set out in the Other
+         MLS Policies. In the event of an apparent conflict between the Other MLS Policies
+         and these rules with regard to the Other MLS Database, Participant's obligations
+         and rights shall be determined, in order of precedence, by the Other MLS Policies,
+         by any agreement between Participant or its Users and the Other MLS, and by these
+         rules.
+
+         15.4.2 Use limited. Participant and their Users may use the Other MLS Database
+         solely for the purpose of selling, listing, leasing, and appraising real estate for bona
+         fide clients and customers as provided in the Other MLS Policies. Except as
+         expressly provided in the Other MLS Policies, Participant and their User may not
+         copy, create derivative works of, distribute, perform, or display the Other MLS
+         Database or any part of it.
+
+         15.4.3 Confidentiality. Participant and their Users shall maintain the confidentiality
+         of all user IDs, passwords, and tokens (if any) and of the Other MLS Database;
+         Participant, its Users, and its employees shall not provide user IDs, passwords, or
+         tokens (if any) to any third party. To maintain the confidentiality of all user IDs,
+         passwords, and the Other MLS Database, Participant, their Users, and employees
+         shall take the greater of reasonable care or the care Participant takes to protect its
+         own confidential information.
+
+         15.4.4 Consideration of alleged rule violations. Participant must submit to the Other
+         MLS Policies, whether relating to a listing record in the Other MLS Database or to
+         another broker Participant in the Other MLS. Participant remains subject to the rules
+         of the Service as well. As a result, it is possible that the same act or acts could
+         constitute a violation of policy in both the Other MLS and the Service, and that
+         Participant may be sanctioned for multiple violations if Participant is found
+         culpable. Participant consents to the Service communicating the final resolutions of
+         disciplinary proceedings to all DSN MLSs. 15.4.5 Other sanctions. In addition to
+
+                                                                 Page 45
+         fines, Participant may be subject to other sanctions levied by the Service, including
+         discontinued access to the DSN, the Other MLS Database, or the Service itself.
+15.5 Disclaimer of warranties. The Other MLS provides the Other MLS data on an "as is,"
+"as available" basis. Use of the Other MLS data and the information available through the
+Other MLS data are at Participant's sole risk. The Service and the Other MLS do not warrant
+that the Other MLS data will be uninterrupted or error-free, accurate, complete, current or
+reliable.
+
+                                                                 Page 46
+
