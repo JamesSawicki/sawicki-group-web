@@ -21,6 +21,7 @@ import { useEffect, useRef, useState } from "react";
 import ChatConversation from "./listing/ChatConversation";
 import { OPEN_CHAT_EVENT, PHOTO_VIEWED_EVENT } from "../lib/chat-events";
 import { track } from "../lib/analytics";
+import { chatBubble } from "../lib/site.config";
 
 interface Props {
   /** The server builds the system prompt from this id (see ChatController on the API). */
@@ -160,7 +161,17 @@ export default function ListingChat({ listingId, apiBaseUrl, listingAddress, lis
               aria-hidden="true"
             />
           )}
-          <span className="relative text-base font-semibold">AI</span>
+          {chatBubble.image ? (
+            <img
+              src={chatBubble.image.src}
+              alt=""
+              width={28}
+              height={28}
+              className="relative w-7 h-7"
+            />
+          ) : (
+            <span className="relative text-base font-semibold">{chatBubble.label}</span>
+          )}
         </button>
       )}
 

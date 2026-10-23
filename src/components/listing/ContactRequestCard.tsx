@@ -6,6 +6,7 @@
  * endpoint (/api/contact: emails the team, rate-limited), with the listing attached.
  */
 import { useState } from "react";
+import { site } from "../../lib/site.config";
 
 /** Fields the AI filled in (all editable here). */
 export interface ContactRequest {
@@ -58,7 +59,7 @@ export default function ContactRequestCard({ draft, listingAddress, listingPath 
   if (status === "sent") {
     return (
       <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
-        Sent. The Sawicki Group will be in touch with {fields.name || "you"} soon.
+        Sent. {site.name} will be in touch with {fields.name || "you"} soon.
       </div>
     );
   }
@@ -92,7 +93,7 @@ export default function ContactRequestCard({ draft, listingAddress, listingPath 
         disabled={status === "sending" || !fields.name.trim() || !fields.email.trim()}
         className="w-full h-11 rounded-lg bg-stone-900 text-white text-sm font-medium hover:bg-stone-700 disabled:opacity-50"
       >
-        {status === "sending" ? "Sending…" : "Send to The Sawicki Group"}
+        {status === "sending" ? "Sending…" : `Send to ${site.name}`}
       </button>
     </div>
   );

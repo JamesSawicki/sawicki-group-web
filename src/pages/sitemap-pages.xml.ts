@@ -10,6 +10,7 @@ const PAGES = [
   "/about",
   "/contact",
   "/privacy",
+  "/privacy-choices",
   "/terms",
   "/disclaimers",
   "/accessibility",
