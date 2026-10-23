@@ -16,7 +16,17 @@
  */
 import type { CollectionEntry } from "astro:content";
 import type { Listing } from "../types/listing";
-import { brokerage, office, site, social, team } from "./site.config";
+import {
+  brokerage,
+  logos,
+  office,
+  primaryContact,
+  site,
+  social,
+  team,
+  type BrandImage,
+  type Phone,
+} from "./site.config";
 import { listingPath } from "./listing-utils";
 
 type Node = Record<string, unknown>;
@@ -33,6 +43,19 @@ export const ORGANIZATION_ID = `${site.siteUrl}/#organization`;
 export const OFFICE_ID = `${site.siteUrl}/#office`;
 /** Identifier of a team member's Person node, e.g. personId("jim-sawicki"). */
 export const personId = (id: string): string => `${site.siteUrl}/#${id}`;
+
+/** A phone in schema.org's preferred international form: "+1-952-212-1586". */
+function intlPhone(phone: Phone | null | undefined): string | undefined {
+  const d = phone?.tel.replace(/\D/g, "").replace(/^1(?=\d{10}$)/, "");
+  return d?.length === 10 ? `+1-${d.slice(0, 3)}-${d.slice(3, 6)}-${d.slice(6)}` : undefined;
+}
+
+/** An ImageObject for a /public image (absolute URL plus its size). */
+function imageObject(image: BrandImage | null | undefined): Node | undefined {
+  if (!image) return undefined;
+  const { src, width, height } = image;
+  return { "@type": "ImageObject", url: absoluteUrl(src), width, height };
+}
 
 /** Drops undefined/null/"" values so absent data is omitted rather than asserted empty. */
 function compact<T extends Node>(node: T): T {
@@ -54,7 +77,7 @@ export function siteEntities(): Node[] {
         postalCode: office.postalCode,
         addressCountry: "US",
       }
-    : undefined; // VERIFY: fill office.streetAddress in site.config.ts
+    : undefined; // TODO-JIM: fill office.streetAddress in site.config.ts
 
   return [
     {
@@ -71,12 +94,7 @@ export function siteEntities(): Node[] {
       name: site.name,
       url: site.siteUrl,
       slogan: site.tagline,
-      logo: {
-        "@type": "ImageObject",
-        url: absoluteUrl(site.logoPath),
-        width: 1200,
-        height: 412,
-      },
+      logo: imageObject(logos.full),
       image: absoluteUrl(site.ogImagePath),
       areaServed: {
         "@type": "AdministrativeArea",
@@ -91,7 +109,14 @@ export function siteEntities(): Node[] {
       "@type": "RealEstateAgent",
       "@id": OFFICE_ID,
       name: office.name,
-      parentOrganization: { "@type": "Organization", name: brokerage.name },
+      telephone: intlPhone(office.phone),
+      parentOrganization: compact({
+        "@type": "Organization",
+        name: brokerage.name,
+        url: brokerage.url,
+        logo: imageObject(brokerage.logo),
+        telephone: intlPhone(brokerage.phone),
+      }),
       address: officeAddress,
     }),
     ...team.map((p) =>
@@ -99,9 +124,10 @@ export function siteEntities(): Node[] {
         "@type": "Person",
         "@id": personId(p.id),
         name: p.name,
-        jobTitle: "jobTitle" in p ? p.jobTitle : undefined,
-        email: "email" in p ? `mailto:${p.email}` : undefined,
-        telephone: "telephone" in p ? p.telephone : undefined,
+        jobTitle: p.jobTitle,
+        email: p.email ? `mailto:${p.email}` : undefined,
+        telephone: intlPhone(p.phone),
+        image: p.headshot ? absoluteUrl(p.headshot.src) : undefined,
         worksFor: { "@id": ORGANIZATION_ID },
         memberOf: { "@id": OFFICE_ID },
       }),
@@ -279,12 +305,12 @@ export const blogPostPath = (post: CollectionEntry<"blog">): string => `/blog/${
 
 /**
  * Nodes for a blog post. AI-written posts are attributed to the organization (matching
- * the page's "The Sawicki Group AI" byline), Jim's to Jim.
+ * the page's `site.aiAuthorName` byline), the rest to the primary contact (Jim).
  */
 export function blogPostNodes(post: CollectionEntry<"blog">): Node[] {
   const url = absoluteUrl(blogPostPath(post));
   const author =
-    post.data.author === "AI" ? { "@id": ORGANIZATION_ID } : { "@id": personId("jim-sawicki") };
+    post.data.author === "AI" ? { "@id": ORGANIZATION_ID } : { "@id": personId(primaryContact.id) };
   return [
     {
       "@type": "BlogPosting",
@@ -301,7 +327,7 @@ export function blogPostNodes(post: CollectionEntry<"blog">): Node[] {
       isPartOf: {
         "@type": "Blog",
         "@id": absoluteUrl("/blog") + "#blog",
-        name: "Market Updates",
+        name: site.blogName,
         url: absoluteUrl("/blog"),
       },
       breadcrumb: { "@id": `${url}#breadcrumb` },
@@ -309,7 +335,7 @@ export function blogPostNodes(post: CollectionEntry<"blog">): Node[] {
     },
     breadcrumbList(url, [
       { name: "Home", path: "/" },
-      { name: "Market Updates", path: "/blog" },
+      { name: site.blogName, path: "/blog" },
       { name: post.data.title, path: blogPostPath(post) },
     ]),
   ];

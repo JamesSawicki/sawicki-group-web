@@ -1,0 +1,42 @@
+---
+/**
+ * Our brokerage's identity: logo (once set), name, service area, license number and phone, from
+ * `brokerage` in site.config.ts. Unset values (TODO-JIM placeholders) are left out.
+ *
+ * NorthstarMLS §5.8(a)(ii) wants our brokerage's name, logo and contact info at least as
+ * prominent as any other brokerage's, and Minnesota wants the broker's name in ads, so
+ * the footer (on every page) shows this block. Inherits the surrounding text style.
+ */
+// ─── Imports ─────────────────────────────────────────────────────────────────
+import { brokerage } from "../../lib/site.config";
+import ContactLine from "./ContactLine.astro";
+---
+
+<div>
+  {/* ── Logo ── */}
+  {brokerage.logo && (
+    <img
+      src={brokerage.logo.src}
+      width={brokerage.logo.width}
+      height={brokerage.logo.height}
+      alt={brokerage.logo.alt}
+      loading="lazy"
+      decoding="async"
+      class="h-8 w-auto mb-2"
+    />
+  )}
+
+  {/* ── Name and details ── */}
+  <div>
+    {brokerage.url ? (
+      <a href={brokerage.url} rel="noopener" target="_blank" class="hover:underline">
+        {brokerage.name}
+      </a>
+    ) : (
+      brokerage.name
+    )}
+  </div>
+  <div>{brokerage.serviceArea}</div>
+  {brokerage.licenseNumber && <div>License #{brokerage.licenseNumber}</div>}
+  <ContactLine phone={brokerage.phone} />
+</div>

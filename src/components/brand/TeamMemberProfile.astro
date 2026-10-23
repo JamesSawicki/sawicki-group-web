@@ -1,0 +1,57 @@
+---
+/**
+ * A team member's profile for the About page: headshot (once set), name, a byline, bio
+ * paragraphs and highlights, all from `team` in site.config.ts. Every profile ends with
+ * the brokerage as a highlight, since Minnesota wants the broker named in advertising.
+ */
+// ─── Imports ─────────────────────────────────────────────────────────────────
+import { brokerage, site, type TeamMember } from "../../lib/site.config";
+
+// ─── Props ───────────────────────────────────────────────────────────────────
+interface Props {
+  /** The person to show. */
+  member: TeamMember;
+  /** Heading level for the name: the page's first profile is the h1. */
+  headingLevel?: "h1" | "h2";
+}
+
+const { member, headingLevel = "h2" } = Astro.props;
+
+// ─── Derived values ──────────────────────────────────────────────────────────
+const Heading = headingLevel;
+const highlights = [...(member.highlights ?? []), { label: "Brokerage", value: brokerage.name }];
+---
+
+<article>
+  {/* ── Name and byline ── */}
+  {member.headshot && (
+    <img
+      src={member.headshot.src}
+      width={member.headshot.width}
+      height={member.headshot.height}
+      alt={member.headshot.alt}
+      class="w-32 h-32 rounded-full object-cover mb-6"
+    />
+  )}
+  <Heading class="text-4xl font-semibold text-stone-900 mb-6">{member.name}</Heading>
+  <p class="text-stone-500 text-lg leading-relaxed mb-6">
+    {site.name} · {brokerage.name} · {brokerage.serviceArea}
+  </p>
+
+  {/* ── Bio ── */}
+  <div class="prose prose-stone max-w-none text-stone-600 leading-relaxed space-y-5">
+    {member.bio?.map((paragraph) => (
+      <p>{paragraph}</p>
+    ))}
+  </div>
+
+  {/* ── Highlights ── */}
+  <div class="mt-12 pt-12 border-t border-stone-200 grid grid-cols-1 sm:grid-cols-3 gap-8 text-sm">
+    {highlights.map((h) => (
+      <div>
+        <div class="text-stone-400 mb-1">{h.label}</div>
+        <div class="font-semibold text-stone-900">{h.value}</div>
+      </div>
+    ))}
+  </div>
+</article>

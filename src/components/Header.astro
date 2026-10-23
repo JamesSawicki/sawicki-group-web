@@ -2,18 +2,22 @@
 /**
  * Site header: logo, navigation, and the Contact call to action.
  *
+ * The logo slot shows `site.headerLogo` from site.config.ts: the name in type
+ * ("wordmark", today) or a logo image variant.
+ *
  * Below the `md` breakpoint (768px) the links don't fit in one row, so they move into a
  * dropdown opened by a menu button; Contact stays visible beside it as the main action.
  * From `md` up, everything sits in a single row.
  */
 // ─── Imports ─────────────────────────────────────────────────────────────────
+import Logo from "./brand/Logo.astro";
 import { site } from "../lib/site.config";
 
 // ─── Navigation links ────────────────────────────────────────────────────────
 // One list feeds both the desktop row and the mobile dropdown, so they can't drift.
 const links = [
   { href: "/listings", label: "Listings" },
-  { href: "/blog", label: "Market Updates" },
+  { href: "/blog", label: site.blogName },
   { href: "/about", label: "About" },
 ];
 ---
@@ -21,7 +25,11 @@ const links = [
 <header class="border-b border-stone-200 relative">
   <nav class="max-w-6xl mx-auto px-6 py-3 md:py-4 flex items-center justify-between gap-4">
     <a href="/" class="text-xl font-semibold tracking-tight text-stone-900 whitespace-nowrap py-2">
-      {site.name}
+      <Logo
+        variant={site.headerLogo}
+        loading="eager"
+        class={site.headerLogo === "wordmark" ? undefined : "h-10 w-auto"}
+      />
     </a>
 
     {/* ── Desktop: single row (md and up) ── */}

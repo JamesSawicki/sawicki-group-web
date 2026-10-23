@@ -1,2 +1,16 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
+
+/*
+ * Brand color tokens (Tailwind 4 keeps its theme here, not in a config file).
+ *   accent / accent-strong: the site's accent (eyebrow labels, text links); change the
+ *     accent here, not class by class. Today they equal Tailwind's amber-700 / amber-900,
+ *     so `text-accent` looks exactly like `text-amber-700` did.
+ *   brand-navy / brand-gold: the logo's colors (mirrored in brandColors, site.config.ts).
+ */
+@theme {
+  --color-accent: oklch(55.5% 0.163 48.998);
+  --color-accent-strong: oklch(41.4% 0.112 45.904);
+  --color-brand-navy: #212c64;
+  --color-brand-gold: #d19b39;
+}
