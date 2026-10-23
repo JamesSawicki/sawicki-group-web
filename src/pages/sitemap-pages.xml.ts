@@ -14,6 +14,7 @@ const PAGES = [
   "/terms",
   "/disclaimers",
   "/accessibility",
+  "/eula",
 ];
 
 export const GET: APIRoute = () => xmlResponse(urlset(PAGES.map((p) => ({ loc: absoluteUrl(p) }))));

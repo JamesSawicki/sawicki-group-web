@@ -44,6 +44,7 @@ import {
   formatSqft,
   listingPath,
   mlsNumber,
+  displayAddress,
 } from "../lib/listing-utils";
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { createPortal } from "react-dom";
@@ -390,7 +391,7 @@ function SidebarCard({ listing, isSelected, onClick, photoAccountHash }: Sidebar
       )}
       <div className="min-w-0 flex-1">
         <div className="font-semibold text-slate-900 text-sm">{formatPrice(listing.listPrice)}</div>
-        <div className="text-xs text-slate-700 truncate mt-0.5">{listing.address}</div>
+        <div className="text-xs text-slate-700 truncate mt-0.5">{displayAddress(listing)}</div>
         <div className="text-xs text-slate-500">{listing.city}, MN</div>
         <div className="text-xs text-slate-600 mt-1">
           {listing.beds ?? "—"} bd &nbsp;·&nbsp; {formatBathTotal(listing)} ba &nbsp;·&nbsp;{" "}

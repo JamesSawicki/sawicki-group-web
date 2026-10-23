@@ -12,6 +12,7 @@
 import { useEffect, useRef } from "react";
 import type { Listing } from "../../types/listing";
 import {
+  displayAddress,
   formatBathTotal,
   formatPrice,
   formatSqft,
@@ -71,7 +72,7 @@ export default function ListingPreview({
   return (
     <div
       role="dialog"
-      aria-label={`Preview: ${listing.address}`}
+      aria-label={`Preview: ${displayAddress(listing)}`}
       className={`${PLACEMENT_CLASSES[placement]}
         bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden`}
       onTouchStart={(e) => (touchStartY.current = e.touches[0].clientY)}
@@ -91,7 +92,7 @@ export default function ListingPreview({
           {photo ? (
             <img
               src={photo}
-              alt={`Photo of ${listing.address}`}
+              alt={`Photo of ${displayAddress(listing)}`}
               className="w-full h-full object-cover"
               loading="eager"
               decoding="async"
@@ -133,7 +134,7 @@ export default function ListingPreview({
           <div className="mt-1 text-lg font-semibold text-slate-900">
             {formatPrice(listing.listPrice)}
           </div>
-          <div className="text-sm text-slate-700 truncate">{listing.address}</div>
+          <div className="text-sm text-slate-700 truncate">{displayAddress(listing)}</div>
           <div className="text-xs text-slate-500 truncate">
             {listing.city}, MN{listing.zipCode ? ` ${listing.zipCode}` : ""}
           </div>

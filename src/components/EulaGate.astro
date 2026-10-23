@@ -1,0 +1,96 @@
+---
+/**
+ * The NorthstarMLS EULA dialog (Rules §5.8(j); lib/eula.ts): shown over pages with MLS data
+ * until the visitor clicks "I agree", once per browser session. Layout makes the page behind
+ * it inert, so nothing can be read or clicked first. Escape doesn't close it: only agreeing
+ * (or leaving) does. Works without JavaScript: the form posts to /api/eula and comes back.
+ * Search engines still get the page HTML (Google allows legally required dialogs).
+ */
+// ─── Imports ─────────────────────────────────────────────────────────────────
+import { EULA_PATH } from "../lib/eula";
+import { mls } from "../lib/site.config";
+
+// ─── Derived values ──────────────────────────────────────────────────────────
+const returnTo = Astro.url.pathname + Astro.url.search;
+---
+
+<div
+  id="eula-gate"
+  class="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-stone-900/40 backdrop-blur-sm p-0 sm:p-6"
+>
+  <div
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="eula-title"
+    aria-describedby="eula-body"
+    class="w-full sm:max-w-lg bg-white rounded-t-2xl sm:rounded-2xl shadow-xl p-6"
+  >
+    {/* ── Agreement ── */}
+    <h2 id="eula-title" class="text-lg font-semibold text-stone-900">
+      Before you view listings
+    </h2>
+    <div id="eula-body" class="mt-3 space-y-3 text-sm text-stone-700 leading-relaxed">
+      <p>
+        Listing information on this site comes from {mls.name}, which asks every visitor to accept
+        its End User License Agreement.
+      </p>
+      <p>
+        In short: the listing information is for your personal, non-commercial use, only to find a
+        home you may want to buy and to compare it with similar properties. You may not copy,
+        resell, or redistribute it. Data believed to be accurate but should be independently
+        verified.
+      </p>
+      <p>
+        <a href={EULA_PATH} target="_blank" rel="noopener" class="underline inline-block py-1">
+          Read the full agreement
+        </a>
+      </p>
+    </div>
+
+    {/* ── Actions ── */}
+    <form method="post" action="/api/eula" class="mt-5 flex flex-col-reverse sm:flex-row gap-3">
+      <input type="hidden" name="return" value={returnTo} />
+      <a href="/" class="text-center text-sm text-stone-600 px-4 py-3 rounded-lg hover:bg-stone-50">
+        Not now
+      </a>
+      <button
+        type="submit"
+        id="eula-agree"
+        autofocus
+        class="flex-1 bg-stone-900 text-white text-sm font-medium px-4 py-3 rounded-lg hover:bg-stone-700"
+      >
+        I agree
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+  import { track } from "../lib/analytics";
+
+  // With JavaScript: record the assent without reloading the page (a reload would redo the
+  // map, a billable Mapbox load), then reveal the page.
+  const gate = document.getElementById("eula-gate");
+  const form = gate?.querySelector("form");
+  // Keyboard and screen-reader users start on the answer (autofocus isn't reliable).
+  form?.querySelector("button")?.focus();
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const button = form.querySelector("button");
+    if (button) button.disabled = true;
+    try {
+      const res = await fetch("/api/eula", {
+        method: "POST",
+        headers: { Accept: "application/json" },
+        body: new FormData(form),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+    } catch {
+      form.submit(); // fall back to the plain form post
+      return;
+    }
+    document.getElementById("page")?.removeAttribute("inert");
+    gate?.remove();
+    track("eula_accept", {});
+  });
+</script>

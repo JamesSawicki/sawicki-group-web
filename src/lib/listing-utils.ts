@@ -474,3 +474,11 @@ export function parseMlsNumber(param: string): string | null {
   const m = param.match(/(?:^|-)(\d{1,12})$/);
   return m ? m[1] : null;
 }
+
+/**
+ * The street address for display, or a placeholder when the seller chose not to show it
+ * (VERIFY-IDX §5.7(b)(i): the API then sends no address).
+ */
+export function displayAddress(l: Pick<Listing, "address">): string {
+  return l.address?.trim() || "Address not disclosed";
+}

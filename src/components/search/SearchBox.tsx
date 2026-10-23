@@ -10,7 +10,7 @@
  */
 import { useEffect, useId, useRef, useState } from "react";
 import type { Listing, PlaceSuggestion, SearchSuggestions } from "../../types/listing";
-import { formatPrice, mlsNumber } from "../../lib/listing-utils";
+import { displayAddress, formatPrice, mlsNumber } from "../../lib/listing-utils";
 import { track } from "../../lib/analytics";
 
 interface Props {
@@ -86,7 +86,7 @@ export default function SearchBox({ apiBaseUrl, status, onSelectPlace, onSelectL
         search_term: option.place.label,
       });
     } else {
-      setQuery(option.listing.address);
+      setQuery(displayAddress(option.listing));
       onSelectListing(option.listing);
       track("search_select", {
         kind: "listing",
@@ -231,7 +231,7 @@ export default function SearchBox({ apiBaseUrl, status, onSelectPlace, onSelectL
                   </span>
                   <span className="flex-1 min-w-0">
                     <span className="block truncate text-sm text-slate-900">
-                      {option.listing.address}
+                      {displayAddress(option.listing)}
                     </span>
                     <span className="block truncate text-xs text-slate-500">
                       {option.listing.city}, MN {option.listing.zipCode ?? ""} ·{" "}

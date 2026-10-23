@@ -21,6 +21,7 @@
  */
 import type { Listing } from "../types/listing";
 import {
+  displayAddress,
   bathTotal,
   formatBathTotal,
   formatLot,
@@ -134,7 +135,7 @@ const showPriceReduction = hasPriceReduction(listing);
 
     {/* Address line */}
     <h3 class="text-base font-semibold text-slate-800 group-hover:text-blue-700 transition-colors">
-      {listing.address}
+      {displayAddress(listing)}
     </h3>
 
     {/* City, zip */}

@@ -10,7 +10,7 @@
  */
 // ─── Imports ─────────────────────────────────────────────────────────────────
 import Layout from "../layouts/Layout.astro";
-import { agent, brokerage, office, site } from "../lib/site.config";
+import { agent, brokerage, mls, office, site } from "../lib/site.config";
 import { absoluteUrl, breadcrumbList, ORGANIZATION_ID, webPage } from "../lib/structured-data";
 
 // ─── Derived values ──────────────────────────────────────────────────────────
@@ -306,13 +306,20 @@ const link = "underline decoration-stone-400 hover:decoration-stone-900";
           out.
         </li>
         <li>
+          <strong>Listing-data agreement cookie</strong> (<code>mls_eula</code>): remembers that you
+          accepted the {mls.name} listing-data license, so we don't ask again during this visit.
+          It's deleted when you close your browser. We keep a log entry that the agreement was
+          accepted (time and version, no personal details), as {mls.name} requires.
+        </li>
+        <li>
           <strong>Browser storage</strong> that stays on your device and isn't sent to us: your
           privacy choice, your last map search (for "Back to map"), and whether the AI assistant's
           "Questions about this home?" prompt has already been shown during this visit.
         </li>
       </ul>
       <p>
-        You can also block or delete cookies in your browser settings; the site works without them.
+        You can also block or delete cookies in your browser settings; the site works without them,
+        except that you'll be asked to accept the listing-data agreement on each listing page.
       </p>
 
       {/* ── Sharing ── */}

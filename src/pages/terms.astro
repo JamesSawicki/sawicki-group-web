@@ -11,17 +11,17 @@
 // ─── Imports ─────────────────────────────────────────────────────────────────
 import Layout from "../layouts/Layout.astro";
 import { agent, brokerage, mls, site } from "../lib/site.config";
+import { EULA_PATH } from "../lib/eula";
 import { absoluteUrl, breadcrumbList, webPage } from "../lib/structured-data";
 
 // ─── Page settings ───────────────────────────────────────────────────────────
 /** Shown at the top; bump on every substantive change. */
 const LAST_UPDATED = "October 23, 2026";
 /**
- * VERIFY-IDX: §5.8(j). Link to the NorthstarMLS EULA once the site asks visitors to accept
- * it. Empty = the EULA paragraph is not shown (the site doesn't ask for assent yet).
- * TODO-JIM: set when the EULA gate ships.
+ * VERIFY-IDX: §5.8(j). The NorthstarMLS EULA that /listings and listing pages ask visitors
+ * to accept (components/EulaGate.astro). Empty would hide the paragraph below.
  */
-const EULA_URL = "";
+const EULA_URL = EULA_PATH;
 /**
  * §5.12: flip to true when visitor accounts (e.g. subscriber-only sold listings) launch;
  * the registration terms below then become part of the page. TODO-JIM.

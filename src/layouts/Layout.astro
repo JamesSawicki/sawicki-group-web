@@ -14,6 +14,8 @@ import "../styles/global.css";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import Analytics from "../components/analytics/Analytics.astro";
+import EulaGate from "../components/EulaGate.astro";
+import { EULA_COOKIE } from "../lib/eula";
 import { site } from "../lib/site.config";
 import { absoluteUrl, jsonLdDocument } from "../lib/structured-data";
 
@@ -33,6 +35,11 @@ interface Props {
   ogType?: "website" | "article";
   /** Keep this page out of search results (its links are still followed). */
   noindex?: boolean;
+  /**
+   * The page shows MLS data, so the NorthstarMLS EULA dialog comes first (§5.8(j)) until
+   * the visitor agrees this session. Only /listings and listing pages set it.
+   */
+  requiresEula?: boolean;
 }
 
 const {
@@ -43,10 +50,14 @@ const {
   ogImage = absoluteUrl(site.ogImagePath),
   ogType = "website",
   noindex = false,
+  requiresEula = false,
 } = Astro.props;
 
 // ─── Derived values ──────────────────────────────────────────────────────────
 const fullTitle = `${title} | ${site.name}`;
+// Ask for EULA assent unless this session already gave it (cookie read only when needed,
+// so prerendered pages never touch cookies).
+const showEulaGate = requiresEula && !Astro.cookies.has(EULA_COOKIE);
 ---
 
 <!doctype html>
@@ -86,19 +97,26 @@ const fullTitle = `${title} | ${site.name}`;
   </head>
   <body class="bg-white text-stone-800 font-sans antialiased">
     {/* Skip link (WCAG 2.4.1): hidden until a keyboard user tabs to it. */}
-    <a
-      href="#main"
-      class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-white focus:px-4 focus:py-2 focus:rounded-lg focus:shadow"
-    >
-      Skip to content
-    </a>
-    <Header />
+    {/* ── EULA dialog (MLS pages, until agreed this session) ── */}
+    {showEulaGate && <EulaGate />}
 
-    <!-- PAGE CONTENT -->
-    <main id="main">
-      <slot />
-    </main>
+    {/* Everything behind the dialog is inert (unreadable to assistive tech, unclickable)
+        until the visitor agrees; EulaGate's script lifts it. */}
+    <div id="page" inert={showEulaGate}>
+      <a
+        href="#main"
+        class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:bg-white focus:px-4 focus:py-2 focus:rounded-lg focus:shadow"
+      >
+        Skip to content
+      </a>
+      <Header />
 
-    <Footer />
+      <!-- PAGE CONTENT -->
+      <main id="main">
+        <slot />
+      </main>
+
+      <Footer />
+    </div>
   </body>
 </html>

@@ -124,8 +124,13 @@ legal pages compare with the portals). Treat the PDF as the authority.
 - **Legal pages:** `/privacy`, `/terms` (`EULA_URL` and `ACCOUNTS_LAUNCHED` switches),
   `/disclaimers`, `/accessibility`, linked from the footer and in `sitemap-pages.xml`. Bump
   their "Last updated" dates on change.
-- **Pending before go-live:** EULA click-through each session (§5.8(j)), 18-month audit trail
-  (§5.9(b)), 2-day notice to NorthstarMLS (§5.8(g)), broker consent (§5.4(f)).
+- **EULA gate (§5.8(j)):** pages with MLS data pass `requiresEula` to Layout, which shows
+  `EulaGate.astro` (and makes the page `inert`) until the visitor agrees; `/api/eula` sets the
+  session cookie `mls_eula` and logs `event:"eula_accept"`. The agreement is `/eula`
+  (provisional text, TODO-JIM: swap in NorthstarMLS's official EULA and bump `EULA_VERSION`
+  in `lib/eula.ts`). Any new page that shows listing data must set `requiresEula`.
+- **Pending before go-live:** 18-month audit trail (§5.9(b)), 2-day notice to NorthstarMLS
+  (§5.8(g)), broker consent (§5.4(f)), official EULA text.
 
 ## Logging
 

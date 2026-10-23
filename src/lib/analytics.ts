@@ -56,6 +56,8 @@ export type PreviewSource = "pin" | "list" | "search";
  * listing pages. Values must never contain anything a visitor typed.
  */
 export interface AnalyticsEvents {
+  /** The visitor accepted the NorthstarMLS EULA (once per session). */
+  eula_accept: Record<string, never>;
   /** A listing page was viewed (GA4 ecommerce event, so Google Ads can use it later). */
   view_item: {
     /** The MLS number (stable across our database rebuilds), as in listing URLs. */

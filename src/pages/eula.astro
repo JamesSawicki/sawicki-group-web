@@ -1,0 +1,108 @@
+---
+/**
+ * The listing-data license visitors accept before viewing MLS data (/eula; NorthstarMLS
+ * Rules §5.8(j); the dialog is components/EulaGate.astro).
+ *
+ * TODO-JIM: this is our provisional wording built from the NorthstarMLS rules (§5.11(f)
+ * limited use, §8.3 compilation copyright, §8.6 no warranty). Replace the agreement text
+ * with the official NorthstarMLS EULA when they send it, and bump EULA_VERSION in
+ * lib/eula.ts so every visitor is asked again.
+ */
+// ─── Imports ─────────────────────────────────────────────────────────────────
+import Layout from "../layouts/Layout.astro";
+import { EULA_VERSION } from "../lib/eula";
+import { mls, site } from "../lib/site.config";
+import { absoluteUrl, breadcrumbList, webPage } from "../lib/structured-data";
+
+// ─── Derived values ──────────────────────────────────────────────────────────
+const description = `The ${mls.name} listing-data license you accept before viewing listings on the ${site.name} website.`;
+const pageUrl = absoluteUrl("/eula");
+const jsonLd = [
+  webPage("WebPage", "/eula", "Listing data license", description, {
+    breadcrumb: { "@id": `${pageUrl}#breadcrumb` },
+  }),
+  breadcrumbList(pageUrl, [
+    { name: "Home", path: "/" },
+    { name: "Listing data license", path: "/eula" },
+  ]),
+];
+---
+
+<Layout title="Listing data license" description={description} jsonLd={jsonLd}>
+  <section class="max-w-3xl mx-auto px-6 py-20">
+    <p class="text-sm font-semibold text-accent uppercase tracking-widest mb-4">Listing data</p>
+    <h1 class="text-4xl font-semibold text-stone-900 mb-4">End User License Agreement</h1>
+    <p class="text-stone-500 mb-12">Version: {EULA_VERSION}</p>
+
+    <div class="text-stone-600 leading-relaxed space-y-10">
+      {/* ── Who and what ── */}
+      <div>
+        <p>
+          The home listings on this site come from {mls.name} (the Regional Multiple Listing Service
+          of Minnesota, Inc.). By choosing "I agree" before viewing listings, you accept this
+          agreement for as long as you use the listing information. It applies in addition to our{" "}
+          <a href="/terms" class="underline">
+            Terms of Use
+          </a>
+          .
+        </p>
+      </div>
+
+      {/* ── License ── */}
+      <div>
+        <h2 class="text-xl font-semibold text-stone-900 mb-3">What you may do</h2>
+        <p>
+          You may view the listing information for your personal, non-commercial use, only to
+          identify a property you may wish to purchase and to compare it with similar properties
+          sold or for sale.
+        </p>
+      </div>
+
+      {/* ── Restrictions ── */}
+      <div>
+        <h2 class="text-xl font-semibold text-stone-900 mb-3">What you may not do</h2>
+        <ul class="list-disc pl-6 space-y-2">
+          <li>
+            copy, download, scrape, or collect listing information by automated means, or try to get
+            around limits on access;
+          </li>
+          <li>
+            resell, publish, redistribute, or reuse the listing information or photos for any
+            commercial purpose, or share them except to help with a purchase or sale you're involved
+            in;
+          </li>
+          <li>use the information to build or improve a listing database or service.</li>
+        </ul>
+      </div>
+
+      {/* ── Ownership ── */}
+      <div>
+        <h2 class="text-xl font-semibold text-stone-900 mb-3">Ownership</h2>
+        <p>
+          The compilation of listing information is owned by the Regional Multiple Listing Service
+          of Minnesota, Inc. and protected by copyright. Photos and descriptions may belong to the
+          listing brokerages or their photographers. This agreement doesn't give you any ownership
+          rights.
+        </p>
+      </div>
+
+      {/* ── No warranty ── */}
+      <div>
+        <h2 class="text-xl font-semibold text-stone-900 mb-3">Accuracy</h2>
+        <p>
+          Data believed to be accurate but should be independently verified. Listing information is
+          provided as is, without warranty, and may change or be withdrawn at any time.
+        </p>
+      </div>
+
+      {/* ── Changes ── */}
+      <div>
+        <h2 class="text-xl font-semibold text-stone-900 mb-3">Changes</h2>
+        <p>
+          {mls.name} may update this agreement. When it changes, we'll ask you to accept the new
+          version before you view listings again.
+        </p>
+      </div>
+    </div>
+  </section>
+</Layout>

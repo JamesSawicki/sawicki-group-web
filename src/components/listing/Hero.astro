@@ -6,6 +6,7 @@
 // ─── Imports ─────────────────────────────────────────────────────────────────
 import type { Listing } from "../../types/listing";
 import {
+  displayAddress,
   bathTotal,
   formatBathTotal,
   formatLevels,
@@ -57,7 +58,7 @@ const cityLine = listing.city
           </span>
         )}
       </div>
-      <h1 class="text-3xl font-semibold text-stone-900">{listing.address}</h1>
+      <h1 class="text-3xl font-semibold text-stone-900">{displayAddress(listing)}</h1>
       <div class="text-stone-500 mt-1">{cityLine}</div>
       {listing.neighborhood && (
         <div class="text-xs text-stone-500 uppercase tracking-widest mt-1">
