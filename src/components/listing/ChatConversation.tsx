@@ -12,6 +12,7 @@
 import { useEffect, useRef, useState } from "react";
 import ContactRequestCard, { type ContactRequest } from "./ContactRequestCard";
 import { SHOWING_REQUEST } from "../../lib/chat-events";
+import { track } from "../../lib/analytics";
 
 interface Props {
   /** The server builds the system prompt from this id; the client never sends prompt text. */
@@ -100,6 +101,11 @@ export default function ChatConversation({
     const updated: Message[] = [...messages, { role: "user", content: trimmed }];
     setMessages(updated);
     setInput("");
+    // Never the text: only its position and whether it's our preset showing request.
+    track("chat_message_sent", {
+      message_number: updated.filter((m) => m.role === "user").length,
+      showing_request: trimmed === SHOWING_REQUEST,
+    });
     setIsLoading(true);
     setError(null);
 
@@ -119,6 +125,7 @@ export default function ChatConversation({
       }
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = (await res.json()) as ChatReply;
+      if (data.contactRequest) track("chat_contact_prepared", {});
       setMessages([
         ...updated,
         {

@@ -1,130 +1,464 @@
 ---
+/**
+ * Privacy Policy. Required by NorthstarMLS Rules §5.8(i) (what visitor data the platform
+ * collects and how the platform and brokerage use it) and by the Google Analytics terms
+ * (§7: disclose GA and its cookies). Written for US visitors in plain English.
+ *
+ * Every factual claim here must match the code: when analytics events, vendors, logging
+ * or retention change, update this page (and `lastUpdated`) in the same change. Background
+ * and the laws checked: docs/compliance/privacy-analytics.md.
+ */
+// ─── Imports ─────────────────────────────────────────────────────────────────
 import Layout from "../layouts/Layout.astro";
-import { agent, brokerage, site } from "../lib/site.config";
-import { webPage } from "../lib/structured-data";
-const lastUpdated = "May 17, 2026";
-const jsonLd = [webPage("WebPage", "/privacy", "Privacy Policy")];
+import { agent, brokerage, office, site } from "../lib/site.config";
+import { absoluteUrl, breadcrumbList, ORGANIZATION_ID, webPage } from "../lib/structured-data";
+
+// ─── Derived values ──────────────────────────────────────────────────────────
+const lastUpdated = "October 23, 2026";
+const description = `How ${site.name} collects, uses and protects information on this website, and the choices you have.`;
+const domain = new URL(site.siteUrl).host;
+const officeAddress = [office.streetAddress, office.addressLocality, office.addressRegion]
+  .filter(Boolean)
+  .join(", ");
+const jsonLd = [
+  webPage("WebPage", "/privacy", "Privacy Policy", description, {
+    about: { "@id": ORGANIZATION_ID },
+    breadcrumb: { "@id": `${absoluteUrl("/privacy")}#breadcrumb` },
+  }),
+  breadcrumbList(absoluteUrl("/privacy"), [
+    { name: "Home", path: "/" },
+    { name: "Privacy Policy", path: "/privacy" },
+  ]),
+];
+const link = "underline decoration-stone-400 hover:decoration-stone-900";
 ---
 
-<Layout
-  title="Privacy Policy"
-  description={`Privacy policy for the ${site.name} website.`}
-  jsonLd={jsonLd}
->
+<Layout title="Privacy Policy" description={description} jsonLd={jsonLd}>
   <section class="max-w-3xl mx-auto px-6 py-20">
     <p class="text-sm font-semibold text-amber-700 uppercase tracking-widest mb-4">Legal</p>
     <h1 class="text-4xl font-semibold text-stone-900 mb-4">Privacy Policy</h1>
     <p class="text-stone-500 mb-12">Last updated: {lastUpdated}</p>
 
-    <div class="prose prose-stone max-w-none text-stone-600 leading-relaxed space-y-8">
-      <div>
-        <h2 class="text-xl font-semibold text-stone-900 mb-3">Who we are</h2>
-        <p>
-          {site.name} is a real estate team operating under {brokerage.name}
-          in the {brokerage.serviceArea} area. This privacy policy applies to the website at{" "}
-          {site.siteUrl.replace("https://", "")} and any future domains operated by {site.name}.
-        </p>
-      </div>
+    <div class="prose prose-stone max-w-none text-stone-600 leading-relaxed prose-h2:text-xl prose-h2:font-semibold prose-h2:text-stone-900 prose-h2:mt-12 prose-h3:text-base prose-h3:text-stone-900">
+      {/* ── Summary ── */}
+      <h2>The short version</h2>
+      <ul>
+        <li>
+          We use <strong>Google Analytics</strong> (with cookies) to see how the site is used, and
+          we may use it to measure our advertising. You can opt out on our{" "}
+          <a href="/privacy-choices" class={link}>
+            Your Privacy Choices
+          </a>{" "}
+          page, and we automatically honor the <strong>Global Privacy Control</strong> signal.
+        </li>
+        <li>
+          We never send Google your name, email, phone number, or what you type into our forms or
+          the AI assistant.
+        </li>
+        <li>
+          What you send us through the contact form or a contact request is emailed to our team so
+          we can respond. Our activity logs record that the AI assistant was used, not what you
+          wrote.
+        </li>
+        <li>
+          <strong>We do not sell your personal information.</strong>
+        </li>
+      </ul>
 
-      <div>
-        <h2 class="text-xl font-semibold text-stone-900 mb-3">Information we collect</h2>
-        <p>We collect information you provide directly to us:</p>
-        <ul class="list-disc pl-6 mt-3 space-y-2">
-          <li>
-            <strong>Contact form submissions</strong> — name, email address, phone number
-            (optional), and message content when you submit our contact form.
-          </li>
-          <li>
-            <strong>AI listing assistant conversations</strong> — questions you ask about properties
-            through our AI chat interface.
-          </li>
-        </ul>
-        <p class="mt-4">
-          We do not use cookies for tracking, serve advertisements, or sell your personal
-          information to third parties.
-        </p>
-      </div>
+      {/* ── Who we are ── */}
+      <h2>Who we are</h2>
+      <p>
+        {site.name} is a real estate team with {brokerage.name}, serving the {brokerage.serviceArea}
+        area from {office.name}
+        {officeAddress && ` (${officeAddress})`}. This policy covers the website at {domain} and any
+        other domain we use for it ("the site"). "We," "us" and "our" mean {site.name}.{" "}
+        {brokerage.name} is our brokerage: it supervises our real estate activities and may see
+        inquiries and records we keep, as described below.
+      </p>
 
-      <div>
-        <h2 class="text-xl font-semibold text-stone-900 mb-3">How we use your information</h2>
-        <ul class="list-disc pl-6 space-y-2">
-          <li>To respond to your inquiries and provide real estate services</li>
-          <li>To answer questions about specific properties via our AI assistant</li>
-          <li>To improve our website and services</li>
-        </ul>
-      </div>
+      {/* ── What we collect ── */}
+      <h2>Information we collect</h2>
+      <h3>Information you give us</h3>
+      <ul>
+        <li>
+          <strong>Contact form and contact requests:</strong> your name, email, phone number
+          (optional), what you're looking to do, your message, and, for a request sent from a
+          listing's AI assistant, which listing it's about.
+        </li>
+        <li>
+          <strong>AI assistant messages:</strong> the questions you type about a listing and the
+          assistant's replies (see "The AI listing assistant" below).
+        </li>
+        <li>
+          <strong>Emails, calls and texts</strong> you send us directly.
+        </li>
+      </ul>
+      <h3>Information collected automatically</h3>
+      <ul>
+        <li>
+          <strong>Usage information (Google Analytics):</strong> pages you view, the listings you
+          look at (by listing number, city and price range), how you use search (filters, map area,
+          search-box picks of a city or ZIP), photos and maps you open, whether you open the AI
+          assistant or send a message (not what it says), whether a contact form was sent (not its
+          contents), clicks on phone, email and outside links, how far you scroll, and how you got
+          here (for example, a search engine or an ad).
+        </li>
+        <li>
+          <strong>Device and connection information:</strong> your IP address, browser and device
+          type, screen size, language, approximate location derived from your IP address (city
+          level), and the page that referred you. This reaches our hosting providers with every
+          request, and reaches Google Analytics, Mapbox and Cloudflare when those load.
+        </li>
+        <li>
+          <strong>Cookies and browser storage:</strong> see "Cookies" below.
+        </li>
+      </ul>
+      <p>
+        The home and listing information on the site comes from NorthstarMLS and other sources. It's
+        about properties, not about you.
+      </p>
 
-      <div>
-        <h2 class="text-xl font-semibold text-stone-900 mb-3">Third party services</h2>
-        <p>We use the following third party services to operate this website:</p>
-        <ul class="list-disc pl-6 mt-3 space-y-2">
-          <li>
-            <strong>Anthropic (Claude AI)</strong> — Powers our AI listing assistant. Conversation
-            content is sent to Anthropic's API to generate responses. Anthropic's privacy policy
-            applies to this data.
-          </li>
-          <li>
-            <strong>Resend</strong> — Delivers contact form submissions to our email inbox. Form
-            data is transmitted through Resend's email delivery service.
-          </li>
-          <li>
-            <strong>Google Cloud</strong> — This website is hosted on Google Cloud Run. Google's
-            infrastructure privacy policy applies.
-          </li>
-        </ul>
-      </div>
+      {/* ── How we use it ── */}
+      <h2>How we use information</h2>
+      <ul>
+        <li>To answer your questions, arrange showings and provide real estate services.</li>
+        <li>To answer questions about a listing through the AI assistant.</li>
+        <li>To understand which pages, homes and tools are useful, and to improve the site.</li>
+        <li>
+          To measure our marketing, including whether online ads lead to visits or inquiries (see
+          "Google Analytics and advertising").
+        </li>
+        <li>
+          To keep the site secure and working: preventing spam, abuse and data scraping (for
+          example, limiting how many messages can be sent from one connection), and fixing problems.
+        </li>
+        <li>
+          To meet legal, licensing and brokerage obligations, including Minnesota real estate
+          record-keeping rules and NorthstarMLS rules.
+        </li>
+      </ul>
 
-      <div>
-        <h2 class="text-xl font-semibold text-stone-900 mb-3">Data retention</h2>
-        <p>
-          Contact form submissions are delivered to our email inbox and retained according to our
-          standard email retention practices. We do not store form submissions in a separate
-          database. AI assistant conversations are not stored after your session ends.
-        </p>
-      </div>
+      {/* ── Google Analytics ── */}
+      <h2>Google Analytics and advertising</h2>
+      <p>
+        We use Google Analytics 4, a service of Google LLC, which sets cookies in your browser and
+        sends usage information to Google. Google processes it on our behalf to give us reports.
+        Google Analytics 4 doesn't store your full IP address. We've set it to keep detailed data
+        for 14 months. Learn more in{" "}
+        <a
+          href="https://policies.google.com/technologies/partner-sites"
+          rel="noopener"
+          target="_blank"
+          class={link}
+        >
+          How Google uses data when you use our partners' sites or apps
+        </a>
+        .
+      </p>
+      <p>
+        We have <strong>not</strong> turned on Google Signals or ad personalization (remarketing),
+        so our analytics data isn't used to show you personalized ads. We may later advertise with
+        Google Ads and use Google Analytics to measure whether those ads lead to visits or
+        inquiries. If we ever start using ad personalization or remarketing, we'll update this
+        policy first, and your opt-out and Global Privacy Control will apply to it.
+      </p>
+      <p>
+        Other ways to control Google: the{" "}
+        <a
+          href="https://tools.google.com/dlpage/gaoptout"
+          rel="noopener"
+          target="_blank"
+          class={link}
+        >
+          Google Analytics opt-out browser add-on
+        </a>{" "}
+        (works on every site) and{" "}
+        <a href="https://myadcenter.google.com" rel="noopener" target="_blank" class={link}>
+          My Ad Center
+        </a>{" "}
+        for the ads Google shows you.
+      </p>
 
-      <div>
-        <h2 class="text-xl font-semibold text-stone-900 mb-3">Your rights</h2>
-        <p>
-          You may request access to, correction of, or deletion of any personal information you have
-          provided to us by contacting us directly at
-          {agent.email}. We will respond to all requests within 30 days.
-        </p>
-      </div>
+      {/* ── Choices + GPC ── */}
+      <h2>Your privacy choices and Global Privacy Control</h2>
+      <p>
+        You can turn off Google Analytics on this site at any time on our{" "}
+        <a href="/privacy-choices" class={link}>
+          Your Privacy Choices
+        </a>{" "}
+        page. Your choice is saved in your browser, so it applies to that browser and device.
+      </p>
+      <p>
+        If your browser or an extension sends a{" "}
+        <a href="https://globalprivacycontrol.org" rel="noopener" target="_blank" class={link}>
+          Global Privacy Control
+        </a>{" "}
+        (GPC) signal, we treat it as a request to opt out of analytics and any sale, sharing or
+        targeted advertising, and Google Analytics doesn't load for you at all. We don't respond
+        separately to the older "Do Not Track" browser setting, because there's no common standard
+        for it; GPC is the signal we honor.
+      </p>
 
-      <div>
-        <h2 class="text-xl font-semibold text-stone-900 mb-3">Minnesota real estate disclosure</h2>
-        <p>
-          {site.name} is licensed to practice real estate in the State of {brokerage.stateName}
-          under {brokerage.name}. This website is operated for the purpose of providing real estate
-          information and facilitating client inquiries. All information provided is for general
-          informational purposes only and does not constitute legal or financial advice.
-        </p>
-      </div>
+      {/* ── AI assistant ── */}
+      <h2>The AI listing assistant</h2>
+      <p>
+        Each listing page has an AI assistant that answers questions about that home. When you send
+        a message, your conversation (your recent messages and its replies) and the listing number
+        go to our listing server, which adds the listing's details and sends it to{" "}
+        <strong>Anthropic</strong> (the maker of Claude) to write a reply.
+      </p>
+      <ul>
+        <li>
+          <strong>We don't keep the text of your conversations.</strong> Our activity logs record
+          that a message was answered for a listing (with the request details described under
+          "Server and activity logs") and how much processing it used, but not the words. The
+          conversation itself lives in your browser tab and is gone when you leave the page. If we
+          ever start keeping conversation text, we'll update this policy first.
+        </li>
+        <li>
+          <strong>Anthropic</strong> processes messages under its commercial terms: it doesn't use
+          them to train its AI models and deletes them after a short period (currently 7 days),
+          unless it must keep them longer to investigate misuse or for legal reasons. See{" "}
+          <a
+            href="https://www.anthropic.com/legal/privacy"
+            rel="noopener"
+            target="_blank"
+            class={link}
+          >
+            Anthropic's privacy policy
+          </a>
+          .
+        </li>
+        <li>
+          If you ask to be contacted, the assistant may fill in a contact request with details you
+          gave it. <strong>Nothing is sent until you review it and press Send</strong>; it's then
+          handled like the contact form.
+        </li>
+        <li>
+          The assistant is automated and can make mistakes. Please don't share sensitive information
+          (like financial account or Social Security numbers) in the chat.
+        </li>
+      </ul>
 
-      <div>
-        <h2 class="text-xl font-semibold text-stone-900 mb-3">Changes to this policy</h2>
-        <p>
-          We may update this privacy policy from time to time. We will update the "last updated"
-          date at the top of this page when changes are made. Continued use of this website after
-          changes constitutes acceptance of the updated policy.
-        </p>
-      </div>
+      {/* ── Contact form ── */}
+      <h2>The contact form</h2>
+      <p>
+        When you send the contact form (or a contact request from the AI assistant), it's delivered
+        to our team's email through <strong>Resend</strong>, an email delivery service. We keep
+        these emails as part of our client communications. We use your details only to respond and
+        to work with you; we don't add you to a mailing list without asking.
+      </p>
 
-      <div>
-        <h2 class="text-xl font-semibold text-stone-900 mb-3">Contact</h2>
-        <p>
-          Questions about this privacy policy can be directed to:
-          <br />
-          {site.name}
-          <br />
-          {brokerage.name}
-          <br />
-          {brokerage.serviceArea}
-          <br />
+      {/* ── Other providers ── */}
+      <h2>Maps, photos and hosting</h2>
+      <p>
+        These services help run the site and receive basic technical information when they're used:
+      </p>
+      <ul>
+        <li>
+          <strong>Mapbox</strong> provides the maps (the search map and listing neighborhood maps).
+          Your browser loads map images and data from Mapbox, which receives your IP address, device
+          information and the map area shown. See{" "}
+          <a
+            href="https://www.mapbox.com/legal/privacy"
+            rel="noopener"
+            target="_blank"
+            class={link}
+          >
+            Mapbox's privacy policy
+          </a>
+          .
+        </li>
+        <li>
+          <strong>Cloudflare</strong> (Cloudflare Images) stores and delivers listing photos, and
+          receives your IP address and device information when photos load.
+        </li>
+        <li>
+          <strong>Google Cloud</strong> hosts this website, and <strong>Railway</strong> hosts our
+          listing server (search, listing details and the AI assistant).
+        </li>
+      </ul>
+
+      {/* ── Logs ── */}
+      <h2>Server and activity logs</h2>
+      <p>
+        Like most websites, our servers and hosting providers record each request: the time, the
+        page or data requested, the response, your IP address, browser type and the referring page.
+        Each request gets a random request number so we can trace a problem across our systems. Our
+        listing server shortens IP addresses before logging them. These logs don't include what you
+        type into the contact form or the AI assistant.
+      </p>
+      <p>
+        We use logs to run, secure and fix the site, to detect misuse such as scraping of listing
+        data, and to keep the record of site activity that NorthstarMLS rules require of websites
+        that display MLS listings. Activity logs may be kept for up to 18 months for those
+        compliance and security purposes. To limit abuse, our servers also hold your IP address in
+        memory for a short time (up to a few hours) to count recent messages and form submissions.
+      </p>
+
+      {/* ── Cookies ── */}
+      <h2>Cookies and browser storage</h2>
+      <ul>
+        <li>
+          <strong>Google Analytics cookies</strong> (<code>_ga</code>, <code>_ga_…</code>): tell
+          visits from the same browser apart. They last up to 2 years and are deleted when you opt
+          out.
+        </li>
+        <li>
+          <strong>Browser storage</strong> that stays on your device and isn't sent to us: your
+          privacy choice, your last map search (for "Back to map"), and whether the AI assistant's
+          "Questions about this home?" prompt has already been shown during this visit.
+        </li>
+      </ul>
+      <p>
+        You can also block or delete cookies in your browser settings; the site works without them.
+      </p>
+
+      {/* ── Sharing ── */}
+      <h2>How information is shared</h2>
+      <ul>
+        <li>
+          <strong>Service providers</strong> named in this policy (Google, Anthropic, Resend,
+          Mapbox, Cloudflare, Railway), only to provide their services to us.
+        </li>
+        <li>
+          <strong>{brokerage.name}</strong>, our brokerage, which supervises our work and may access
+          client communications and records.
+        </li>
+        <li>
+          <strong>With your direction</strong>, for example with a listing agent, lender or
+          inspector when you ask us to arrange a showing or help with a transaction.
+        </li>
+        <li>
+          <strong>When required by law</strong>, to protect rights and safety, or as part of a
+          transfer of our business.
+        </li>
+      </ul>
+      <p>
+        <strong>We do not sell your personal information</strong>, and we don't currently share it
+        for cross-site targeted advertising.
+      </p>
+
+      {/* ── Retention ── */}
+      <h2>How long we keep information</h2>
+      <ul>
+        <li>
+          AI assistant conversations: the text isn't kept by us (Anthropic: see above); the fact
+          that the assistant was used is part of our activity logs.
+        </li>
+        <li>
+          Contact form emails and client communications: as long as needed to work with you, and as
+          long as Minnesota real estate rules and our brokerage require for transaction records.
+        </li>
+        <li>Google Analytics: 14 months for detailed data; reports are aggregated.</li>
+        <li>
+          Server and activity logs: up to 18 months, for security and NorthstarMLS compliance
+          (longer only when needed to investigate a security problem or required by law).
+        </li>
+      </ul>
+
+      {/* ── Rights ── */}
+      <h2>Your rights</h2>
+      <p>
+        Wherever you live, you can ask us to tell you what personal information we have about you,
+        give you a copy, correct it, or delete it, and you can opt out of analytics and any targeted
+        advertising or sale. Email{" "}
+        <a href={`mailto:${agent.email}`} class={link}>
           {agent.email}
-        </p>
-      </div>
+        </a>
+        . We'll confirm your request (we may need to verify who you are) and respond within 45 days.
+        If we can't do something, we'll explain why (for example, records we must keep by law), and
+        you can ask us to reconsider by replying to our answer. We won't treat you differently for
+        using these rights.
+      </p>
+      <h3>Minnesota residents</h3>
+      <p>
+        Minnesota's Consumer Data Privacy Act gives residents rights to access, correct, delete and
+        get a copy of their personal data, to opt out of targeted advertising, sale and certain
+        profiling, to question the result of certain automated decisions, and to get a list of the
+        specific third parties their data was disclosed to (the providers listed in this policy). We
+        honor these requests as described above. If you aren't satisfied with our answer to an
+        appeal, you can contact the Minnesota Attorney General's office.
+      </p>
+      <h3>California residents</h3>
+      <p>
+        We honor Global Privacy Control as described above. We don't share personal information with
+        third parties for their own direct marketing.
+      </p>
+
+      {/* ── Children ── */}
+      <h2>Children</h2>
+      <p>
+        The site is for adults looking to buy or sell homes. It isn't directed to children under 16,
+        and we don't knowingly collect information from them. If you believe a child has sent us
+        information, contact us and we'll delete it.
+      </p>
+
+      {/* ── Security ── */}
+      <h2>Security</h2>
+      <p>
+        The site uses encrypted connections (HTTPS), limits how often forms and the AI assistant can
+        be used, keeps passwords and keys out of our code, and gives our providers only what they
+        need. No website is perfectly secure, so please don't send highly sensitive information
+        through the site; call us instead.
+      </p>
+
+      {/* ── Links ── */}
+      <h2>Other websites</h2>
+      <p>
+        Listings may link to virtual tours and other sites, and we link to our social media pages.
+        Those sites have their own privacy policies.
+      </p>
+
+      {/* ── Related ── */}
+      <h2>Related terms</h2>
+      <p>
+        Use of the site is also covered by our{" "}
+        <a href="/terms" class={link}>
+          Terms of Use
+        </a>{" "}
+        and{" "}
+        <a href="/disclaimers" class={link}>
+          Disclaimers
+        </a>
+        . See also our{" "}
+        <a href="/accessibility" class={link}>
+          Accessibility
+        </a>{" "}
+        statement. Nothing on this site is legal or financial advice.
+      </p>
+
+      {/* ── Changes ── */}
+      <h2>Changes to this policy</h2>
+      <p>
+        We'll update this page when our practices change and change the "Last updated" date above.
+        If a change is significant (for example, starting ad personalization), we'll make the update
+        before the change takes effect.
+      </p>
+
+      {/* ── Contact ── */}
+      <h2>Contact us</h2>
+      <p>
+        {site.name}, {brokerage.name}
+        <br />
+        {office.name}
+        {officeAddress && (
+          <>
+            <br />
+            {officeAddress}
+          </>
+        )}
+        <br />
+        Email:{" "}
+        <a href={`mailto:${agent.email}`} class={link}>
+          {agent.email}
+        </a>
+        <br />
+        Phone:{" "}
+        <a href={`tel:${agent.phone}`} class={link}>
+          {agent.phoneDisplay}
+        </a>
+      </p>
     </div>
   </section>
 </Layout>

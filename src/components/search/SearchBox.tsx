@@ -11,6 +11,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import type { Listing, PlaceSuggestion, SearchSuggestions } from "../../types/listing";
 import { formatPrice } from "../../lib/listing-utils";
+import { track } from "../../lib/analytics";
 
 interface Props {
   /** Base URL of listing-agent-api. */
@@ -78,9 +79,16 @@ export default function SearchBox({ apiBaseUrl, status, onSelectPlace, onSelectL
     if (option.kind === "place") {
       setQuery(option.place.label);
       onSelectPlace(option.place);
+      // A city or ZIP from our own data, never the typed text.
+      track("search_select", {
+        kind: "place",
+        place_type: option.place.type,
+        search_term: option.place.label,
+      });
     } else {
       setQuery(option.listing.address);
       onSelectListing(option.listing);
+      track("search_select", { kind: "listing", listing_id: option.listing.id });
     }
     setOpen(false);
     inputRef.current?.blur(); // hides the phone keyboard so the map is visible
