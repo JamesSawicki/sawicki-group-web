@@ -23,7 +23,6 @@ export interface Listing {
 
   // Identity & Status
   mlsId?: string;
-  listingKey?: string; // MLS Grid system key, e.g. NST2878776
   status?: string;
   contingency?: string;
   listDate?: string;
@@ -135,10 +134,8 @@ export interface Listing {
   // Agent / Office
   listAgentName?: string;
   listAgentPhone?: string;
-  listAgentMlsId?: string;
   listOfficeName?: string;
   listOfficePhone?: string;
-  listOfficeMlsId?: string;
 
   // Display
   publicRemarks?: string;
@@ -146,24 +143,17 @@ export interface Listing {
   directions?: string;
   amenityScores?: string;
 
-  // MLS Grid sync metadata (Spring entity emits Instant as ISO 8601 string)
+  // Last change in the MLS (Spring emits Instant as an ISO 8601 string). The API keeps its
+  // sync/ingestion internals (listing key, MLS Grid flags, raw media) out of the JSON.
   modificationTimestamp?: string;
-  originalEntryTimestamp?: string;
-  mlgCanView?: boolean;
-  mlgCanUse?: string; // JSON array, e.g. IDX, VOW
 
   // Hosted media (populated by MediaIngestionService after MLS Grid ingest).
   // photoIds and floorPlanIds are JSON arrays of {key, cfId} (legacy: plain
   // Cloudflare Image ID strings); read them with photo-utils.parsePhotoIds.
   // virtualTourUrls is a JSON array of {provider, url, label} objects.
-  // mediaIngestionStatus: PENDING | IN_PROGRESS | COMPLETE | FAILED | null.
   photoIds?: string;
   floorPlanIds?: string;
   virtualTourUrls?: string;
-  mediaIngestionStatus?: string;
-  // Legacy MLS Grid photo link (expires; no longer displayed) and raw media JSON.
-  primaryImageUrl?: string;
-  mediaJson?: string;
 }
 
 /**

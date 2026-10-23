@@ -10,7 +10,7 @@
  */
 import { useEffect, useId, useRef, useState } from "react";
 import type { Listing, PlaceSuggestion, SearchSuggestions } from "../../types/listing";
-import { formatPrice } from "../../lib/listing-utils";
+import { formatPrice, mlsNumber } from "../../lib/listing-utils";
 import { track } from "../../lib/analytics";
 
 interface Props {
@@ -88,7 +88,10 @@ export default function SearchBox({ apiBaseUrl, status, onSelectPlace, onSelectL
     } else {
       setQuery(option.listing.address);
       onSelectListing(option.listing);
-      track("search_select", { kind: "listing", listing_id: option.listing.id });
+      track("search_select", {
+        kind: "listing",
+        listing_id: mlsNumber(option.listing) ?? String(option.listing.id),
+      });
     }
     setOpen(false);
     inputRef.current?.blur(); // hides the phone keyboard so the map is visible

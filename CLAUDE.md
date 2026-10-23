@@ -46,9 +46,12 @@ npm run build    # local production build; does not deploy
 - **API calls from SSR pages** go through `fetchWithTimeout` in `src/lib/api.ts`. A 404 from
   the API → `Astro.rewrite("/404")`; other failures → `serviceUnavailableResponse()` (503).
   Never let an API failure produce a 500 or a hanging render.
-- **Listing URLs** are SEO slugs ending in the numeric id. Build them with `listingPath()`
-  and parse them with `parseListingId()` (`src/lib/listing-utils.ts`); never hand-build
-  `/listings/${id}`. `pages/listings/[id].astro` receives the full slug as its param.
+- **Listing URLs** are SEO slugs ending in the **MLS number** (`mlsNumber()`: the digits of
+  `mlsId`, e.g. `...-edina-mn-55424-6512345`), never our database id, so links survive a
+  re-import. Build them with `listingPath()` and parse them with `parseMlsNumber()`
+  (`src/lib/listing-utils.ts`); never hand-build `/listings/...`. `pages/listings/[id].astro`
+  receives the full slug and fetches `GET /api/listings/mls/{number}`. Analytics
+  `listing_id` is the MLS number too. The chat and other API calls still use `listing.id`.
 - **Formatting** (prices, baths, lots, amenity scores, labels) lives in
   `src/lib/listing-utils.ts`; reuse it rather than formatting inline.
 - **Photos:** use `src/lib/photo-utils.ts`. `photoIds` may be the current

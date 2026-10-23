@@ -17,6 +17,8 @@ import { urlset, xmlResponse } from "../lib/sitemap";
 /** One row of GET /api/listings/sitemap. */
 interface SitemapEntry {
   id: number;
+  /** MLS number with MLS Grid's prefix; the listing URL ends in its digits. */
+  mlsId?: string;
   address?: string;
   city?: string;
   postalCity?: string;
@@ -26,7 +28,7 @@ interface SitemapEntry {
 }
 
 /** Photos per listing in the image sitemap; the first few are the ones that matter. */
-const IMAGES_PER_LISTING = 5;
+const IMAGES_PER_LISTING = 5; // the API already sends only this many
 
 export const GET: APIRoute = async () => {
   const apiBase = process.env.PUBLIC_API_BASE_URL || import.meta.env.PUBLIC_API_BASE_URL;

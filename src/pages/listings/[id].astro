@@ -39,7 +39,7 @@ import {
   formatSqft,
   listingPath,
   parseList,
-  parseListingId,
+  parseMlsNumber,
 } from "../../lib/listing-utils";
 import { parsePhotoIds, parseVirtualTourUrls, photoUrl } from "../../lib/photo-utils";
 import { listingNodes } from "../../lib/structured-data";
@@ -53,14 +53,14 @@ import "yet-another-react-lightbox/plugins/counter.css";
 
 // ─── Route param → listing id ────────────────────────────────────────────────
 // The file is named [id].astro for historical reasons, but the param is a full SEO slug,
-// e.g. "3901-w-50th-st-unit-101-edina-mn-55424-4021". Reading both `slug` and `id` lets
-// the file be renamed to [slug].astro later with zero code change. The numeric id is the
-// last hyphen-delimited token and is what the API resolves.
+// e.g. "3901-w-50th-st-unit-101-edina-mn-55424-6512345". Reading both `slug` and `id` lets
+// the file be renamed to [slug].astro later with zero code change. The MLS number is the
+// last hyphen-delimited token and is what the API resolves (/api/listings/mls/{number}).
 const params = Astro.params as Record<string, string | undefined>;
 const slugParam = params.slug ?? params.id ?? "";
-const listingId = parseListingId(slugParam);
-if (listingId == null) {
-  // No trailing integer => not a real listing URL. Render the branded 404.
+const listingNumber = parseMlsNumber(slugParam);
+if (listingNumber == null) {
+  // No trailing number => not a real listing URL. Render the branded 404.
   return Astro.rewrite("/404");
 }
 
@@ -82,7 +82,7 @@ if (!apiBase) {
 //   - any other failure → branded 503 (transient) instead of a 500 stack trace or blank page
 let listing: Listing;
 try {
-  const res = await fetchWithTimeout(`${apiBase}/api/listings/${listingId}`);
+  const res = await fetchWithTimeout(`${apiBase}/api/listings/mls/${listingNumber}`);
   if (res.status === 404) {
     return Astro.rewrite("/404");
   }
@@ -96,8 +96,8 @@ try {
 }
 
 // ─── Canonical URL + 301 redirect ────────────────────────────────────────────
-// The slug comes from the (mutable) address; the id is stable. A visitor on a bare-id URL
-// (/listings/4021) or a stale slug is permanently redirected to the canonical address slug,
+// The slug comes from the (mutable) address; the MLS number is stable. A visitor on a
+// bare-number URL (/listings/6512345) or a stale slug is permanently redirected to the canonical address slug,
 // so search ranking consolidates on ONE URL per property. No loop: listingPath() is
 // deterministic, so a request already on the canonical path falls through.
 const canonicalPath = listingPath(listing);

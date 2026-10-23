@@ -38,7 +38,13 @@
  * bookmarked or shared. Each fetch is capped at 200 and asks for the listings nearest
  * the view's center (sortBy=nearest); the visitor's chosen sort orders them here.
  */
-import { formatPrice, formatBathTotal, formatSqft, listingPath } from "../lib/listing-utils";
+import {
+  formatPrice,
+  formatBathTotal,
+  formatSqft,
+  listingPath,
+  mlsNumber,
+} from "../lib/listing-utils";
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { createPortal } from "react-dom";
 import mapboxgl from "mapbox-gl";
@@ -728,7 +734,10 @@ export default function MapSearch({
         setPreview(listing);
         setSelectedId(listing.id);
         map.setFilter("selected-point", ["==", ["get", "id"], String(listing.id)]);
-        track("listing_preview_open", { listing_id: listing.id, source: "pin" });
+        track("listing_preview_open", {
+          listing_id: mlsNumber(listing) ?? String(listing.id),
+          source: "pin",
+        });
       });
 
       // Tap empty map → close the preview.
@@ -891,7 +900,10 @@ export default function MapSearch({
     setPreview(listing);
     setSelectedId(listing.id);
     map.setFilter("selected-point", ["==", ["get", "id"], String(listing.id)]);
-    track("listing_preview_open", { listing_id: listing.id, source: "search" });
+    track("listing_preview_open", {
+      listing_id: mlsNumber(listing) ?? String(listing.id),
+      source: "search",
+    });
     map.flyTo({ center: [listing.longitude, listing.latitude], zoom: Math.max(map.getZoom(), 15) });
   }, []);
 
@@ -905,7 +917,10 @@ export default function MapSearch({
     if (!mapRef.current || listing.latitude == null) return;
     setSelectedId(listing.id);
     setPreview(listing);
-    track("listing_preview_open", { listing_id: listing.id, source: "list" });
+    track("listing_preview_open", {
+      listing_id: mlsNumber(listing) ?? String(listing.id),
+      source: "list",
+    });
     mapRef.current.setFilter("selected-point", ["==", ["get", "id"], String(listing.id)]);
     mapRef.current.flyTo({
       center: [listing.longitude!, listing.latitude],

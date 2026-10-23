@@ -21,7 +21,7 @@
  * never competes with the page's own content. Events sent before then wait in dataLayer.
  */
 import { applyFiltersToParams, DEFAULT_STATUS, type SearchFilters } from "./search-filters";
-import { parseListingId } from "./listing-utils";
+import { parseMlsNumber } from "./listing-utils";
 import { PHOTO_VIEWED_EVENT } from "./chat-events";
 import { OPEN_PHOTO_EVENT } from "./photo-utils";
 import { OPEN_MAP_EVENT } from "./map-utils";
@@ -58,7 +58,8 @@ export type PreviewSource = "pin" | "list" | "search";
 export interface AnalyticsEvents {
   /** A listing page was viewed (GA4 ecommerce event, so Google Ads can use it later). */
   view_item: {
-    listing_id: number;
+    /** The MLS number (stable across our database rebuilds), as in listing URLs. */
+    listing_id: string;
     city?: string;
     property_type?: string;
     price_band?: string;
@@ -72,11 +73,11 @@ export interface AnalyticsEvents {
     }[];
   };
   /** A listing's preview card opened on the search map. */
-  listing_preview_open: { listing_id: number; source: PreviewSource };
+  listing_preview_open: { listing_id: string; source: PreviewSource };
   /** A search-box suggestion was chosen (the typed text is never sent). */
   search_select:
     | { kind: "place"; place_type: "city" | "zip"; search_term: string }
-    | { kind: "listing"; listing_id: number };
+    | { kind: "listing"; listing_id: string };
   /** Search criteria applied: how many, which ones (our own option values) and the sort. */
   search_filters_apply: { active_filters: number; filters: string; sort: string };
   /** The filter drawer was opened. */
@@ -192,10 +193,10 @@ export function measurementId(): string | null {
   }
 }
 
-/** The listing id when this is a listing page (/listings/<slug>-<id>), else null. */
-function currentListingId(): number | null {
+/** The MLS number when this is a listing page (/listings/<slug>-<number>), else null. */
+function currentListingId(): string | null {
   const m = location.pathname.match(/^\/listings\/([^/]+)\/?$/);
-  return m ? parseListingId(m[1]) : null;
+  return m ? parseMlsNumber(m[1]) : null;
 }
 
 /**
@@ -318,9 +319,7 @@ function trackListingView(): void {
     price_band: price ? priceBand(price) : undefined,
     currency: "USD",
     value: price,
-    items: [
-      { item_id: String(listingId), item_category: city, item_category2: propertyType, price },
-    ],
+    items: [{ item_id: listingId, item_category: city, item_category2: propertyType, price }],
   });
 }
 

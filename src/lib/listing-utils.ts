@@ -438,8 +438,21 @@ export function listingSlug(l: Listing): string {
   const cityForUrl = l.postalCity?.trim() || l.city?.trim() || "";
   const addr = (l.address ?? "").replace(/#\s*/g, "unit ");
   const base = slugify([addr, cityForUrl, "MN", l.zipCode ?? ""].filter(Boolean).join(" "));
-  // Guard: if base is somehow empty, the id alone still resolves.
-  return base ? `${base}-${l.id}` : String(l.id);
+  // The MLS number, not our database id: it survives a re-import or a rebuilt database,
+  // so indexed and shared links keep working. Every MLS listing has one.
+  const number = mlsNumber(l) ?? "";
+  // Guard: if base is somehow empty (address hidden by the seller and no city), the number
+  // alone still resolves.
+  return base ? `${base}-${number}` : number;
+}
+
+/**
+ * The listing's MLS number as shown to people: the digits of `mlsId` without MLS Grid's
+ * system prefix ("NST4899410" -> "4899410"). Null when the listing has none.
+ */
+export function mlsNumber(l: Pick<Listing, "mlsId">): string | null {
+  const m = l.mlsId?.match(/(\d+)$/);
+  return m ? m[1] : null;
 }
 
 /** Full site path for a listing detail page: "/listings/{slug}". */
@@ -448,13 +461,13 @@ export function listingPath(l: Listing): string {
 }
 
 /**
- * Extract the numeric listing id from a slug URL segment.
- * The id is always the final hyphen-delimited integer:
- *   "3901-w-50th-st-unit-101-edina-mn-55424-4021" -> 4021
- *   "4021"                                          -> 4021   (bare-id URL)
- * Returns null when there's no trailing integer (=> treat as 404).
+ * Extract the MLS number from a listing URL segment: always the final hyphen-delimited
+ * run of digits (kept as a string; MLS numbers are identifiers, not quantities):
+ *   "3901-w-50th-st-unit-101-edina-mn-55424-6512345" -> "6512345"
+ *   "6512345"                                          -> "6512345"   (bare-number URL)
+ * Returns null when there's no trailing number (=> treat as 404).
  */
-export function parseListingId(param: string): number | null {
-  const m = param.match(/(?:^|-)(\d+)$/);
-  return m ? Number(m[1]) : null;
+export function parseMlsNumber(param: string): string | null {
+  const m = param.match(/(?:^|-)(\d{1,12})$/);
+  return m ? m[1] : null;
 }
