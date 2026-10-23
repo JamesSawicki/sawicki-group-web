@@ -171,9 +171,11 @@ Many visitors browse on phones, and map search is the primary way people look fo
   "Back to map" on phones); `listing/NeighborhoodMap.tsx` loads mapbox-gl only when one
   is clicked (streets-v12 + Satellite). Keep it that way: an interactive map on page
   load would add ~1 MB of JS and a billable map load to every listing view.
-- **Listing AI chat** (`ListingChat.tsx`) is a floating widget placed by the listing page:
-  an "AI" bubble bottom-right on phones (opens a bottom sheet) and an "AI chat" bar docked
-  bottom-right on desktop (opens a panel). Both labels are placeholders for the logo.
+- **Listing AI chat:** the conversation is `listing/ChatConversation.tsx`. Desktop embeds it in
+  the summary card (in place of a "Contact us" button, with a direct contact link + phone
+  under it; the card fits the window and the chat scrolls inside it). Phones/tablets open it
+  from a round "AI" bubble bottom-right (`ListingChat.tsx`, a bottom sheet). "AI" is a
+  placeholder for the logo.
 - **Check it:** `npm run audit:mobile` (with `npm run dev` running) loads every main page at
   375 / 768 / 1280px, fails on any page wider than the screen, reports small tap targets and
   text, and saves phone screenshots to `.audit/`. For a quick look, Chrome DevTools device

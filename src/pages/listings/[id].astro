@@ -196,6 +196,8 @@ const amenitiesList = parseList(listing.amenities);
       photoIds={photoIds}
       accountHash={cfAccountHash}
       mapboxToken={mapboxToken}
+      apiBase={apiBase}
+      listingPath={canonicalPath}
     />
   </div>
 
@@ -214,7 +216,7 @@ const amenitiesList = parseList(listing.amenities);
     />
   )}
 
-  {/* ── AI chat: floating bubble (phones) / docked bar (desktop) ── */}
+  {/* ── AI chat on phones/tablets: floating bubble (desktop embeds it in the summary card) ── */}
   <ListingChat
     client:load
     listingId={listing.id}

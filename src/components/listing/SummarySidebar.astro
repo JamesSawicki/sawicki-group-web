@@ -1,8 +1,8 @@
 ---
 /**
  * Right-hand column on desktop (after the main content on phones): the sticky summary
- * card and call to action, plus the phones' slide-down mini header — both rendered by
- * the ListingSummary island (see there for the scroll behaviour).
+ * card (with the AI chat embedded on desktop, a call to action on phones), plus the
+ * phones' slide-down mini header — all rendered by the ListingSummary island.
  *
  * Every listing gets the same CTA — Jim acts as a buyer's agent on all listings,
  * including ones held by his own brokerage.
@@ -24,9 +24,13 @@ interface Props {
   accountHash?: string;
   /** Public Mapbox token, for the card's neighborhood map image. */
   mapboxToken?: string;
+  /** listing-agent-api base URL, for the embedded chat (desktop). */
+  apiBase: string;
+  /** This page's path, attached to contact requests sent from the chat. */
+  listingPath: string;
 }
 
-const { listing, photoIds, accountHash, mapboxToken } = Astro.props;
+const { listing, photoIds, accountHash, mapboxToken, apiBase, listingPath } = Astro.props;
 
 // ─── Derived values ──────────────────────────────────────────────────────────
 const cityLine = listing.city
@@ -64,6 +68,9 @@ const ctaBody = `${site.name} can represent you as a buyer's agent to view and m
       contactHref="/contact"
       phone={{ tel: agent.phone, display: agent.phoneDisplay }}
       mapImage={mapImage}
+      listingId={listing.id}
+      apiBaseUrl={apiBase}
+      listingPath={listingPath}
     />
   </div>
 </div>

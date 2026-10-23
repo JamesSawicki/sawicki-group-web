@@ -2,7 +2,10 @@
  * ListingSummary.tsx — the listing page's summary + call to action, in two forms:
  *
  *   - Card (the right-hand column on desktop; near the end of the page on phones):
- *     price, address, key stats, "Contact us" and click-to-call. On desktop its top is a
+ *     price, address and key stats. Below them, desktop embeds the AI chat
+ *     (ChatConversation; it can take contact requests, so it replaces the old "Contact us"
+ *     button, with a direct contact link + phone under it); phones show the "Contact us"
+ *     button and click-to-call (their chat is the floating bubble). On desktop its top is a
  *     media frame with Map | Photos tabs: the neighborhood map (a static image; click
  *     opens the interactive map) while the main photos are on screen, then a photo
  *     carousel slides down over it once they've scrolled away. Choosing a tab stops the
@@ -19,6 +22,7 @@ import { useCallback, useEffect, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import { openListingPhoto, photoUrl } from "../../lib/photo-utils";
 import { openNeighborhoodMap } from "../../lib/map-utils";
+import ChatConversation from "./ChatConversation";
 
 /** id of the marker placed right after the gallery + hero on the listing page. */
 export const HERO_END_ID = "listing-hero-end";
@@ -46,6 +50,10 @@ interface Props {
   phone: { tel: string; display: string };
   /** Static neighborhood map image for the card's frame (desktop); omitted without coordinates. */
   mapImage?: string;
+  /** For the embedded chat (desktop): listing id, API base URL and the page path. */
+  listingId: number;
+  apiBaseUrl: string;
+  listingPath: string;
 }
 
 // ─── Photo carousel (used by the card and the mini header) ────────────────────
@@ -164,6 +172,9 @@ export default function ListingSummary({
   contactHref,
   phone,
   mapImage,
+  listingId,
+  apiBaseUrl,
+  listingPath,
 }: Props) {
   // True once the gallery + hero have scrolled out of view (above the viewport).
   const [scrolledPast, setScrolledPast] = useState<boolean>(false);
@@ -240,11 +251,12 @@ export default function ListingSummary({
         </div>
       </div>
 
-      {/* ── Card ── */}
-      <div className="border border-stone-200 rounded-xl bg-white">
+      {/* ── Card ── (desktop: a column that fits the window, so the sticky card never runs
+          off screen; the chat takes the remaining height and scrolls inside itself) */}
+      <div className="border border-stone-200 rounded-xl bg-white lg:flex lg:flex-col lg:[@media(min-height:700px)]:max-h-[calc(100vh-4rem)]">
         {/* ── Media frame (desktop): map, with photos sliding down over it ── */}
         {(hasPhotos || mapImage) && (
-          <div className="hidden lg:block relative aspect-[16/10] rounded-t-xl overflow-hidden bg-stone-200">
+          <div className="hidden lg:block shrink-0 relative aspect-[16/10] rounded-t-xl overflow-hidden bg-stone-200">
             {mapImage && (
               <button
                 type="button"
@@ -307,15 +319,40 @@ export default function ListingSummary({
           </div>
         )}
 
-        <div className="p-6">
-          {/* ── Summary ── */}
+        {/* ── Summary ── */}
+        <div className="p-6 lg:px-5 lg:py-4 shrink-0">
           <div className="text-2xl font-semibold text-stone-900">{price}</div>
           <div className="text-sm text-stone-700 mt-1">{address}</div>
           <div className="text-sm text-stone-500">{cityLine}</div>
           {stats && <div className="text-sm text-stone-600 mt-2">{stats}</div>}
+        </div>
 
-          {/* ── Call to action ── */}
-          <div className="border-t border-stone-100 mt-5 pt-5">
+        {/* ── Desktop: the AI chat (asks + contact requests), then a direct route ── */}
+        <div className="hidden lg:flex flex-col flex-1 min-h-72 border-t border-stone-100">
+          <div className="flex-1 min-h-0">
+            <ChatConversation
+              listingId={listingId}
+              apiBaseUrl={apiBaseUrl}
+              listingAddress={[address, cityLine].filter(Boolean).join(", ")}
+              listingPath={listingPath}
+              active={isDesktop}
+            />
+          </div>
+          <div className="shrink-0 px-4 pb-3 text-xs text-stone-500 text-center">
+            Prefer to reach out directly?{" "}
+            <a href={contactHref} className="underline hover:text-stone-900">
+              Contact us
+            </a>{" "}
+            or call{" "}
+            <a href={`tel:${phone.tel}`} className="underline hover:text-stone-900">
+              {phone.display}
+            </a>
+          </div>
+        </div>
+
+        {/* ── Phones/tablets: call to action (their chat is the floating bubble) ── */}
+        <div className="lg:hidden px-6 pb-6">
+          <div className="border-t border-stone-100 pt-5">
             <div className="font-semibold text-stone-900 mb-1">{ctaTitle}</div>
             <p className="text-sm text-stone-500 mb-4">{ctaBody}</p>
             <a
