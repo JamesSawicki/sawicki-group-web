@@ -1,0 +1,36 @@
+---
+/**
+ * Google Analytics 4 for every page (placed once in Layout.astro's <head>).
+ *
+ * Renders the measurement ID as a small JSON block and runs `startAnalytics()` from
+ * lib/analytics.ts, which honors the visitor's opt-out / Global Privacy Control and loads
+ * gtag.js only once the page is idle. The ID is read at request time (Cloud Run sets it
+ * in process.env), so changing it needs no rebuild; with no ID (dev) nothing is tracked.
+ */
+// ─── Imports ─────────────────────────────────────────────────────────────────
+import { ANALYTICS_CONFIG_ID } from "../../lib/analytics";
+
+// ─── Props ───────────────────────────────────────────────────────────────────
+// None: the ID comes from the environment.
+
+// ─── Derived values ──────────────────────────────────────────────────────────
+const configured =
+  process.env.PUBLIC_GA_MEASUREMENT_ID || import.meta.env.PUBLIC_GA_MEASUREMENT_ID || "";
+// Only a well-formed GA4 ID ("G-XXXXXXX") is rendered, so a bad value can't inject markup.
+const measurementId = /^G-[A-Z0-9]{4,20}$/.test(configured) ? configured : null;
+---
+
+{/* ── Config (read by lib/analytics.ts and the /privacy-choices page) ── */}
+{measurementId && (
+  <script
+    type="application/json"
+    id={ANALYTICS_CONFIG_ID}
+    set:html={JSON.stringify({ measurementId })}
+  />
+)}
+
+{/* ── Bootstrap (a deferred module: runs after the page is parsed) ── */}
+<script>
+  import { startAnalytics } from "../../lib/analytics";
+  startAnalytics();
+</script>

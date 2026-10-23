@@ -1,0 +1,144 @@
+---
+/**
+ * "Your Privacy Choices": the visitor's opt-out of analytics and advertising measurement.
+ *
+ * The choice is stored in this browser (localStorage, via lib/analytics.ts) and checked
+ * on every page before Google Analytics loads. A Global Privacy Control signal is honored
+ * automatically and can't be overridden here: the page only explains it. Everything is
+ * client-side so pages never vary by cookie (keeps them cacheable at a CDN later).
+ */
+// ─── Imports ─────────────────────────────────────────────────────────────────
+import Layout from "../layouts/Layout.astro";
+import { agent, site } from "../lib/site.config";
+import { absoluteUrl, breadcrumbList, ORGANIZATION_ID, webPage } from "../lib/structured-data";
+
+// ─── Derived values ──────────────────────────────────────────────────────────
+const description = `Opt out of analytics and advertising measurement on the ${site.name} website.`;
+const jsonLd = [
+  webPage("WebPage", "/privacy-choices", "Your Privacy Choices", description, {
+    about: { "@id": ORGANIZATION_ID },
+    breadcrumb: { "@id": `${absoluteUrl("/privacy-choices")}#breadcrumb` },
+  }),
+  breadcrumbList(absoluteUrl("/privacy-choices"), [
+    { name: "Home", path: "/" },
+    { name: "Privacy Policy", path: "/privacy" },
+    { name: "Your Privacy Choices", path: "/privacy-choices" },
+  ]),
+];
+---
+
+<Layout title="Your Privacy Choices" description={description} jsonLd={jsonLd}>
+  <section class="max-w-3xl mx-auto px-6 py-20">
+    {/* ── Intro ── */}
+    <p class="text-sm font-semibold text-amber-700 uppercase tracking-widest mb-4">Privacy</p>
+    <h1 class="text-4xl font-semibold text-stone-900 mb-6">Your Privacy Choices</h1>
+    <div class="text-stone-600 leading-relaxed space-y-4 mb-10">
+      <p>
+        We use Google Analytics to understand how people use this website (which pages and homes get
+        viewed, which search tools get used) and, in the future, to measure whether our advertising
+        works. We do not sell your personal information. You can turn this measurement off for this
+        browser below. See our{" "}
+        <a href="/privacy" class="underline py-2">
+          Privacy Policy
+        </a>{" "}
+        for details.
+      </p>
+    </div>
+
+    {/* ── Choice (filled in by the script; the no-JS note shows otherwise) ── */}
+    <div class="rounded-xl border border-stone-200 p-5 sm:p-6">
+      <div
+        id="gpc-notice"
+        hidden
+        class="mb-5 p-4 rounded-lg bg-green-50 border border-green-200 text-sm text-green-900"
+      >
+        Your browser is sending a <strong>Global Privacy Control</strong> signal, so you're already
+        opted out: analytics never loads for you here. To change that, turn off Global Privacy
+        Control in your browser or extension settings.
+      </div>
+
+      <label
+        id="choice-row"
+        hidden
+        class="flex items-center justify-between gap-4 min-h-11 cursor-pointer"
+      >
+        <span>
+          <span class="block font-medium text-stone-900">Allow analytics and ad measurement</span>
+          <span class="block text-sm text-stone-500">On this browser and device only</span>
+        </span>
+        <input id="analytics-toggle" type="checkbox" role="switch" class="peer sr-only" />
+        <span
+          aria-hidden="true"
+          class="relative shrink-0 w-14 h-8 rounded-full bg-stone-300 transition-colors peer-checked:bg-stone-900 peer-focus-visible:ring-2 peer-focus-visible:ring-amber-600 peer-focus-visible:ring-offset-2 after:absolute after:top-1 after:left-1 after:w-6 after:h-6 after:rounded-full after:bg-white after:shadow after:transition-transform peer-checked:after:translate-x-6"
+        ></span>
+      </label>
+
+      <p id="choice-status" class="mt-4 text-sm text-stone-600" aria-live="polite">
+        This page needs JavaScript to save your choice. You can also opt out by turning on Global
+        Privacy Control in your browser, or by emailing us at{" "}
+        <a href={`mailto:${agent.email}`} class="underline py-2">
+          {agent.email}
+        </a>
+        .
+      </p>
+    </div>
+
+    {/* ── What this covers ── */}
+    <div class="mt-10 text-stone-600 leading-relaxed space-y-4">
+      <h2 class="text-xl font-semibold text-stone-900">What opting out does</h2>
+      <ul class="list-disc pl-6 space-y-2">
+        <li>
+          Google Analytics stops loading on this site in this browser, and its cookies are deleted.
+        </li>
+        <li>
+          Your choice is saved in this browser. If you clear your browser data, use a different
+          browser or device, or browse privately, you'll need to opt out there too (or turn on
+          Global Privacy Control, which works everywhere automatically).
+        </li>
+        <li>
+          It doesn't affect things the site needs to work, like the map, photos, the AI assistant,
+          or the contact form. Those services still receive the basic technical information
+          described in our Privacy Policy.
+        </li>
+      </ul>
+      <p>
+        Prefer to ask us directly, or want us to access, correct or delete information you've sent
+        us? Email{" "}
+        <a href={`mailto:${agent.email}`} class="underline py-2">
+          {agent.email}
+        </a>
+        .
+      </p>
+    </div>
+  </section>
+
+  <script>
+    import { gpcEnabled, savedOptOut, setOptOut } from "../lib/analytics";
+
+    const gpcNotice = document.getElementById("gpc-notice")!;
+    const row = document.getElementById("choice-row")!;
+    const toggle = document.getElementById("analytics-toggle") as HTMLInputElement;
+    const status = document.getElementById("choice-status")!;
+
+    const describe = (allowed: boolean) =>
+      allowed
+        ? "Analytics is on for this browser."
+        : "You're opted out: analytics won't load in this browser.";
+
+    if (gpcEnabled()) {
+      gpcNotice.hidden = false;
+      status.textContent = "";
+    } else {
+      row.hidden = false;
+      toggle.checked = !savedOptOut();
+      status.textContent = describe(toggle.checked);
+      toggle.addEventListener("change", () => {
+        const saved = setOptOut(!toggle.checked);
+        status.textContent = saved
+          ? describe(toggle.checked) +
+            (toggle.checked ? " It starts again on the next page you open." : "")
+          : "Your browser is blocking site storage, so we couldn't save this choice. Turning on Global Privacy Control in your browser works instead.";
+      });
+    }
+  </script>
+</Layout>

@@ -35,6 +35,7 @@
  */
 
 import { useEffect, useRef, useState } from "react";
+import { track } from "../lib/analytics";
 import useEmblaCarousel from "embla-carousel-react";
 import Lightbox from "yet-another-react-lightbox";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
@@ -177,6 +178,7 @@ export default function PhotoGallery({
   }
 
   const openLightbox = (set: "photos" | "floorPlans", index: number) => {
+    track("photo_lightbox_open", { set, source: "gallery" });
     setLightboxSet(set);
     setLightboxIndex(index);
     setLightboxOpen(true);

@@ -20,6 +20,7 @@
 import { useEffect, useRef, useState } from "react";
 import ChatConversation from "./listing/ChatConversation";
 import { OPEN_CHAT_EVENT, PHOTO_VIEWED_EVENT } from "../lib/chat-events";
+import { track } from "../lib/analytics";
 
 interface Props {
   /** The server builds the system prompt from this id (see ChatController on the API). */
@@ -77,6 +78,7 @@ export default function ListingChat({ listingId, apiBaseUrl, listingAddress, lis
     setOpen(true);
     setNudge(false);
     markNudged();
+    track("chat_open", { trigger: message ? "contact_button" : "bubble" });
     if (message) setPending({ text: message, id: Date.now() });
   };
 
@@ -127,6 +129,7 @@ export default function ListingChat({ listingId, apiBaseUrl, listingAddress, lis
       window.clearInterval(timer);
       markNudged();
       setNudge(true);
+      track("chat_nudge_shown", {});
     }, 1000);
 
     window.addEventListener(PHOTO_VIEWED_EVENT, onPhoto);

@@ -58,6 +58,7 @@ import {
   type SearchFilters,
 } from "../lib/search-filters";
 import { setAreaParam, type SearchArea } from "../lib/search-area";
+import { track, trackFilters } from "../lib/analytics";
 // CSS for both libraries is imported in search.astro — not here.
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -525,6 +526,7 @@ export default function MapSearch({
     }
     drawRef.current.changeMode("draw_polygon");
     setIsDrawing(true);
+    track("map_draw", { action: "start" });
   }, []);
 
   const cancelDraw = useCallback((): void => {
@@ -537,6 +539,7 @@ export default function MapSearch({
     activePolygonRef.current = null;
     setActivePolygon(null);
     setIsDrawing(false);
+    track("map_draw", { action: "clear" });
   }, [detachDraw]);
 
   // Render the finished polygon with our own layers (Draw is gone by then), and mirror it
@@ -588,6 +591,7 @@ export default function MapSearch({
     onDrawPolygon(map, "draw.create", (polygon) => {
       activePolygonRef.current = polygon;
       setActivePolygon(polygon);
+      track("map_draw", { action: "complete" });
     });
 
     // Draw returns to simple_select when a shape is finished or the visitor presses
@@ -724,6 +728,7 @@ export default function MapSearch({
         setPreview(listing);
         setSelectedId(listing.id);
         map.setFilter("selected-point", ["==", ["get", "id"], String(listing.id)]);
+        track("listing_preview_open", { listing_id: listing.id, source: "pin" });
       });
 
       // Tap empty map → close the preview.
@@ -778,6 +783,7 @@ export default function MapSearch({
     (next: SearchFilters): void => {
       filtersRef.current = next;
       setFilters(next);
+      trackFilters(next);
       // Phones/tablets: close so the updated map is visible. Desktop has room to keep the
       // drawer open beside the map for further tweaking.
       if (window.matchMedia("(max-width: 1023px)").matches) setFiltersOpen(false);
@@ -786,7 +792,10 @@ export default function MapSearch({
     [fetchForViewport],
   );
   const closeFilters = useCallback(() => setFiltersOpen(false), []);
-  const openFilters = useCallback(() => setFiltersOpen(true), []);
+  const openFilters = useCallback(() => {
+    setFiltersOpen(true);
+    track("filters_open", {});
+  }, []);
 
   // Keep the anchored popup in step with the preview (desktop only). We pick the anchor
   // ourselves (popupAnchor) instead of Mapbox's auto-anchor: Mapbox measures the popup
@@ -882,6 +891,7 @@ export default function MapSearch({
     setPreview(listing);
     setSelectedId(listing.id);
     map.setFilter("selected-point", ["==", ["get", "id"], String(listing.id)]);
+    track("listing_preview_open", { listing_id: listing.id, source: "search" });
     map.flyTo({ center: [listing.longitude, listing.latitude], zoom: Math.max(map.getZoom(), 15) });
   }, []);
 
@@ -895,6 +905,7 @@ export default function MapSearch({
     if (!mapRef.current || listing.latitude == null) return;
     setSelectedId(listing.id);
     setPreview(listing);
+    track("listing_preview_open", { listing_id: listing.id, source: "list" });
     mapRef.current.setFilter("selected-point", ["==", ["get", "id"], String(listing.id)]);
     mapRef.current.flyTo({
       center: [listing.longitude!, listing.latitude],
