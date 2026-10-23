@@ -6,8 +6,9 @@
  * 5 / 10 / 15 minutes. Renders nothing when the listing has no amenity scores yet.
  *
  * Scores come with the listing from the API's amenity pipeline (Mapbox isochrones +
- * OpenStreetMap). Reachability uses real street/path networks; the distance shown is
- * straight-line. The mode switch is CSS-only (radio inputs + :has), so no JavaScript.
+ * OpenStreetMap, plus stores and restaurants OSM lacks from Overture Maps). Reachability
+ * uses real street/path networks; the distance shown is straight-line. The mode switch
+ * is CSS-only (radio inputs + :has), so no JavaScript.
  */
 // ─── Imports ─────────────────────────────────────────────────────────────────
 import type { Listing } from "../../types/listing";
@@ -137,7 +138,7 @@ const updated = amenityScores
 
     <p class="text-xs text-stone-400 mt-3">
       Counts: places reachable within 5, 10 and 15 minutes. Distance: straight-line to the closest
-      one. Data via Mapbox and OpenStreetMap; updated {updated}.
+      one. Data via Mapbox, © OpenStreetMap contributors and Overture Maps Foundation; updated {updated}.
     </p>
   </section>
 )}
