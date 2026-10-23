@@ -158,7 +158,8 @@ const amenitiesList = parseList(listing.amenities);
   <Breadcrumb address={listing.address} class="lg:hidden" />
 
   {/* ── Photo gallery ── */}
-  <div class="max-w-6xl mx-auto px-6 pt-6">
+  {/* Wider than the text column on big screens (2xl) so the photos can breathe. */}
+  <div class="max-w-6xl 2xl:max-w-[1600px] mx-auto px-6 pt-6 lg:pt-2">
     <PhotoGallery
       client:load
       photoIds={photoIds}

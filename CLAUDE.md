@@ -171,8 +171,9 @@ Many visitors browse on phones, and map search is the primary way people look fo
   pale so the blue listing pins stay the strongest color; it's style-only (no extra cost).
 - **Listing page photos & summary:** `PhotoGallery.tsx` (mosaic on desktop, swipe carousel
   on phones; the mosaic is 16:9 but capped to the window height so the price and key stats
-  show without scrolling on short laptop screens, and from `lg` the back link and breadcrumb
-  share one row) owns the one lightbox, with our own all-photos thumbnail strip; other islands
+  show without scrolling on short laptop screens; the View all / floor plan / tour chips sit
+  on its corner from `md`; from `lg` the back link and breadcrumb share one row; at `2xl` the
+  gallery widens past the text column into a 3:1 strip of 1 + 6 photos) owns the one lightbox, with our own all-photos thumbnail strip; other islands
   open it with `openListingPhoto(i)` (`lib/photo-utils.ts`). `listing/ListingSummary.tsx`
   is the summary card and the phones' slide-down mini header. Desktop: the card is always
   sticky and capped to the window height (media frame max 32vh, chat flexes and scrolls

@@ -121,6 +121,11 @@ function ThumbnailStrip({ ids, hash, current, onSelect }: ThumbnailStripProps) {
   );
 }
 
+/** Gallery action chips: grey under the phone carousel, white pills over the desktop mosaic. */
+const CHIP_CLASSES =
+  "inline-flex items-center gap-1.5 text-sm px-3 py-1.5 rounded-lg transition-colors " +
+  "bg-stone-100 hover:bg-stone-200 md:bg-white/95 md:hover:bg-white md:shadow-md md:font-medium";
+
 export default function PhotoGallery({
   photoIds = [],
   floorPlanIds = [],
@@ -182,18 +187,20 @@ export default function PhotoGallery({
     src: url(accountHash, id, "lightbox"),
   }));
 
-  // Take up to 5 photos for the mosaic, but track how many exist for the
-  // "+N more" overlay on the last tile.
-  const mosaicPhotos = photoIds.slice(0, 5);
-  const extraCount = Math.max(0, photoIds.length - 5);
+  // The mosaic shows 5 photos (1 large + 4), or 7 on wide screens (2xl: 1 large + 6);
+  // the last visible tile says how many more there are.
+  const mosaicPhotos = photoIds.slice(0, 7);
+  const moreThan = (shown: number) => Math.max(0, photoIds.length - shown);
 
   return (
-    <div>
+    <div className="md:relative">
       {/* ── Desktop mosaic ──────────────────────────────────────────────── */}
       {/* 16:9 when the window is tall enough; on shorter screens it gets shorter (never
-          below 240px) so the price, address and key stats show without scrolling.
-          390px = page header + back row + the hero price/stats block. */}
-      <div className="hidden md:grid grid-cols-3 grid-rows-2 gap-2 w-full aspect-[16/9] md:max-h-[max(240px,calc(100svh-390px))] rounded-xl overflow-hidden">
+          below 220px) so the price, address and key stats show without scrolling
+          (330px = page header + back row + the hero's address/price/stats). Wide screens
+          (2xl) get a Redfin-style 3:1 strip with six small tiles instead of four, so the
+          photos (often low-res MLS images) grow wider rather than taller. */}
+      <div className="hidden md:grid grid-cols-3 2xl:grid-cols-[2fr_1fr_1fr_1fr] grid-rows-2 gap-2 w-full aspect-[16/9] 2xl:aspect-[3/1] md:max-h-[max(220px,calc(100svh-330px))] rounded-xl overflow-hidden">
         {/* Primary tile — spans 2 rows on the left */}
         {mosaicPhotos[0] ? (
           <button
@@ -214,14 +221,14 @@ export default function PhotoGallery({
           <div className="row-span-2 bg-stone-100" />
         )}
 
-        {/* Four satellite tiles in a 2×2 grid */}
-        {[1, 2, 3, 4].map((i) =>
+        {/* Satellite tiles: 2×2, or 3×2 on wide screens (tiles 5–6 only show at 2xl) */}
+        {[1, 2, 3, 4, 5, 6].map((i) =>
           mosaicPhotos[i] ? (
             <button
               key={i}
               type="button"
               onClick={() => openLightbox("photos", i)}
-              className="bg-stone-200 overflow-hidden group relative"
+              className={`bg-stone-200 overflow-hidden group relative ${i > 4 ? "hidden 2xl:block" : ""}`}
               aria-label={`Open photo ${i + 1} in lightbox`}
             >
               <img
@@ -230,15 +237,17 @@ export default function PhotoGallery({
                 loading="lazy"
                 className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
-              {/* "+N more" overlay on the last visible tile when more photos exist */}
-              {i === 4 && extraCount > 0 && (
-                <div className="absolute inset-0 bg-black/45 flex items-center justify-center text-white font-medium text-sm pointer-events-none">
-                  + {extraCount} more
+              {/* "+N more" on the last visible tile: tile 4 below 2xl, tile 6 at 2xl */}
+              {(i === 4 || i === 6) && moreThan(i + 1) > 0 && (
+                <div
+                  className={`absolute inset-0 bg-black/45 flex items-center justify-center text-white font-medium text-sm pointer-events-none ${i === 4 ? "2xl:hidden" : ""}`}
+                >
+                  + {moreThan(i + 1)} more
                 </div>
               )}
             </button>
           ) : (
-            <div key={i} className="bg-stone-100" />
+            <div key={i} className={`bg-stone-100 ${i > 4 ? "hidden 2xl:block" : ""}`} />
           ),
         )}
       </div>
@@ -274,13 +283,11 @@ export default function PhotoGallery({
       </div>
 
       {/* ── Action chips: View all / Floor plans / Virtual tours ────────── */}
-      <div className="flex flex-wrap gap-2 mt-4">
+      {/* Phones: a row under the carousel. md+: on the mosaic's bottom-right corner
+          (Redfin-style), which keeps the price higher on short laptop screens. */}
+      <div className="flex flex-wrap gap-2 mt-4 md:mt-0 md:absolute md:bottom-3 md:right-3 md:justify-end">
         {photoIds.length > 0 && (
-          <button
-            type="button"
-            onClick={() => openLightbox("photos", 0)}
-            className="inline-flex items-center gap-1.5 text-sm px-3 py-1.5 bg-stone-100 hover:bg-stone-200 rounded-lg transition-colors"
-          >
+          <button type="button" onClick={() => openLightbox("photos", 0)} className={CHIP_CLASSES}>
             <svg
               className="w-4 h-4"
               viewBox="0 0 24 24"
@@ -302,7 +309,7 @@ export default function PhotoGallery({
           <button
             type="button"
             onClick={() => openLightbox("floorPlans", 0)}
-            className="inline-flex items-center gap-1.5 text-sm px-3 py-1.5 bg-stone-100 hover:bg-stone-200 rounded-lg transition-colors"
+            className={CHIP_CLASSES}
           >
             <svg
               className="w-4 h-4"
@@ -325,7 +332,7 @@ export default function PhotoGallery({
             href={tour.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-sm px-3 py-1.5 bg-stone-100 hover:bg-stone-200 rounded-lg transition-colors"
+            className={CHIP_CLASSES}
           >
             <svg
               className="w-4 h-4"
