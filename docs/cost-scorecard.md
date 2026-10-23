@@ -62,7 +62,7 @@ Transfer sizes are what Chrome received (HTML compressed; `/_astro` JS not yet �
 
 | Feature | Where | Per use | Billable calls | Notes / guardrails |
 |---|---|---|---|---|
-| Map search (pins, list, filters, drawn area) | `/listings`, `MapSearch.tsx` | 1 map load per page view; 1 API search per pan/zoom (debounced 400 ms, cached 60 s) | Mapbox GL JS map load | Capped at 200 results, nearest-first; `view=summary` (~10 KB gz per fetch). Never request full listings for the map. |
+| Map search (pins, list, filters, drawn area) | `/listings`, `MapSearch.tsx` | 1 map load per page view; 1 API search per pan/zoom (debounced 400 ms, cached 60 s) | Mapbox GL JS map load | Capped at 200 results, nearest-first; `view=summary` (~10 KB gz per fetch). Drawn area (2026-10-23): up to 1,000 per fetch over the area's bounds (~50 KB gz, ~0.2 s API locally for 295–752 listings), "Show more" pages beyond; the map bills per load, not per pin, and list photos lazy-load, so no extra paid calls. Stale fetches are aborted. Never request full listings for the map. |
 | Search box suggestions | `SearchBox.tsx`, `GET /api/listings/suggest` | 1 API call per typing pause (200 ms debounce, ≥2 chars; stale requests aborted) | none (own DB) | LIKE scan; add pg_trgm index if the table grows large. |
 | Base map tint | `MapSearch.tsx` | style changes only | none | No extra requests. |
 | Listing photos + lightbox | `PhotoGallery.tsx` | 5 mosaic / carousel images up front; lightbox loads on demand; strip uses 120 px thumbs | Cloudflare Images deliveries | Avoid full-size thumbnails (the old plugin loaded 2048 px). |
