@@ -106,7 +106,7 @@ export default function ChatConversation({
   };
 
   return (
-    <div className="flex flex-col min-h-0 h-full">
+    <div className="flex flex-col flex-1 min-h-0 h-full">
       {/* ── Thread ── */}
       <div
         ref={threadRef}
@@ -114,7 +114,8 @@ export default function ChatConversation({
       >
         {messages.length === 0 && (
           <div className="text-center px-2 mt-2">
-            <p className="text-sm text-stone-500">
+            {/* Hidden on short windows so the starters fit in the desktop card. */}
+            <p className="text-sm text-stone-500 [@media(max-height:640px)]:hidden">
               Ask anything about this home: features, the neighborhood, costs, or a showing. We can
               pass your request straight to our team.
             </p>

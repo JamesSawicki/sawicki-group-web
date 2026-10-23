@@ -52,8 +52,8 @@ const ctaBody = `${site.name} can represent you as a buyer's agent to view and m
 ---
 
 <div class="lg:col-span-2">
-  {/* Sticky only when the window is tall enough to show the whole card. */}
-  <div class="lg:[@media(min-height:700px)]:sticky lg:top-8">
+  {/* Sticky at every window height: the card shrinks to fit the window (see ListingSummary). */}
+  <div class="lg:sticky lg:top-4">
     <ListingSummary
       client:load
       photoIds={photoIds}

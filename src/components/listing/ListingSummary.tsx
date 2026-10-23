@@ -253,10 +253,11 @@ export default function ListingSummary({
 
       {/* ── Card ── (desktop: a column that fits the window, so the sticky card never runs
           off screen; the chat takes the remaining height and scrolls inside itself) */}
-      <div className="border border-stone-200 rounded-xl bg-white lg:flex lg:flex-col lg:[@media(min-height:700px)]:max-h-[calc(100vh-4rem)]">
-        {/* ── Media frame (desktop): map, with photos sliding down over it ── */}
+      <div className="border border-stone-200 rounded-xl bg-white lg:flex lg:flex-col lg:max-h-[calc(100vh-2rem)]">
+        {/* ── Media frame (desktop): map, with photos sliding down over it. Capped at about a
+            third of the window's height, so short laptop screens still fit the whole card. ── */}
         {(hasPhotos || mapImage) && (
-          <div className="hidden lg:block shrink-0 relative aspect-[16/10] rounded-t-xl overflow-hidden bg-stone-200">
+          <div className="hidden lg:block shrink-0 relative aspect-[16/10] max-h-[32vh] rounded-t-xl overflow-hidden bg-stone-200">
             {mapImage && (
               <button
                 type="button"
@@ -328,8 +329,8 @@ export default function ListingSummary({
         </div>
 
         {/* ── Desktop: the AI chat (asks + contact requests), then a direct route ── */}
-        <div className="hidden lg:flex flex-col flex-1 min-h-72 border-t border-stone-100">
-          <div className="flex-1 min-h-0">
+        <div className="hidden lg:flex flex-col flex-1 min-h-44 border-t border-stone-100">
+          <div className="flex-1 min-h-0 flex flex-col">
             <ChatConversation
               listingId={listingId}
               apiBaseUrl={apiBaseUrl}
