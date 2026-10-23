@@ -48,7 +48,8 @@ npm run build    # local production build; does not deploy
   `src/lib/listing-utils.ts`; reuse it rather than formatting inline.
 - **Photos:** use `src/lib/photo-utils.ts`. `photoIds` may be the current
   `[{key, cfId}]` format or the legacy `[cfId]` format; the parser handles both.
-- **Chat island** (`ListingChat.tsx`) sends `{ listingId, messages }` (text only); the API
+- **Chat** (`listing/ChatConversation.tsx`, used by the desktop summary card and the phone
+  bubble `ListingChat.tsx`) sends `{ listingId, messages }` (text only); the API
   owns the prompt (listing details + Close to Home) and replies `{ reply, contactRequest? }`.
   A `contactRequest` (the AI's request_contact tool) renders as `listing/ContactRequestCard.tsx`:
   the visitor edits and sends it via `/api/contact`, so the AI never sends anything itself.
@@ -164,8 +165,11 @@ Many visitors browse on phones, and map search is the primary way people look fo
 - **Listing page photos & summary:** `PhotoGallery.tsx` (mosaic on desktop, swipe carousel
   on phones) owns the one lightbox, with our own all-photos thumbnail strip; other islands
   open it with `openListingPhoto(i)` (`lib/photo-utils.ts`). `listing/ListingSummary.tsx`
-  is the sticky summary/CTA card (desktop: a photo carousel slides open once the gallery
-  scrolls past `#listing-hero-end`) and the phones' slide-down mini header.
+  is the summary card and the phones' slide-down mini header. Desktop: the card is always
+  sticky and capped to the window height (media frame max 32vh, chat flexes and scrolls
+  inside), with a Map | Photos frame whose photos slide in once the gallery scrolls past
+  `#listing-hero-end`, then price/stats and the embedded chat. Phones: price/stats + Contact
+  button and click-to-call at the end of the page.
 - **Listing neighborhood map:** the page shows only static Mapbox images
   (`lib/map-utils.ts`: the summary card's Map tab on desktop, the Neighborhood button by
   "Back to map" on phones); `listing/NeighborhoodMap.tsx` loads mapbox-gl only when one
