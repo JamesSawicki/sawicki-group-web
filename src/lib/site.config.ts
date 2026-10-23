@@ -153,8 +153,16 @@ export const brokerage: {
   serviceArea: "Twin Cities, Minnesota",
   state: "MN",
   stateName: "Minnesota",
-  /** TODO-JIM: approved Coldwell Banker Realty logo file (from the brokerage's brand portal). */
-  logo: null,
+  /**
+   * Horizontal black lockup, a 342×80 web copy of public/brand/coldwell-banker/
+   * cbr-horizontal-black.png (other variants: docs/brand.md). Shown about 32px tall.
+   */
+  logo: {
+    src: "/brand/coldwell-banker/cbr-horizontal-black-web.png",
+    width: 342,
+    height: 80,
+    alt: "Coldwell Banker Realty",
+  },
   /** TODO-JIM: the brokerage's Minnesota license number, if it should be shown. */
   licenseNumber: "",
   /** TODO-JIM: brokerage/office main phone (or leave null to show only ours). */

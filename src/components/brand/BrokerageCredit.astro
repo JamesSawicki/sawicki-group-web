@@ -27,15 +27,19 @@ import ContactLine from "./ContactLine.astro";
   )}
 
   {/* ── Name and details ── */}
-  <div>
-    {brokerage.url ? (
-      <a href={brokerage.url} rel="noopener" target="_blank" class="hover:underline">
-        {brokerage.name}
-      </a>
-    ) : (
-      brokerage.name
-    )}
-  </div>
+  {/* The logo already shows the name (its alt text carries it for screen readers), so the
+      text name appears only when there's no logo. */}
+  {!brokerage.logo && (
+    <div>
+      {brokerage.url ? (
+        <a href={brokerage.url} rel="noopener" target="_blank" class="hover:underline">
+          {brokerage.name}
+        </a>
+      ) : (
+        brokerage.name
+      )}
+    </div>
+  )}
   {brokerage.legalName && <div>{brokerage.legalName}</div>}
   {brokerage.primaryBroker && <div>Broker: {brokerage.primaryBroker}</div>}
   <div>{brokerage.serviceArea}</div>
