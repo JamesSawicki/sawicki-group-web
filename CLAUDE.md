@@ -92,7 +92,9 @@ Goal: as much accurate machine-readable data as the MLS rules allow.
 - **Only state what's known.** Omit missing values; never invent addresses, dates or
   contact details (team/office/social details live in `site.config.ts`).
 - **VERIFY-IDX:** a listing's offer is made by the listing brokerage, never us; no sold
-  listings on public pages or sitemaps (statuses decided by the API's `/sitemap`); AI
+  listings anywhere public: they're planned for subscribers only, the public API serves
+  only Active/Coming Soon/Pending (a sold listing's page is a 404) and the map has no
+  "Sold" filter; AI
   crawlers are kept off `/listings` in `robots.txt.ts`; `llms.txt` doesn't list listing data.
 - **Canonical + link previews:** canonical URLs and all absolute URLs come from
   `site.siteUrl` (update it with the custom domain). Pages with a query string (e.g.

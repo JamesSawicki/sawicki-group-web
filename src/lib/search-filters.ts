@@ -48,15 +48,15 @@ export const EMPTY_FILTERS: SearchFilters = {
 };
 
 // ─── Options ─────────────────────────────────────────────────────────────────
-// `value` is what the API receives. Status values must match the data exactly
-// (sold listings are "Closed"); property types are categories the API expands.
+// `value` is what the API receives. Status values must match the data exactly; property
+// types are categories the API expands. VERIFY-IDX: no "Sold" option. Sold listings
+// ("Closed") are planned for subscribers only, and the public API won't return them.
 
 export const STATUS_OPTIONS = [
   { value: "Active", label: "For sale" },
   { value: "Active,Pending,Coming Soon", label: "For sale + pending + coming soon" },
   { value: "Coming Soon", label: "Coming soon" },
   { value: "Pending", label: "Pending" },
-  { value: "Closed", label: "Sold" },
 ];
 
 export const PROPERTY_TYPE_OPTIONS = [
@@ -112,7 +112,10 @@ export function sortListings(listings: Listing[], sortBy: string): Listing[] {
 export function filtersFromParams(params: URLSearchParams): SearchFilters {
   const get = (key: keyof SearchFilters) => params.get(key) ?? "";
   return {
-    status: params.get("status") || DEFAULT_STATUS,
+    // Unknown values (e.g. an old "Closed" link from before sold went private) → default.
+    status: STATUS_OPTIONS.some((o) => o.value === params.get("status"))
+      ? (params.get("status") as string)
+      : DEFAULT_STATUS,
     minPrice: get("minPrice"),
     maxPrice: get("maxPrice"),
     minBeds: get("minBeds"),
