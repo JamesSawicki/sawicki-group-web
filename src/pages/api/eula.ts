@@ -4,7 +4,7 @@
  * fetch (204); without JavaScript the gate's form posts here and we redirect back (303).
  */
 import type { APIRoute } from "astro";
-import { currentRequestId } from "../../lib/request-context";
+import { auditLog } from "../../lib/audit";
 import { EULA_COOKIE, EULA_VERSION, safeReturnPath } from "../../lib/eula";
 
 export const POST: APIRoute = async ({ request, cookies }) => {
@@ -22,11 +22,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       request.headers.get("x-forwarded-proto") === "https",
   });
 
-  // One JSON line per assent: time (log timestamp), version, request id. No IP or other
-  // personal data (CLAUDE.md logging rules).
-  console.log(
-    JSON.stringify({ event: "eula_accept", version: EULA_VERSION, requestId: currentRequestId() }),
-  );
+  // One audit line per assent (§5.9(b)): time (log timestamp), version, session + request
+  // id. No IP or other personal data (CLAUDE.md logging rules).
+  auditLog("eula_accept", { version: EULA_VERSION });
 
   if (request.headers.get("accept")?.includes("application/json")) {
     return new Response(null, { status: 204 });

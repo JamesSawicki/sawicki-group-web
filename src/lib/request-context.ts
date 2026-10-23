@@ -15,6 +15,8 @@ export interface RequestContext {
   requestId: string;
   /** The visitor's IP (middleware.ts), forwarded to the API with the site key. */
   clientIp?: string;
+  /** The visit's pseudonymous audit-trail id (lib/audit.ts), forwarded to the API. */
+  auditSessionId?: string;
 }
 
 export const requestContext = new AsyncLocalStorage<RequestContext>();
@@ -22,6 +24,11 @@ export const requestContext = new AsyncLocalStorage<RequestContext>();
 /** The current page's request id, or undefined outside a request (build time, tests). */
 export function currentRequestId(): string | undefined {
   return requestContext.getStore()?.requestId;
+}
+
+/** The visit's audit-trail session id, or undefined outside a request. */
+export function currentAuditSessionId(): string | undefined {
+  return requestContext.getStore()?.auditSessionId;
 }
 
 /** The current visitor's IP, or undefined outside a request. */

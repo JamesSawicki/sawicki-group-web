@@ -66,6 +66,7 @@ import {
 } from "../lib/search-filters";
 import { setAreaParam, type SearchArea } from "../lib/search-area";
 import { track, trackFilters } from "../lib/analytics";
+import { auditHeaders } from "../lib/audit-session";
 // CSS for both libraries is imported in search.astro — not here.
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -537,7 +538,10 @@ export default function MapSearch({
         // Remember this search so listing pages can offer "Back to map" to it.
         saveLastSearchUrl(pageUrl.pathname + pageUrl.search);
 
-        const res = await fetch(url.toString(), { signal: controller.signal });
+        const res = await fetch(url.toString(), {
+          signal: controller.signal,
+          headers: auditHeaders(), // ties the API's audit line to this visit (§5.9(b))
+        });
         if (!res.ok) return;
         const data = (await res.json()) as Page<ListingSummary>;
 

@@ -13,6 +13,7 @@ import { useEffect, useRef, useState } from "react";
 import ContactRequestCard, { type ContactRequest } from "./ContactRequestCard";
 import { SHOWING_REQUEST } from "../../lib/chat-events";
 import { track } from "../../lib/analytics";
+import { auditHeaders } from "../../lib/audit-session";
 
 interface Props {
   /** The server builds the system prompt from this id; the client never sends prompt text. */
@@ -112,7 +113,8 @@ export default function ChatConversation({
     try {
       const res = await fetch(`${apiBaseUrl}/api/chat`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        // The audit header ties the API's line to this visit (§5.9(b)); never the text.
+        headers: { "Content-Type": "application/json", ...auditHeaders() },
         body: JSON.stringify({
           listingId,
           // Text only: contact cards stay in the browser.

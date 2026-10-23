@@ -25,7 +25,13 @@
  *  byte; it clears once response headers arrive. Tune per-call via `timeoutMs`. */
 export const DEFAULT_FETCH_TIMEOUT_MS = 8000;
 
-import { currentClientIp, currentRequestId, REQUEST_ID_HEADER } from "./request-context";
+import {
+  currentAuditSessionId,
+  currentClientIp,
+  currentRequestId,
+  REQUEST_ID_HEADER,
+} from "./request-context";
+import { AUDIT_HEADER } from "./audit-session";
 import { site } from "./site.config";
 
 export interface FetchWithTimeoutOptions extends RequestInit {
@@ -50,6 +56,9 @@ export async function fetchWithTimeout(
   const headers = new Headers(init.headers);
   const requestId = currentRequestId();
   if (requestId && !headers.has(REQUEST_ID_HEADER)) headers.set(REQUEST_ID_HEADER, requestId);
+  // Audit trail (§5.9(b)): the API's lines for this page share the visit's session id.
+  const auditSid = currentAuditSessionId();
+  if (auditSid) headers.set(AUDIT_HEADER, auditSid);
   // Lets the API rate-limit the visitor, not Cloud Run's shared egress IPs. Server-only
   // secret: sent only to our API, never to the browser.
   const siteKey = process.env.SITE_API_KEY || import.meta.env.SITE_API_KEY;

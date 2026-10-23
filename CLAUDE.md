@@ -129,8 +129,8 @@ legal pages compare with the portals). Treat the PDF as the authority.
   session cookie `mls_eula` and logs `event:"eula_accept"`. The agreement is `/eula`
   (provisional text, TODO-JIM: swap in NorthstarMLS's official EULA and bump `EULA_VERSION`
   in `lib/eula.ts`). Any new page that shows listing data must set `requiresEula`.
-- **Pending before go-live:** 18-month audit trail (§5.9(b)), 2-day notice to NorthstarMLS
-  (§5.8(g)), broker consent (§5.4(f)), official EULA text.
+- **Pending before go-live:** the audit-trail log bucket + sink (code done; runbook in the API
+  repo), 2-day notice to NorthstarMLS (§5.8(g)), broker consent (§5.4(f)), official EULA text.
 
 ## Logging
 
@@ -139,6 +139,13 @@ legal pages compare with the portals). Treat the PDF as the authority.
   calls behind it share one id in the logs. Use `fetchWithTimeout` for every SSR API call.
 - Never log chat or contact-form content, API keys, or full visitor IPs. (A JSON access log
   for the site is on the to-do list.)
+- **Audit trail** (NorthstarMLS §5.9(b), 18 months): middleware sets a random `audit_sid`
+  session cookie per visit; `lib/audit.ts` `auditLog(event, details)` writes one JSON line with
+  `audit_event` (page_view on `/listings` pages, eula_accept, contact_sent);
+  `fetchWithTimeout` forwards the id to the API, and islands calling the API directly add
+  `auditHeaders()` (`lib/audit-session.ts`). A Cloud Logging sink keeps `audit_event` lines
+  549 days (listing-agent-api `docs/abuse-protection.md` §4). A new visitor action on MLS
+  data gets an audit line; never personal data or typed text in it.
 
 ## Cost scorecard (every feature)
 

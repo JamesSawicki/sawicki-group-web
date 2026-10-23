@@ -1,6 +1,8 @@
 import { isIP } from "node:net";
 import type { APIContext, MiddlewareHandler, MiddlewareNext } from "astro";
 import { site } from "./lib/site.config";
+import { auditLog, newAuditSessionId } from "./lib/audit";
+import { AUDIT_COOKIE } from "./lib/audit-session";
 import {
   REQUEST_ID_HEADER,
   currentRequestId,
@@ -265,11 +267,31 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   // fetchWithTimeout to forward to the API (X-Visitor-Ip, with the site key), so the API
   // limits the visitor rather than Cloud Run's shared egress IP.
   const requestId = requestIdFrom(context.request.headers.get(REQUEST_ID_HEADER));
+  // Audit trail (§5.9(b)): a random id per browser session ties one visitor's actions
+  // together without identifying them. Set once; it ends when the browser closes.
+  const existingSid = context.cookies.get(AUDIT_COOKIE)?.value;
+  const auditSessionId =
+    existingSid && /^[A-Za-z0-9_-]{16,64}$/.test(existingSid) ? existingSid : newAuditSessionId();
+  if (auditSessionId !== existingSid) {
+    context.cookies.set(AUDIT_COOKIE, auditSessionId, {
+      path: "/",
+      sameSite: "lax",
+      secure: context.request.headers.get("x-forwarded-proto") === "https",
+    });
+  }
   const store: RequestContext = {
     requestId,
     clientIp: clientIpFrom(context.request),
+    auditSessionId,
   };
-  const response = await requestContext.run(store, () => handle(context, next, store.clientIp));
+  const response = await requestContext.run(store, () => {
+    // Pages with MLS data: what was viewed (the path holds the MLS number or search filters).
+    const { pathname, search } = new URL(context.request.url);
+    if (context.request.method === "GET" && /^\/listings(\/|$)/.test(pathname)) {
+      auditLog("page_view", { path: pathname + search });
+    }
+    return handle(context, next, store.clientIp);
+  });
   try {
     response.headers.set(REQUEST_ID_HEADER, requestId);
   } catch {

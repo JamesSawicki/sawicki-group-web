@@ -292,9 +292,14 @@ const link = "underline decoration-stone-400 hover:decoration-stone-900";
       <p>
         We use logs to run, secure and fix the site, to detect misuse such as scraping of listing
         data, and to keep the record of site activity that NorthstarMLS rules require of websites
-        that display MLS listings. Activity logs may be kept for up to 18 months for those
-        compliance and security purposes. To limit abuse, our servers also hold your IP address in
-        memory for a short time (up to a few hours) to count recent messages and form submissions.
+        that display MLS listings. That record ties together one visit's actions with a random visit
+        number (the <code>audit_sid</code> cookie below), not your name: which listing pages and
+        searches you viewed (map area and filters), that you accepted the listing-data agreement,
+        that you used the AI assistant (how many messages, never the words), that you sent a contact
+        request (never its content), and any rate-limit blocks. Activity logs may be kept for up to
+        18 months for those compliance and security purposes. To limit abuse, our servers also hold
+        your IP address in memory for a short time (up to a few hours) to count recent messages and
+        form submissions.
       </p>
 
       {/* ── Cookies ── */}
@@ -304,6 +309,11 @@ const link = "underline decoration-stone-400 hover:decoration-stone-900";
           <strong>Google Analytics cookies</strong> (<code>_ga</code>, <code>_ga_…</code>): tell
           visits from the same browser apart. They last up to 2 years and are deleted when you opt
           out.
+        </li>
+        <li>
+          <strong>Visit cookie</strong> (<code>audit_sid</code>): a random number for this visit
+          that links the entries in our activity log (see "Server and activity logs"). It contains
+          nothing about you and is deleted when you close your browser.
         </li>
         <li>
           <strong>Listing-data agreement cookie</strong> (<code>mls_eula</code>): remembers that you

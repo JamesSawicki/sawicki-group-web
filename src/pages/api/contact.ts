@@ -7,6 +7,7 @@
  * length-capped, and a daily cap on sends bounds the total however many visitors there are.
  */
 import type { APIRoute } from "astro";
+import { auditLog } from "../../lib/audit";
 import { Resend } from "resend";
 import { agent, site } from "../../lib/site.config";
 import { clientIpFrom, logAbuse } from "../../middleware";
@@ -189,6 +190,8 @@ export const POST: APIRoute = async ({ request }) => {
     });
     if (error) throw new Error(error.name);
 
+    // Audit trail (§5.9(b)): that a request was sent, never its content.
+    auditLog("contact_sent", {});
     return json(200, { success: true });
   } catch (error) {
     // The error only: never the form's content.
