@@ -45,6 +45,18 @@ interface ChatReply {
 }
 
 /** One-tap starters shown before the first message (labels and what they send). */
+/**
+ * The AI is told to write plain text, but sometimes uses Markdown anyway; the chat shows
+ * text as-is, so strip bold/italic markers and heading hashes rather than show asterisks.
+ */
+function plainText(text: string | undefined): string {
+  return (text ?? "")
+    .replace(/\*\*(.+?)\*\*/g, "$1")
+    .replace(/__(.+?)__/g, "$1")
+    .replace(/^#{1,6}\s+/gm, "")
+    .trim();
+}
+
 /** Reply buttons under the greeting (phones). */
 const GREETING_REPLIES = [
   { label: "Tell me more", text: "Tell me more about this home: what stands out?" },
@@ -111,7 +123,7 @@ export default function ChatConversation({
         ...updated,
         {
           role: "assistant",
-          content: data.reply || "Sorry, I couldn't generate a response.",
+          content: plainText(data.reply) || "Sorry, I couldn't generate a response.",
           contactRequest: data.contactRequest,
         },
       ]);
@@ -121,6 +133,14 @@ export default function ChatConversation({
       setIsLoading(false);
     }
   };
+
+  // Offer a showing under the latest answer until the visitor has asked for one (or a
+  // contact request has been prepared).
+  const showShowingOffer =
+    !isLoading &&
+    messages.length > 0 &&
+    messages[messages.length - 1].role === "assistant" &&
+    !messages.some((m) => m.contactRequest || (m.role === "user" && m.content === SHOWING_REQUEST));
 
   // Send a message handed in from outside (once per id).
   const sentPendingId = useRef<number | null>(null);
@@ -206,6 +226,21 @@ export default function ChatConversation({
                 listingPath={listingPath}
               />
             ),
+        )}
+
+        {/* Standing offer under the latest answer until a contact request exists: the AI
+            also invites a showing in words, but a button is always there to tap. */}
+        {showShowingOffer && (
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs text-stone-500">Want to see it in person?</span>
+            <button
+              type="button"
+              onClick={() => send(SHOWING_REQUEST)}
+              className="h-9 px-3 rounded-full bg-stone-900 text-white text-xs font-medium hover:bg-stone-700"
+            >
+              Schedule a showing
+            </button>
+          </div>
         )}
 
         {isLoading && (
