@@ -9,7 +9,7 @@
  * highlighted), Escape closes. Built as an ARIA combobox so screen readers announce it.
  */
 import { useEffect, useId, useRef, useState } from "react";
-import type { Listing, PlaceSuggestion, SearchSuggestions } from "../../types/listing";
+import type { ListingSummary, PlaceSuggestion, SearchSuggestions } from "../../types/listing";
 import { displayAddress, formatPrice, mlsNumber } from "../../lib/listing-utils";
 import { track } from "../../lib/analytics";
 
@@ -21,10 +21,11 @@ interface Props {
   /** A city or ZIP was chosen. */
   onSelectPlace: (place: PlaceSuggestion) => void;
   /** A listing was chosen. */
-  onSelectListing: (listing: Listing) => void;
+  onSelectListing: (listing: ListingSummary) => void;
 }
 
-type Option = { kind: "place"; place: PlaceSuggestion } | { kind: "listing"; listing: Listing };
+type Option =
+  { kind: "place"; place: PlaceSuggestion } | { kind: "listing"; listing: ListingSummary };
 
 // Wait this long after the last keystroke before asking the API.
 const DEBOUNCE_MS = 200;

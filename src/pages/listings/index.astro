@@ -17,7 +17,7 @@ import "@mapbox/mapbox-gl-draw/dist/mapbox-gl-draw.css";
 import Layout from "../../layouts/Layout.astro";
 import MapSearch from "../../components/MapSearch.tsx";
 import ListingDisclosure from "../../components/ListingDisclosure.astro";
-import type { Listing, Page } from "../../types/listing";
+import type { ListingSummary, Page } from "../../types/listing";
 import { fetchWithTimeout } from "../../lib/api";
 import { applyFiltersToParams, filtersFromParams, MAP_API_SORT } from "../../lib/search-filters";
 import { areaFromParams } from "../../lib/search-area";
@@ -42,7 +42,7 @@ const filters = filtersFromParams(params);
 const initialArea = areaFromParams(params); // hand-drawn area, if the URL has one
 
 // ─── Data fetching ───────────────────────────────────────────────────────────
-let initialListings: Listing[] = [];
+let initialListings: ListingSummary[] = [];
 let initialTotal = 0;
 try {
   const url = new URL(`${apiBase}/api/listings/search`);
@@ -59,7 +59,7 @@ try {
 
   const res = await fetchWithTimeout(url.toString());
   if (res.ok) {
-    const data = (await res.json()) as Page<Listing>;
+    const data = (await res.json()) as Page<ListingSummary>;
     initialListings = data.content;
     initialTotal = data.page.totalElements;
   }

@@ -172,14 +172,47 @@ export interface Page<T> {
 }
 
 /**
+ * The ~20 fields of a listing that map search gets (API `view=summary`, search-box
+ * suggestions; Java `ListingSummary`). Typed separately so map code can't read a field a
+ * summary doesn't carry. `photoIds` holds the first photo only.
+ */
+export type ListingSummary = Pick<
+  Listing,
+  | "id"
+  | "mlsId"
+  | "address"
+  | "city"
+  | "postalCity"
+  | "zipCode"
+  | "status"
+  | "listPrice"
+  | "listDate"
+  | "daysOnMarket"
+  | "beds"
+  | "bathsFull"
+  | "bathsThreeQuarter"
+  | "bathsHalf"
+  | "bathsQuarter"
+  | "sqftTotal"
+  | "latitude"
+  | "longitude"
+  | "propertyType"
+  | "photoIds"
+  | "photosCount"
+>;
+
+/**
  * Room — the parsed shape of one entry from listing.roomInfo JSON.
  * roomInfo is stored as a JSON string in the database; parsed shape:
- *   [{"room":"Living Room","level":"Main","dim":"15x21"}, ...]
+ *   [{"key":"NST75326957","room":"Living Room","level":"Main","dim":"15x21","sortOrder":1}, ...]
+ * `level` and `dim` may be null; `key` and `sortOrder` exist on MLS Grid data.
  */
 export interface Room {
   room: string;
-  level: string;
-  dim: string;
+  level: string | null;
+  dim: string | null;
+  key?: string;
+  sortOrder?: number;
 }
 
 export interface CategoryScore {
@@ -203,7 +236,7 @@ export interface PlaceSuggestion {
 /** GET /api/listings/suggest: matching places and up to 5 listings. */
 export interface SearchSuggestions {
   places: PlaceSuggestion[];
-  listings: Listing[];
+  listings: ListingSummary[];
 }
 
 /** One of the nearest places in a category, measured along real routes for one travel mode. */
@@ -222,7 +255,7 @@ export interface NearbyPlace {
 
 export interface AmenityScores {
   generatedAt: string;
-  /** Scoring rules version (3 = includes `nearest`). */
+  /** Scoring rules version (current: 4; `nearest` since 3). */
   schemaVersion?: number;
   scores: Record<string, Record<string, CategoryScore>>;
   // scores["walk_10min"]["grocery"] = CategoryScore

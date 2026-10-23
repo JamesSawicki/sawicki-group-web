@@ -51,7 +51,7 @@ import { createPortal } from "react-dom";
 import mapboxgl from "mapbox-gl";
 import MapboxDraw from "@mapbox/mapbox-gl-draw";
 import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
-import type { Listing, Page, PlaceSuggestion } from "../types/listing";
+import type { ListingSummary, Page, PlaceSuggestion } from "../types/listing";
 import FilterDrawer from "./search/FilterDrawer";
 import ListingPreview from "./search/ListingPreview";
 import SearchBox from "./search/SearchBox";
@@ -78,7 +78,7 @@ interface Bbox {
 }
 
 interface Props {
-  initialListings?: Listing[];
+  initialListings?: ListingSummary[];
   /** Total matches in the initial viewport (can exceed initialListings, which is capped). */
   initialTotal?: number;
   initialBbox: Bbox;
@@ -94,7 +94,7 @@ interface Props {
 
 /**
  * GeoJSON properties stored on each map marker. Only the listing id: a tapped pin is
- * looked up in the current listings, and the preview card renders from the full Listing.
+ * looked up in the current listings, and the preview card renders from that summary.
  */
 interface MarkerProperties {
   id: string;
@@ -112,7 +112,7 @@ interface DrawEvent {
 
 // ─── GeoJSON helpers ──────────────────────────────────────────────────────────
 
-function listingsToGeoJSON(listings: Listing[]): GeoJSON.FeatureCollection {
+function listingsToGeoJSON(listings: ListingSummary[]): GeoJSON.FeatureCollection {
   return {
     type: "FeatureCollection",
     features: listings
@@ -278,7 +278,10 @@ function areaBounds(area: SearchArea): Box {
   };
 }
 
-function listingInPolygon(listing: Listing, polygon: GeoJSON.Feature<GeoJSON.Polygon>): boolean {
+function listingInPolygon(
+  listing: ListingSummary,
+  polygon: GeoJSON.Feature<GeoJSON.Polygon>,
+): boolean {
   if (listing.latitude == null || listing.longitude == null) return false;
   try {
     return booleanPointInPolygon(
@@ -325,7 +328,7 @@ function onDrawModeChange(map: mapboxgl.Map, handler: (mode: string) => void): v
 // ─── Sidebar card ─────────────────────────────────────────────────────────────
 
 interface SidebarCardProps {
-  listing: Listing;
+  listing: ListingSummary;
   isSelected: boolean;
   onClick: () => void;
   /** Cloudflare account hash; with it, listings that have photos show a thumbnail. */
@@ -428,18 +431,18 @@ export default function MapSearch({
   // without needing to re-register the event listener on each state change.
   const activePolygonRef = useRef<SearchArea | null>(initialArea);
 
-  const [listings, setListings] = useState<Listing[]>(initialListings);
+  const [listings, setListings] = useState<ListingSummary[]>(initialListings);
   // How many listings match the viewport in total. Each fetch returns at most 200, so when
   // zoomed out this is larger than listings.length and the header says to zoom in.
   const [totalInView, setTotalInView] = useState<number>(initialTotal);
   // Latest listings for map event handlers, which are registered once at load.
-  const listingsRef = useRef<Listing[]>(initialListings);
+  const listingsRef = useRef<ListingSummary[]>(initialListings);
   useEffect(() => {
     listingsRef.current = listings;
   }, [listings]);
   // Listing shown in the preview card (null = no card). Kept as the object, so the card
   // stays put even if a refetch drops that listing from the current results.
-  const [preview, setPreview] = useState<Listing | null>(null);
+  const [preview, setPreview] = useState<ListingSummary | null>(null);
 
   // Desktop (lg+) shows the preview on the pin, in a Mapbox popup whose content is the
   // ListingPreview React component (rendered via a portal into popupContainer).
@@ -476,7 +479,7 @@ export default function MapSearch({
   // useMemo recalculates automatically whenever listings or activePolygon changes,
   // so the sidebar and map markers stay in sync without manual coordination.
   // The API returns the listings nearest the view's center; order them by the visitor's sort.
-  const displayedListings = useMemo<Listing[]>(() => {
+  const displayedListings = useMemo<ListingSummary[]>(() => {
     const inArea = activePolygon
       ? listings.filter((l) => listingInPolygon(l, activePolygon))
       : listings;
@@ -488,7 +491,7 @@ export default function MapSearch({
   // (listings state updates) and polygon draw/clear (activePolygon changes).
   // The ref hands the latest set to the map's load handler, which may run after this
   // effect (e.g. with a drawn area restored from the URL).
-  const displayedListingsRef = useRef<Listing[]>(displayedListings);
+  const displayedListingsRef = useRef<ListingSummary[]>(displayedListings);
   useEffect(() => {
     displayedListingsRef.current = displayedListings;
     sourceRef.current?.setData(listingsToGeoJSON(displayedListings));
@@ -536,7 +539,7 @@ export default function MapSearch({
 
         const res = await fetch(url.toString(), { signal: controller.signal });
         if (!res.ok) return;
-        const data = (await res.json()) as Page<Listing>;
+        const data = (await res.json()) as Page<ListingSummary>;
 
         // setListings triggers useMemo → displayedListings recomputes →
         // useEffect above syncs map markers. No manual source.setData needed here.
@@ -909,7 +912,7 @@ export default function MapSearch({
 
   const popupAnchorRef = useRef<PopupAnchor | null>(null);
   const popupSizeRef = useRef<[number, number]>([0, 0]);
-  const previewRef = useRef<Listing | null>(null);
+  const previewRef = useRef<ListingSummary | null>(null);
   useEffect(() => {
     previewRef.current = isDesktop ? preview : null;
     placePopup(true);
@@ -949,7 +952,7 @@ export default function MapSearch({
   }, []);
 
   // A listing: fly to it and open its preview (it may not be in the current results yet).
-  const goToListing = useCallback((listing: Listing): void => {
+  const goToListing = useCallback((listing: ListingSummary): void => {
     const map = mapRef.current;
     if (!map || listing.latitude == null || listing.longitude == null) return;
     setPreview(listing);
@@ -968,7 +971,7 @@ export default function MapSearch({
   }, []);
 
   // ── Sidebar card click → pan + highlight + preview ────────────────────────
-  const handleSidebarClick = useCallback((listing: Listing): void => {
+  const handleSidebarClick = useCallback((listing: ListingSummary): void => {
     if (!mapRef.current || listing.latitude == null) return;
     setSelectedId(listing.id);
     setPreview(listing);

@@ -10,7 +10,7 @@
  * the visitor clicks empty map.
  */
 import { useEffect, useRef } from "react";
-import type { Listing } from "../../types/listing";
+import type { ListingSummary } from "../../types/listing";
 import {
   displayAddress,
   formatBathTotal,
@@ -25,7 +25,7 @@ import { parsePhotoIds, photoUrl } from "../../lib/photo-utils";
 
 interface Props {
   /** The listing to preview. */
-  listing: Listing;
+  listing: ListingSummary;
   /** Cloudflare Images account hash; without it (or without photos) a placeholder shows. */
   accountHash?: string;
   /** Called when the card is dismissed. */
