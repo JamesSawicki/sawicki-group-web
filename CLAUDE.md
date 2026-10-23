@@ -155,7 +155,9 @@ Many visitors browse on phones, and map search is the primary way people look fo
   is one page, `/listings` (`/search` and `/map` 301 there): the map comes first with listings
   underneath below `lg` and beside it from `lg` up (`MapSearch.tsx`), and criteria live in a
   drawer opened by a vertical "Filters" edge tab on the left (`search/FilterDrawer.tsx`; tap or swipe; "Show results" closes it only below `lg`) whose filters are defined once in
-  `src/lib/search-filters.ts` and mirrored into the URL. Tapping a pin or list row opens `search/ListingPreview.tsx` (photo-first card: bottom of the map on phones; on desktop inside a Mapbox popup anchored to the pin). Each fetch returns at most 200
+  `src/lib/search-filters.ts` and mirrored into the URL. Tapping a pin or list row opens `search/ListingPreview.tsx` (photo-first card: bottom of the map on phones; on desktop inside a Mapbox popup anchored to the pin, placed by `popupAnchor()` in
+  `MapSearch.tsx`: above, below or beside the pin, whichever keeps the whole card on the map,
+  nudging a very short map if nothing fits). Each fetch returns at most 200
   listings, the ones nearest the view's center (API `sortBy=nearest`; the visitor's sort is
   applied in the browser); when more match, the header reads "Showing 200 of N · Zoom in to
   see all". A search box over the map (`search/SearchBox.tsx`, API `/api/listings/suggest`)

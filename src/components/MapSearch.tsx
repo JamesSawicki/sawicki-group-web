@@ -177,6 +177,70 @@ function tintBaseMap(map: mapboxgl.Map): void {
  * Wrapped in try/catch — Turf throws on malformed geometry, which can happen
  * mid-draw if an event fires with an incomplete polygon.
  */
+/** Where a Mapbox popup attaches to its point ("bottom" = the card sits above the pin). */
+type PopupAnchor = NonNullable<mapboxgl.PopupOptions["anchor"]>;
+
+/** Space between the pin and the preview card, px. */
+const POPUP_GAP = 14;
+/** Height of Mapbox's popup tip (the little arrow), which sits between pin and card, px. */
+const POPUP_TIP = 10;
+/** Breathing room kept between the card and the map's edges, px. */
+const POPUP_MARGIN = 8;
+/** Space the card keeps clear at the top of the map: the search box lives there, px. */
+const POPUP_TOP_CLEARANCE = 64;
+
+/**
+ * Picks where the desktop preview card goes so all of it stays on the map, in order of
+ * preference: above the pin, below it, beside it (centered, then shifted down or up), on
+ * the side with more room first. Above/below shift sideways near the map's left/right
+ * edge. If nothing fits (a very short map), the position that hides the least wins, with
+ * `pan`: how far to pan the map (px, for `map.panBy`) so that it does.
+ *
+ * @param width - the rendered card's size, px (0 before it has rendered)
+ */
+function popupAnchor(
+  map: mapboxgl.Map,
+  lngLat: [number, number],
+  width: number,
+  height: number,
+): { anchor: PopupAnchor; pan: [number, number] } {
+  const { x, y } = map.project(lngLat);
+  const mapWidth = map.getContainer().clientWidth;
+  const mapHeight = map.getContainer().clientHeight;
+  const g = POPUP_GAP + POPUP_TIP; // pin-to-card distance (a little less at corners)
+  const [w, h] = [width, height];
+
+  // Above/below: centered on the pin unless that crosses a side edge.
+  const horizontal =
+    x - w / 2 < POPUP_MARGIN ? "-left" : x + w / 2 > mapWidth - POPUP_MARGIN ? "-right" : "";
+  const shift = horizontal === "-left" ? 0 : horizontal === "-right" ? -w : -w / 2;
+  // Beside: the side with more room first ("left" anchor = card to the right of the pin).
+  const sides: ("left" | "right")[] = mapWidth - x >= x ? ["left", "right"] : ["right", "left"];
+  const sideLeft = (side: "left" | "right") => (side === "left" ? x + g : x - g - w);
+
+  // [anchor, card's left, card's top] in map pixels, best first.
+  const candidates: [PopupAnchor, number, number][] = [
+    [`bottom${horizontal}` as PopupAnchor, x + shift, y - g - h],
+    [`top${horizontal}` as PopupAnchor, x + shift, y + g],
+    ...sides.flatMap((side): [PopupAnchor, number, number][] => [
+      [side, sideLeft(side), y - h / 2],
+      [`top-${side}`, sideLeft(side), y + g],
+      [`bottom-${side}`, sideLeft(side), y - g - h],
+    ]),
+  ];
+  // How far the card would have to move to sit inside the usable area ([0, 0] = fits).
+  const overflow = ([, left, top]: [PopupAnchor, number, number]): [number, number] => [
+    Math.max(0, left + w - (mapWidth - POPUP_MARGIN)) - Math.max(0, POPUP_MARGIN - left),
+    Math.max(0, top + h - (mapHeight - POPUP_MARGIN)) - Math.max(0, POPUP_TOP_CLEARANCE - top),
+  ];
+  const hidden = (c: [PopupAnchor, number, number]) =>
+    Math.abs(overflow(c)[0]) + Math.abs(overflow(c)[1]);
+  const fitting = candidates.find((c) => hidden(c) === 0);
+  if (fitting) return { anchor: fitting[0], pan: [0, 0] };
+  const best = candidates.reduce((a, c) => (hidden(c) < hidden(a) ? c : a));
+  return { anchor: best[0], pan: overflow(best) };
+}
+
 function listingInPolygon(listing: Listing, polygon: GeoJSON.Feature<GeoJSON.Polygon>): boolean {
   if (listing.latitude == null || listing.longitude == null) return false;
   try {
@@ -724,25 +788,78 @@ export default function MapSearch({
   const closeFilters = useCallback(() => setFiltersOpen(false), []);
   const openFilters = useCallback(() => setFiltersOpen(true), []);
 
-  // Keep the anchored popup in step with the preview (desktop only).
+  // Keep the anchored popup in step with the preview (desktop only). We pick the anchor
+  // ourselves (popupAnchor) instead of Mapbox's auto-anchor: Mapbox measures the popup
+  // before React has rendered the card into it, so on short screens it chose "below the
+  // pin" and the card ran off the bottom of the map. Re-placed when the card's size
+  // changes and after the map moves; changing the anchor means recreating the popup.
+  const placePopup = useCallback(
+    (allowPan: boolean = false) => {
+      const map = mapRef.current;
+      const container = popupContainer;
+      const listing = previewRef.current;
+      if (!map || !container || !listing || listing.latitude == null || listing.longitude == null) {
+        popupRef.current?.remove();
+        return;
+      }
+      const lngLat: [number, number] = [listing.longitude, listing.latitude];
+      // A card that's off the map (between popups) measures 0: use its last real size.
+      if (container.offsetHeight > 0) {
+        popupSizeRef.current = [container.offsetWidth, container.offsetHeight];
+      }
+      const [width, height] = popupSizeRef.current;
+      const { anchor, pan } = popupAnchor(map, lngLat, width, height);
+      if (popupRef.current && popupAnchorRef.current !== anchor) {
+        popupRef.current.remove();
+        popupRef.current = null;
+      }
+      if (!popupRef.current) {
+        popupRef.current = new mapboxgl.Popup({
+          closeButton: false, // the card has its own
+          closeOnClick: false, // MapSearch's map click handler decides
+          maxWidth: "none",
+          offset: POPUP_GAP,
+          anchor,
+          className: "listing-preview-popup",
+        }).setDOMContent(container);
+        popupAnchorRef.current = anchor;
+      }
+      popupRef.current.setLngLat(lngLat).addTo(map);
+      // A short map where no position fits: nudge the map so the card does. Only when the
+      // card opens or resizes, so it never fights the visitor dragging the map.
+      if (allowPan && (pan[0] !== 0 || pan[1] !== 0) && height > 0) {
+        map.panBy(pan, { duration: 300 });
+      }
+    },
+    [popupContainer],
+  );
+
+  const popupAnchorRef = useRef<PopupAnchor | null>(null);
+  const popupSizeRef = useRef<[number, number]>([0, 0]);
+  const previewRef = useRef<Listing | null>(null);
+  useEffect(() => {
+    previewRef.current = isDesktop ? preview : null;
+    placePopup(true);
+  }, [preview, isDesktop, placePopup]);
+
+  // The card's height settles after React renders it (and its photo box lays out).
+  useEffect(() => {
+    if (!popupContainer) return;
+    const observer = new ResizeObserver(([entry]) => {
+      if (entry.contentRect.height > 0) placePopup(true); // 0 = between popups
+    });
+    observer.observe(popupContainer);
+    return () => observer.disconnect();
+  }, [popupContainer, placePopup]);
+
+  // After a pan/zoom the pin may sit somewhere else on screen.
   useEffect(() => {
     const map = mapRef.current;
-    const show = isDesktop && preview && popupContainer && map && preview.latitude != null;
-    if (!show) {
-      popupRef.current?.remove();
-      return;
-    }
-    if (!popupRef.current) {
-      popupRef.current = new mapboxgl.Popup({
-        closeButton: false, // the card has its own
-        closeOnClick: false, // MapSearch's map click handler decides
-        maxWidth: "none",
-        offset: 14,
-        className: "listing-preview-popup",
-      }).setDOMContent(popupContainer);
-    }
-    popupRef.current.setLngLat([preview.longitude!, preview.latitude!]).addTo(map);
-  }, [preview, isDesktop, popupContainer]);
+    if (!map) return;
+    const onMoveEnd = () => placePopup();
+    map.on("moveend", onMoveEnd);
+    return () => void map.off("moveend", onMoveEnd);
+  }, [placePopup]);
   useEffect(() => () => void popupRef.current?.remove(), []);
 
   // ── Search box picks ───────────────────────────────────────────────────────
