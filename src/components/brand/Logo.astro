@@ -1,0 +1,40 @@
+---
+/**
+ * The site's logo in any slot (header, footer, ...), from `logos` in site.config.ts.
+ *
+ * An image variant whose file isn't set yet (null) falls back to the wordmark — the site
+ * name set in type — so a slot can ask for e.g. "mark" before the file exists. Size the
+ * image with `class` (e.g. "h-10 w-auto"); width/height attributes reserve its space.
+ */
+// ─── Imports ─────────────────────────────────────────────────────────────────
+import { logos, site, type LogoVariant } from "../../lib/site.config";
+
+// ─── Props ───────────────────────────────────────────────────────────────────
+interface Props {
+  /** Which logo: an image variant, or "wordmark" for the name in type. */
+  variant?: LogoVariant;
+  /** Classes for the image or the wordmark text (size, color, weight). */
+  class?: string;
+  /** Image loading; "eager" for above-the-fold slots like the header. */
+  loading?: "eager" | "lazy";
+}
+
+const { variant = "full", class: className, loading = "lazy" } = Astro.props;
+
+// ─── Derived values ──────────────────────────────────────────────────────────
+const image = variant === "wordmark" ? null : logos[variant];
+---
+
+{image ? (
+  <img
+    src={image.src}
+    width={image.width}
+    height={image.height}
+    alt={image.alt}
+    loading={loading}
+    decoding="async"
+    class={className}
+  />
+) : (
+  <span class={className}>{site.name}</span>
+)}

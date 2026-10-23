@@ -1,0 +1,31 @@
+---
+/**
+ * A phone number (tel: link) or email address (mailto: link) from site.config.ts, so the
+ * link and the visible text always come from the same value. Renders nothing when the
+ * value isn't set yet (a TODO-JIM placeholder), so pages never show an empty link.
+ */
+// ─── Imports ─────────────────────────────────────────────────────────────────
+import type { Phone } from "../../lib/site.config";
+
+// ─── Props ───────────────────────────────────────────────────────────────────
+interface Props {
+  /** Phone to link (pass this or `email`). */
+  phone?: Phone | null;
+  /** Email address to link (pass this or `phone`). */
+  email?: string;
+  /** Link classes; defaults to an underline on hover with a taller tap area. */
+  class?: string;
+}
+
+const { phone, email, class: className = "inline-block py-1 hover:underline" } = Astro.props;
+
+// ─── Derived values ──────────────────────────────────────────────────────────
+const href = phone?.tel ? `tel:${phone.tel}` : email ? `mailto:${email}` : undefined;
+const text = phone?.tel ? phone.display : email;
+---
+
+{href && (
+  <a href={href} class={className}>
+    {text}
+  </a>
+)}

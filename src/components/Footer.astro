@@ -1,0 +1,75 @@
+---
+/**
+ * Site footer: who we are (with our brokerage, on every page), navigation and legal.
+ *
+ * Every name, link and license line comes from site.config.ts. The brokerage block is
+ * here because NorthstarMLS §5.8(a)(ii) and Minnesota advertising rules want our
+ * brokerage named (and, once set, its logo and contact) on every page.
+ */
+// ─── Imports ─────────────────────────────────────────────────────────────────
+import BrokerageCredit from "./brand/BrokerageCredit.astro";
+import { agent, primaryContact, site, social, socialLabels } from "../lib/site.config";
+
+// ─── Derived values ──────────────────────────────────────────────────────────
+const navLinks = [
+  { href: "/listings", label: "Listings" },
+  { href: "/blog", label: site.blogName },
+  { href: "/about", label: "About" },
+  { href: "/contact", label: "Contact" },
+];
+const socialLinks = (Object.keys(social) as (keyof typeof social)[]).map((key) => ({
+  href: social[key],
+  label: socialLabels[key],
+}));
+const linkClass = "py-1.5 hover:text-stone-900 transition-colors";
+---
+
+<footer class="border-t border-stone-200 mt-24">
+  <div class="max-w-6xl mx-auto px-6 py-12 grid grid-cols-1 sm:grid-cols-3 gap-8 text-sm text-stone-500">
+    {/* ── Who we are ── */}
+    <div>
+      <div class="font-semibold text-stone-900 mb-3">{site.name}</div>
+      <BrokerageCredit />
+      {socialLinks.map((link) => (
+        <a
+          href={link.href}
+          rel="me noopener"
+          target="_blank"
+          class={`inline-block mt-2 ${linkClass}`}
+        >
+          {link.label}
+        </a>
+      ))}
+    </div>
+
+    {/* ── Navigate ── */}
+    <div>
+      <div class="font-semibold text-stone-900 mb-3">Navigate</div>
+      <div class="flex flex-col">
+        {navLinks.map((link) => (
+          <a href={link.href} class={linkClass}>
+            {link.label}
+          </a>
+        ))}
+      </div>
+    </div>
+
+    {/* ── Legal ── */}
+    <div>
+      <div class="font-semibold text-stone-900 mb-3">Legal</div>
+      <div class="flex flex-col">
+        <a href="/privacy" class={linkClass}>
+          Privacy Policy
+        </a>
+        <span class="py-1.5">
+          {agent.licenseText}
+          {primaryContact.licenseNumber && ` · License #${primaryContact.licenseNumber}`}
+        </span>
+        <span class="py-1.5">
+          © {new Date().getFullYear()} {site.name}
+        </span>
+        <span class="py-1.5">All rights reserved</span>
+      </div>
+    </div>
+  </div>
+</footer>

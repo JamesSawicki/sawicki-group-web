@@ -1,7 +1,7 @@
 ---
 /**
  * Page shell: <head> (title, description, canonical URL, link-preview tags, JSON-LD),
- * header, footer.
+ * header, footer. Names, icons and default texts come from site.config.ts.
  *
  * Machine-readable data on every page: the JSON-LD graph always includes the site-wide
  * entities (website, agency, team, office; see lib/structured-data.ts) plus the page's
@@ -12,12 +12,13 @@
 // ─── Imports ─────────────────────────────────────────────────────────────────
 import "../styles/global.css";
 import Header from "../components/Header.astro";
-import { agent, brokerage, site, social } from "../lib/site.config";
+import Footer from "../components/Footer.astro";
+import { site } from "../lib/site.config";
 import { absoluteUrl, jsonLdDocument } from "../lib/structured-data";
 
 // ─── Props ───────────────────────────────────────────────────────────────────
 interface Props {
-  /** Page title; " | The Sawicki Group" is appended. */
+  /** Page title; " | {site.name}" is appended. */
   title: string;
   /** Meta description (also the link-preview text). */
   description?: string;
@@ -35,7 +36,7 @@ interface Props {
 
 const {
   title,
-  description = "Twin Cities real estate expert serving Minneapolis, Saint Paul, and surrounding communities.",
+  description = site.description,
   jsonLd = [],
   canonical = absoluteUrl(Astro.url.pathname),
   ogImage = absoluteUrl(site.ogImagePath),
@@ -55,11 +56,11 @@ const fullTitle = `${title} | ${site.name}`;
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
     {noindex && <meta name="robots" content="noindex, follow" />}
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href={site.faviconPath} />
     <link
       rel="alternate"
       type="application/rss+xml"
-      title={`${site.name} Market Updates`}
+      title={`${site.name} ${site.blogName}`}
       href="/rss.xml"
     />
     <meta name="generator" content={Astro.generator} />
@@ -89,53 +90,6 @@ const fullTitle = `${title} | ${site.name}`;
       <slot />
     </main>
 
-    <!-- FOOTER -->
-    <footer class="border-t border-stone-200 mt-24">
-      <div class="max-w-6xl mx-auto px-6 py-12 grid grid-cols-1 sm:grid-cols-3 gap-8 text-sm text-stone-500">
-        <div>
-          <div class="font-semibold text-stone-900 mb-3">{site.name}</div>
-          <div>{brokerage.name}</div>
-          <div>{brokerage.serviceArea}</div>
-          <a
-            href={social.facebook}
-            rel="me noopener"
-            target="_blank"
-            class="inline-block py-1.5 mt-2 hover:text-stone-900 transition-colors"
-          >
-            Facebook
-          </a>
-        </div>
-        <div>
-          <div class="font-semibold text-stone-900 mb-3">Navigate</div>
-          <div class="flex flex-col">
-            <a href="/listings" class="py-1.5 hover:text-stone-900 transition-colors">
-              Listings
-            </a>
-            <a href="/blog" class="py-1.5 hover:text-stone-900 transition-colors">
-              Market Updates
-            </a>
-            <a href="/about" class="py-1.5 hover:text-stone-900 transition-colors">
-              About
-            </a>
-            <a href="/contact" class="py-1.5 hover:text-stone-900 transition-colors">
-              Contact
-            </a>
-          </div>
-        </div>
-        <div>
-          <div class="font-semibold text-stone-900 mb-3">Legal</div>
-          <div class="flex flex-col">
-            <a href="/privacy" class="py-1.5 hover:text-stone-900 transition-colors">
-              Privacy Policy
-            </a>
-            <span class="py-1.5">{agent.licenseText}</span>
-            <span class="py-1.5">
-              © {new Date().getFullYear()} {site.name}
-            </span>
-            <span class="py-1.5">All rights reserved</span>
-          </div>
-        </div>
-      </div>
-    </footer>
+    <Footer />
   </body>
 </html>

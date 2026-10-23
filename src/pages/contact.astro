@@ -1,9 +1,17 @@
 ---
+/**
+ * Contact page: the contact form (posts to /api/contact, which emails the primary
+ * contact) beside our direct phone, email and brokerage, all from site.config.ts.
+ */
+// ─── Imports ─────────────────────────────────────────────────────────────────
 import Layout from "../layouts/Layout.astro";
-import { agent, brokerage, site } from "../lib/site.config";
+import BrokerageCredit from "../components/brand/BrokerageCredit.astro";
+import ContactLine from "../components/brand/ContactLine.astro";
+import { brokerage, primaryContact, site } from "../lib/site.config";
 import { absoluteUrl, breadcrumbList, ORGANIZATION_ID, webPage } from "../lib/structured-data";
 
-const description = `Get in touch with ${agent.name} at ${site.name}, ${brokerage.name}.`;
+// ─── Derived values ──────────────────────────────────────────────────────────
+const description = `Get in touch with ${primaryContact.name} at ${site.name}, ${brokerage.name}.`;
 const jsonLd = [
   webPage("ContactPage", "/contact", `Contact ${site.name}`, description, {
     about: { "@id": ORGANIZATION_ID },
@@ -18,14 +26,14 @@ const jsonLd = [
 
 <Layout title="Contact" description={description} jsonLd={jsonLd}>
   <section class="max-w-3xl mx-auto px-6 py-20">
-    <p class="text-sm font-semibold text-amber-700 uppercase tracking-widest mb-4">Contact</p>
+    <p class="text-sm font-semibold text-accent uppercase tracking-widest mb-4">Contact</p>
     <h1 class="text-4xl font-semibold text-stone-900 mb-4">Let's talk</h1>
     <p class="text-stone-500 text-lg mb-12">
       No pressure, no scripts. Just a straightforward conversation about what you're looking for.
     </p>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-16">
-      <!-- FORM -->
+      {/* ── Form ── */}
       <div>
         <!-- Success message — hidden by default -->
         <div
@@ -112,7 +120,7 @@ const jsonLd = [
         </form>
       </div>
 
-      <!-- CONTACT DETAILS -->
+      {/* ── Contact details ── */}
       <div class="flex flex-col gap-8 text-sm text-stone-600">
         <div>
           <div class="font-semibold text-stone-900 mb-2">Response time</div>
@@ -123,23 +131,21 @@ const jsonLd = [
         </div>
         <div>
           <div class="font-semibold text-stone-900 mb-2">Phone / Text</div>
-          <p>Add your number here</p>
+          <p>
+            <ContactLine phone={primaryContact.phone} />
+          </p>
         </div>
         <div>
           <div class="font-semibold text-stone-900 mb-2">Email</div>
           <p>
-            <a href={`mailto:${agent.email}`} class="hover:underline">
-              {agent.email}
-            </a>
+            <ContactLine email={primaryContact.email} />
           </p>
         </div>
         <div>
           <div class="font-semibold text-stone-900 mb-2">Brokerage</div>
-          <p class="leading-relaxed">
-            {brokerage.name}
-            <br />
-            {brokerage.serviceArea}
-          </p>
+          <div class="leading-relaxed">
+            <BrokerageCredit />
+          </div>
         </div>
       </div>
     </div>
