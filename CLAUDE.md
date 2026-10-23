@@ -222,7 +222,9 @@ Many visitors browse on phones, and map search is the primary way people look fo
   nudging a very short map if nothing fits). Each fetch returns at most 200
   listings, the ones nearest the view's center (API `sortBy=nearest`; the visitor's sort is
   applied in the browser); when more match, the header reads "Showing 200 of N · Zoom in to
-  see all". A search box over the map (`search/SearchBox.tsx`, API `/api/listings/suggest`)
+  see all". With a drawn area, the fetch covers the area's own bounds instead, up to 1,000,
+  with a "Show more in this area" button for the next page. Each fetch aborts the previous
+  one, so a slow response can't overwrite newer pins. A search box over the map (`search/SearchBox.tsx`, API `/api/listings/suggest`)
   suggests cities/ZIPs (frames them) and listings (flies to one and previews it) from our
   own data. List rows are real links to the listing (crawlable; a plain click previews).
   The hand-drawn area is kept in the URL too (`area=`, `lib/search-area.ts`). If

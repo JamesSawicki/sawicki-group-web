@@ -248,6 +248,35 @@ function popupAnchor(
   return { anchor: best[0], pan: overflow(best) };
 }
 
+/** Listings per fetch: the 200 nearest the view's center, or up to 1,000 in a drawn area. */
+const VIEW_FETCH_SIZE = 200;
+const AREA_FETCH_SIZE = 1000;
+
+interface Box {
+  minLat: number;
+  maxLat: number;
+  minLng: number;
+  maxLng: number;
+}
+
+/** The map view as a plain box. */
+function boundsBox(b: mapboxgl.LngLatBounds): Box {
+  return { minLat: b.getSouth(), maxLat: b.getNorth(), minLng: b.getWest(), maxLng: b.getEast() };
+}
+
+/** The bounding box of a drawn area (its outer ring). */
+function areaBounds(area: SearchArea): Box {
+  const ring = area.geometry.coordinates[0] ?? [];
+  const lngs = ring.map((p) => p[0]);
+  const lats = ring.map((p) => p[1]);
+  return {
+    minLat: Math.min(...lats),
+    maxLat: Math.max(...lats),
+    minLng: Math.min(...lngs),
+    maxLng: Math.max(...lngs),
+  };
+}
+
 function listingInPolygon(listing: Listing, polygon: GeoJSON.Feature<GeoJSON.Polygon>): boolean {
   if (listing.latitude == null || listing.longitude == null) return false;
   try {
@@ -465,18 +494,31 @@ export default function MapSearch({
   }, [displayedListings]);
 
   // ── Fetch listings for current viewport ───────────────────────────────────
+  // Only the newest request may update the map: each fetch aborts the one before it, so a
+  // slow response for an old view can't replace pins for the current one.
+  const fetchAbortRef = useRef<AbortController | null>(null);
+  // "Show more" in a drawn area: the next page of the same query.
+  const areaPageRef = useRef<number>(0);
   const fetchForViewport = useCallback(
-    async (bounds: mapboxgl.LngLatBounds): Promise<void> => {
+    async (bounds: mapboxgl.LngLatBounds, page = 0): Promise<void> => {
+      fetchAbortRef.current?.abort();
+      const controller = new AbortController();
+      fetchAbortRef.current = controller;
       setIsLoading(true);
       try {
+        // With a drawn area, search the area's own bounds (up to 1,000, then "Show more")
+        // instead of the 200 nearest the view's center, so a large area isn't cut short.
+        const area = activePolygonRef.current;
+        const q = area ? areaBounds(area) : boundsBox(bounds);
         const url = new URL(`${apiBaseUrl}/api/listings/search`);
-        url.searchParams.set("minLat", bounds.getSouth().toFixed(5));
-        url.searchParams.set("maxLat", bounds.getNorth().toFixed(5));
-        url.searchParams.set("minLng", bounds.getWest().toFixed(5));
-        url.searchParams.set("maxLng", bounds.getEast().toFixed(5));
+        url.searchParams.set("minLat", q.minLat.toFixed(5));
+        url.searchParams.set("maxLat", q.maxLat.toFixed(5));
+        url.searchParams.set("minLng", q.minLng.toFixed(5));
+        url.searchParams.set("maxLng", q.maxLng.toFixed(5));
         applyFiltersToParams(filtersRef.current, url.searchParams);
         url.searchParams.set("sortBy", MAP_API_SORT); // the chosen sort is applied above
-        url.searchParams.set("size", "200");
+        url.searchParams.set("size", String(area ? AREA_FETCH_SIZE : VIEW_FETCH_SIZE));
+        if (page > 0) url.searchParams.set("page", String(page));
         url.searchParams.set("view", "summary"); // ~20 fields per listing, not ~150
 
         // Keep the URL shareable: viewport + filters + drawn area.
@@ -491,22 +533,28 @@ export default function MapSearch({
         // Remember this search so listing pages can offer "Back to map" to it.
         saveLastSearchUrl(pageUrl.pathname + pageUrl.search);
 
-        const res = await fetch(url.toString());
+        const res = await fetch(url.toString(), { signal: controller.signal });
         if (!res.ok) return;
         const data = (await res.json()) as Page<Listing>;
 
         // setListings triggers useMemo → displayedListings recomputes →
         // useEffect above syncs map markers. No manual source.setData needed here.
-        setListings(data.content);
+        areaPageRef.current = page;
+        setListings((prev) => (page > 0 ? [...prev, ...data.content] : data.content));
         setTotalInView(data.page.totalElements);
       } catch {
-        // Swallow fetch errors silently — map will retry on next moveend
+        // Aborted (a newer request took over) or a network error: the next moveend retries.
       } finally {
-        setIsLoading(false);
+        if (fetchAbortRef.current === controller) setIsLoading(false);
       }
     },
     [apiBaseUrl],
   );
+
+  // A drawn area holds more listings than one fetch returned: load the next page.
+  const showMoreInArea = useCallback((): void => {
+    if (mapRef.current) fetchForViewport(mapRef.current.getBounds()!, areaPageRef.current + 1);
+  }, [fetchForViewport]);
 
   // ── Draw handlers ──────────────────────────────────────────────────────────
 
@@ -546,7 +594,9 @@ export default function MapSearch({
     setActivePolygon(null);
     setIsDrawing(false);
     track("map_draw", { action: "clear" });
-  }, [detachDraw]);
+    // Back to the 200 nearest the view's center.
+    if (mapRef.current) fetchForViewport(mapRef.current.getBounds()!);
+  }, [detachDraw, fetchForViewport]);
 
   // Render the finished polygon with our own layers (Draw is gone by then), and mirror it
   // into the page URL and the saved "Back to map" search.
@@ -598,6 +648,7 @@ export default function MapSearch({
       activePolygonRef.current = polygon;
       setActivePolygon(polygon);
       track("map_draw", { action: "complete" });
+      fetchForViewport(map.getBounds()!); // search the whole area, not just the view
     });
 
     // Draw returns to simple_select when a shape is finished or the visitor presses
@@ -614,6 +665,9 @@ export default function MapSearch({
 
     map.on("load", () => {
       tintBaseMap(map);
+      // A drawn area restored from the URL: the server-rendered results are the 200 nearest
+      // the view's center, so fetch the area itself.
+      if (activePolygonRef.current) fetchForViewport(map.getBounds()!);
 
       // Finished drawn area, below the listing layers.
       map.addSource("drawn-area", {
@@ -972,12 +1026,12 @@ export default function MapSearch({
               {isLoading
                 ? "Searching…"
                 : activePolygon
-                  ? `${displayedListings.length} of ${listings.length} in drawn area`
+                  ? `${displayedListings.length} in drawn area`
                   : totalInView > listings.length
                     ? `Showing ${listings.length} of ${totalInView}`
                     : `${listings.length} listing${listings.length !== 1 ? "s" : ""} in view`}
             </span>
-            {!isLoading && totalInView > listings.length && (
+            {!isLoading && !activePolygon && totalInView > listings.length && (
               <span className="text-xs text-slate-500">Zoom in to see all</span>
             )}
           </div>
@@ -1002,6 +1056,17 @@ export default function MapSearch({
               photoAccountHash={photoAccountHash}
             />
           ))}
+          {/* ── Show more (drawn area holding more than one fetch) ── */}
+          {activePolygon && totalInView > listings.length && (
+            <button
+              type="button"
+              onClick={showMoreInArea}
+              disabled={isLoading}
+              className="w-full mt-2 py-3 text-sm font-medium text-slate-700 border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50"
+            >
+              {isLoading ? "Loading…" : "Show more in this area"}
+            </button>
+          )}
         </div>
       </div>
 
