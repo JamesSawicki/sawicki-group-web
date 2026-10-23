@@ -29,3 +29,6 @@ pnpm-debug.log*
 
 # responsive audit screenshots (npm run audit:mobile)
 .audit/
+
+# Agent worktrees (Claude Code)
+.claude/worktrees/

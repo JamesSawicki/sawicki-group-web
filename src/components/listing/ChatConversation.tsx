@@ -116,11 +116,13 @@ export default function ChatConversation({
         body: JSON.stringify({
           listingId,
           // Text only: contact cards stay in the browser.
-          messages: updated.map(({ role, content }) => ({ role, content })),
+          // The API accepts at most 20 messages and uses the last 10.
+          messages: updated.slice(-20).map(({ role, content }) => ({ role, content })),
         }),
       });
-      if (res.status === 429) {
-        setError("Too many messages. Please wait a moment before continuing.");
+      if (res.status === 429 || res.status === 400 || res.status === 413) {
+        const data = (await res.json().catch(() => ({}))) as { error?: string };
+        setError(data.error || "Too many messages. Please wait a moment before continuing.");
         return;
       }
       if (!res.ok) throw new Error(`HTTP ${res.status}`);

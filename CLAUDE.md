@@ -34,8 +34,10 @@ npm run build    # local production build; does not deploy
   For the map and chat to work there, `.env.local` points `PUBLIC_API_BASE_URL` at the PC's
   LAN IP (not `localhost`), and the API's `dev` profile allows `192.168.*` / `10.*` origins
   (`app.cors.extra-origin-patterns`). If the PC's IP changes, update `.env.local`.
-- Env vars: `PUBLIC_API_BASE_URL`, `PUBLIC_MAPBOX_TOKEN`, `PUBLIC_CF_IMAGES_ACCOUNT_HASH`
-  (`.env.local`); `RESEND_API_KEY` for the contact form. Never commit `.env*`.
+- Env vars: `PUBLIC_API_BASE_URL`, `PUBLIC_MAPBOX_TOKEN`, `PUBLIC_CF_IMAGES_ACCOUNT_HASH`,
+  `PUBLIC_GA_MEASUREMENT_ID` (none = no tracking) (`.env.local`); `RESEND_API_KEY` for the
+  contact form; server-only `SITE_API_KEY` (never `PUBLIC_`), `TRUSTED_PROXY_HOPS`,
+  `CONTACT_DAILY_SEND_CAP`. Never commit `.env*`.
 
 ## Conventions
 
@@ -69,6 +71,28 @@ npm run build    # local production build; does not deploy
   `src/styles/global.css` (`text-accent`, `brand-navy`, `brand-gold`). See `docs/brand.md`.
 - **Blog posts** in `src/content/blog/` arrive as `draft: true`; publishing means flipping
   that to `false`.
+
+## Analytics and abuse protection
+
+- **GA4:** `components/analytics/Analytics.astro` (in Layout) + `lib/analytics.ts`. ID from
+  `PUBLIC_GA_MEASUREMENT_ID` at runtime. gtag.js loads after `load` when idle. Track with
+  `track(name, params)`; every event and parameter is declared in `AnalyticsEvents`. **Never
+  send PII, typed text, chat or form contents.** Listing views come from the page's JSON-LD;
+  contact leads are seen at `fetch('/api/contact')`. Map pans are not page views (turn off GA's
+  "history events" page views). US-only opt-out model (no consent banner, by Jim's decision):
+  Global Privacy Control or the `/privacy-choices` opt-out means gtag never loads. Google
+  Signals and ad personalization are off (`ADS_PERSONALIZATION`); turning them on, or adding
+  remarketing, session replay or another pixel, needs a `/privacy` update first (see
+  `docs/compliance/privacy-analytics.md`). When events, vendors, logging or retention change,
+  update `/privacy` and its date in the same change.
+- **Abuse protection** (`middleware.ts`; runbook: listing-agent-api `docs/abuse-protection.md`):
+  client IP = `clientIpFrom()` (X-Forwarded-For entry `TRUSTED_PROXY_HOPS` from the right,
+  never the leftmost). Per-visitor limits on listing pages, `/listings`, the listing sitemap
+  and `/api/contact` (`RULES`); rejections log one JSON `event:"abuse"` line for the Cloud
+  Monitoring alert. `/api/contact` is same-origin only, size-capped, has a honeypot field
+  (`website`) and a 50/day send cap. `fetchWithTimeout` sends `SITE_API_KEY` + the visitor IP
+  to the API so it limits visitors, not Cloud Run's egress IPs. A new billable endpoint gets a
+  rule and a daily cap.
 
 ## Compliance (NorthstarMLS Rules eff. 2026-07-01, Minn. Stat. ch. 82)
 

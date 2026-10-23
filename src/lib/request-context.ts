@@ -13,6 +13,8 @@ export const REQUEST_ID_HEADER = "X-Request-Id";
 
 export interface RequestContext {
   requestId: string;
+  /** The visitor's IP (middleware.ts), forwarded to the API with the site key. */
+  clientIp?: string;
 }
 
 export const requestContext = new AsyncLocalStorage<RequestContext>();
@@ -20,6 +22,11 @@ export const requestContext = new AsyncLocalStorage<RequestContext>();
 /** The current page's request id, or undefined outside a request (build time, tests). */
 export function currentRequestId(): string | undefined {
   return requestContext.getStore()?.requestId;
+}
+
+/** The current visitor's IP, or undefined outside a request. */
+export function currentClientIp(): string | undefined {
+  return requestContext.getStore()?.clientIp;
 }
 
 /** The incoming id if it looks valid (as the API checks), else a new one. */

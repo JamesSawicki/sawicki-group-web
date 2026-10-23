@@ -52,6 +52,15 @@ const jsonLd = [
         </div>
 
         <form id="contact-form" class="flex flex-col gap-5">
+          {/* Honeypot: hidden from people; bots that fill it get a fake "sent" (api/contact.ts). */}
+          <div
+            aria-hidden="true"
+            style="position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden"
+          >
+            <label>
+              Leave this empty <input type="text" name="website" tabindex="-1" autocomplete="off" />
+            </label>
+          </div>
           <div class="flex flex-col gap-2">
             <label class="text-sm font-medium text-stone-700">
               Name <span class="text-red-400">*</span>

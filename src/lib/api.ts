@@ -25,7 +25,7 @@
  *  byte; it clears once response headers arrive. Tune per-call via `timeoutMs`. */
 export const DEFAULT_FETCH_TIMEOUT_MS = 8000;
 
-import { currentRequestId, REQUEST_ID_HEADER } from "./request-context";
+import { currentClientIp, currentRequestId, REQUEST_ID_HEADER } from "./request-context";
 import { site } from "./site.config";
 
 export interface FetchWithTimeoutOptions extends RequestInit {
@@ -50,6 +50,15 @@ export async function fetchWithTimeout(
   const headers = new Headers(init.headers);
   const requestId = currentRequestId();
   if (requestId && !headers.has(REQUEST_ID_HEADER)) headers.set(REQUEST_ID_HEADER, requestId);
+  // Lets the API rate-limit the visitor, not Cloud Run's shared egress IPs. Server-only
+  // secret: sent only to our API, never to the browser.
+  const siteKey = process.env.SITE_API_KEY || import.meta.env.SITE_API_KEY;
+  const apiBase = process.env.PUBLIC_API_BASE_URL || import.meta.env.PUBLIC_API_BASE_URL;
+  if (siteKey && apiBase && String(input).startsWith(apiBase)) {
+    headers.set("X-Site-Key", siteKey);
+    const ip = currentClientIp();
+    if (ip) headers.set("X-Visitor-Ip", ip);
+  }
   try {
     return await fetch(input, { ...init, headers, signal: controller.signal });
   } finally {

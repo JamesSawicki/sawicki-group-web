@@ -264,7 +264,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   // fetchWithTimeout to forward to the API (X-Visitor-Ip, with the site key), so the API
   // limits the visitor rather than Cloud Run's shared egress IP.
   const requestId = requestIdFrom(context.request.headers.get(REQUEST_ID_HEADER));
-  const store: RequestContext & { clientIp?: string } = {
+  const store: RequestContext = {
     requestId,
     clientIp: clientIpFrom(context.request),
   };

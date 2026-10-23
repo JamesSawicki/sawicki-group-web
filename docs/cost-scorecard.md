@@ -18,6 +18,7 @@ re-measure when a feature changes) and keep the action list current.
 | 1 | Static JS/CSS (`/_astro/*`) still go out uncompressed — mapbox-gl is 1.76 MB instead of ~476 KB gzipped. They bypass Astro middleware. | First visit to map search downloads ~2 MB of JS (cached for a year after). | Go-live: Cloudflare (free) in front of the custom domain (Brotli + edge cache), or precompressed assets served by a custom Node server. | Go-live checklist |
 | 2 | API search still loads full listing rows from Postgres and slims them in Java. | ~90 ms per search locally; DB → app transfer of full rows. | A JPA projection query for `view=summary` if search latency grows. | Watch |
 | 3 | Pages send no `Cache-Control`: every listing/blog/home view renders on Cloud Run and (listings) calls the API. | Server work and API calls scale 1:1 with views. | Go-live, with the CDN: a short edge cache on HTML (e.g. `s-maxage=300, stale-while-revalidate`) so most views never reach Cloud Run. | Go-live checklist |
+| 5 | Abuse guardrails need console/infra settings that code can't set. | Without them a flood is limited only by our code caps. | Anthropic console monthly limit (~$20), Mapbox URL restriction on the public token, Cloud Run `--max-instances=3`, GCP budget alerts, Railway usage limit, `SITE_API_KEY` on both sides (commands in listing-agent-api `docs/abuse-protection.md`). | Go-live checklist |
 | 4 | Overpass (public) is slow and flaky (40–60 s per query, frequent 502s). | Amenity batches take hours. | Mitigated: shared tiles, resumable batches, 90-day refresh. Self-hosted Overpass or a POI vendor if it stays a bottleneck. | Mitigated |
 
 ### Done (2026-10-22 lean pass)
@@ -73,7 +74,9 @@ Transfer sizes are what Chrome received (HTML compressed; `/_astro` JS not yet �
 | Structured data, sitemaps, RSS, robots, llms.txt | `structured-data.ts`, `src/pages/*.ts` | sitemap-listings: 1 slim API call per crawl (cached 1 h) | none | JSON-LD adds ~5–15 KB per page. |
 | Phone chat nudge + greeting | `ListingChat.tsx`, `lib/chat-events.ts` | a 1 s timer + scroll/photo listeners until it fires (once per visit) | none: the greeting is written in, not generated; an AI call only happens when the visitor asks | ~1 KB of JS. |
 | Logging & monitoring | API `logging/`, Actuator; site `middleware.ts` | 1 access line per request; 1 line per outbound call (media downloads/uploads at DEBUG); metrics in memory | none (log storage: Railway plan / Cloud Logging 50 GiB free) | Prod INFO + JSON; all-SQL logging off (was on in every profile), slow SQL > 200 ms only. ~1 KB of logs per request. |
-| Contact form | `/api/contact` | 1 email per submission | Resend | |
+| Contact form | `/api/contact` | 1 email per submission | Resend | Same-origin only, honeypot, 5 / 15 min and 20 / day per visitor, 50 / day site-wide (Resend free tier is 100/day). |
+| GA4 analytics (2026-10-23) | `analytics/Analytics.astro`, `lib/analytics.ts` | +157 KB (gtag.js ~155 KB, browser-cached) loaded after `load`, so no effect on first paint/LCP; our chunk 4.5 KB gz; +2 requests per first page view; +270–330 ms idle script after load; +2.1 MB heap | none (GA4 standard is free) | Off when no ID, opted out, or GPC. No Google Tag Manager or extra pixels without measuring. |
+| Abuse protection (2026-10-23) | API `abuse/`; site `middleware.ts` | ~µs per request (in-memory buckets); API ≤ ~10 MB at the 50k-client cap; site ≤ 20k entries per window | none (alert emails ≤ 12/day, Resend free tier) | Worst case Anthropic with caps: 300 calls/day ≈ $1–3.60/day; the Anthropic console limit is the hard ceiling. Mapbox/Cloudflare calls are batch-only; their caps are backstops. |
 
 ## Third-party pricing (verify before relying)
 
