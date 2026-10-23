@@ -100,7 +100,8 @@ npm run build    # local production build; does not deploy
 ## Compliance (NorthstarMLS Rules eff. 2026-07-01, Minn. Stat. ch. 82)
 
 The rules and a website digest are in `docs/compliance/` (README = digest;
-`gap-analysis.md` = open gaps and go-live blockers). Treat the PDF as the authority.
+`gap-analysis.md` = open gaps and go-live blockers; `zillow-redfin-comparison.md` = how our
+legal pages compare with the portals). Treat the PDF as the authority.
 
 - **One disclosure block:** `ListingDisclosure.astro` holds the exact §5.4(e) disclaimer
   ("Data believed to be accurate but should be independently verified."), the §5.11(f)
