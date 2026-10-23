@@ -1,0 +1,108 @@
+---
+/**
+ * Accessibility statement (/accessibility): our goal (WCAG 2.2 AA), what we do today,
+ * known limits, and how to get help or report a barrier.
+ *
+ * Keep "Known limitations" honest and current: list a barrier here until it's fixed, and
+ * remove it only when the fix ships. Claims in "What we do" must be true of the live site.
+ */
+// ─── Imports ─────────────────────────────────────────────────────────────────
+import Layout from "../layouts/Layout.astro";
+import { agent, site } from "../lib/site.config";
+import { absoluteUrl, breadcrumbList, webPage } from "../lib/structured-data";
+
+// ─── Page settings ───────────────────────────────────────────────────────────
+/** Date of the last review of this statement against the live site. */
+const LAST_REVIEWED = "October 23, 2026";
+/** How quickly we answer accessibility requests. TODO-JIM: confirm you can meet this. */
+const RESPONSE_TIME = "2 business days";
+
+// ─── Derived values ──────────────────────────────────────────────────────────
+const description = `Accessibility statement for the ${site.name} website, and how to get help if something doesn't work for you.`;
+const pageUrl = absoluteUrl("/accessibility");
+const jsonLd = [
+  webPage("WebPage", "/accessibility", "Accessibility", description, {
+    breadcrumb: { "@id": `${pageUrl}#breadcrumb` },
+  }),
+  breadcrumbList(pageUrl, [
+    { name: "Home", path: "/" },
+    { name: "Accessibility", path: "/accessibility" },
+  ]),
+];
+---
+
+<Layout title="Accessibility" description={description} jsonLd={jsonLd}>
+  <section class="max-w-3xl mx-auto px-6 py-20">
+    <p class="text-sm font-semibold text-amber-700 uppercase tracking-widest mb-4">Accessibility</p>
+    <h1 class="text-4xl font-semibold text-stone-900 mb-4">Accessibility statement</h1>
+    <p class="text-stone-500 mb-12">Last reviewed: {LAST_REVIEWED}</p>
+
+    <div class="text-stone-600 leading-relaxed space-y-10">
+      {/* ── Commitment ── */}
+      <div>
+        <h2 class="text-xl font-semibold text-stone-900 mb-3">Our commitment</h2>
+        <p>
+          We want everyone to be able to search for a home and reach us, including people who use
+          screen readers, keyboards, magnification, or other assistive technology. Our goal is to
+          meet the Web Content Accessibility Guidelines (WCAG) 2.2 at level AA. We're working toward
+          that goal and haven't had the site independently audited yet.
+        </p>
+      </div>
+
+      {/* ── What we do ── */}
+      <div>
+        <h2 class="text-xl font-semibold text-stone-900 mb-3">What we do</h2>
+        <ul class="list-disc pl-6 space-y-2">
+          <li>Pages are built to work on phones, tablets, and desktops.</li>
+          <li>Buttons and links are sized to be easy to tap, and text is at least 12 pixels.</li>
+          <li>
+            Search results are listed as ordinary links beside or below the map, so you don't have
+            to use the map to find a home.
+          </li>
+          <li>
+            The chat button's attention pulse stays still when your device asks for reduced motion.
+          </li>
+          <li>We check pages on several screen sizes before changes go live.</li>
+        </ul>
+      </div>
+
+      {/* ── Known limitations ── */}
+      <div>
+        <h2 class="text-xl font-semibold text-stone-900 mb-3">Known limitations</h2>
+        <ul class="list-disc pl-6 space-y-2">
+          <li>
+            The interactive maps (search map, neighborhood map, and drawing a search area) are hard
+            to use with a screen reader or keyboard. The listing results and the "Close to Home"
+            list carry the same information in text.
+          </li>
+          <li>
+            Listing photos come from the listing brokerage and don't come with descriptions; their
+            alternative text names the address only.
+          </li>
+          <li>
+            Some third-party content, such as virtual tours and floor plans hosted elsewhere, isn't
+            under our control.
+          </li>
+        </ul>
+      </div>
+
+      {/* ── Get help ── */}
+      <div>
+        <h2 class="text-xl font-semibold text-stone-900 mb-3">Need help or found a barrier?</h2>
+        <p>
+          If anything on the site doesn't work for you, contact {agent.name} at{" "}
+          <a href={`tel:${agent.phone}`} class="underline">
+            {agent.phoneDisplay}
+          </a>{" "}
+          or{" "}
+          <a href={`mailto:${agent.email}`} class="underline">
+            {agent.email}
+          </a>
+          . Tell us the page and what went wrong, and we'll get you the information another way (by
+          phone, email, or in another format) and work on a fix. We aim to reply within{" "}
+          {RESPONSE_TIME}.
+        </p>
+      </div>
+    </div>
+  </section>
+</Layout>

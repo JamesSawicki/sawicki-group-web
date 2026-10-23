@@ -1,88 +1,157 @@
 ---
 /**
- * ListingDisclosure.astro — IDX-required attribution + disclosure block.
+ * The NorthstarMLS disclosure block: who presents the data, where it comes from, how fresh
+ * it is, the required disclaimer and limited-use notice, copyright, fair housing, and where
+ * to report an error. One component holds this wording so every page says the same thing.
  *
- * Renders below the main content on every listing detail page. Includes:
- *   1. "Listed by" attribution (agent name + brokerage name, no contact info)
- *   2. Data freshness timestamp from modificationTimestamp
- *   3. Reliability disclaimer (industry-standard wording, see VERIFY-IDX)
- *   4. Fair Housing statement + Equal Housing Opportunity badge
- *   5. MLS copyright notice
- *
- * COMPLIANCE NOTES — read before shipping to production:
- * - All wording strings live in `site.config.ts` under `mls.*` and are marked
- *   with // VERIFY-IDX comments. Swap each for exact NorthstarMLS wording
- *   from their IDX Display Manual before flipping real MLS data to production.
- * - The Equal Housing Opportunity logo here is a TEXT PLACEHOLDER. The
- *   official EHO logo (raster or SVG) should replace it before production.
- *   Source: https://www.hud.gov/library/bookshelf11/hudgraphics/fheologo
- * - The NorthstarMLS logo is similarly a text placeholder. Request the
- *   official logo file from NorthstarMLS IDX support and host at
- *   /public/mls/northstar-logo.svg, then replace the text node here.
- * - On third-party listings we display BROKERAGE NAME ONLY. No listing agent
- *   name, no phone, no email, no tel: links. Per Jim's research, NorthstarMLS
- *   requires brokerage-level attribution only — individual listing agent
- *   identification is not mandated. This is the maximal competitive posture
- *   that still meets IDX disclosure.
+ * With `listing`, it's the block under a listing's details (listing brokerage, MLS #, last
+ * change). Without it, it's the page-level version for search results and /disclaimers.
+ * Rule numbers are NorthstarMLS Rules eff. 2026-07-01 (docs/compliance/); see
+ * docs/compliance/gap-analysis.md for what is still open (EULA, logos, LEA field list).
  */
+// ─── Imports ─────────────────────────────────────────────────────────────────
 import type { Listing } from "../types/listing";
-import { mls } from "../lib/site.config";
-import { formatDataFreshness } from "../lib/listing-utils";
+import { agent, brokerage, mls, site } from "../lib/site.config";
+import { formatDataFreshness, formatMlsId } from "../lib/listing-utils";
 
+// ─── Props ───────────────────────────────────────────────────────────────────
 interface Props {
-  listing: Listing;
+  /** The listing shown above; omit for the page-level block (search results, /disclaimers). */
+  listing?: Listing;
+  /** Match a narrow text page (max-w-3xl) instead of the listing page's width. */
+  narrow?: boolean;
 }
 
-const { listing } = Astro.props;
+const { listing, narrow = false } = Astro.props;
 
-const listingOfficeDisplay = listing.listOfficeName ?? "Not provided";
-const dataFreshness = formatDataFreshness(listing.modificationTimestamp);
+// ─── Required wording ────────────────────────────────────────────────────────
+// VERIFY-IDX: §5.4(e) requires this exact sentence in every disclosure. It replaces the
+// older NAR-style "deemed reliable but not guaranteed" line (mls.reliabilityDisclaimer),
+// which the 2026 rules no longer use. Do not reword.
+const ACCURACY_DISCLAIMER = "Data believed to be accurate but should be independently verified.";
+
+// VERIFY-IDX: §5.11(f) limited-use notice. Follows the rule's wording, including the
+// "compare it to similar properties sold or for sale" clause the old text left out.
+const LIMITED_USE_NOTICE =
+  "Listing information is provided for your personal, non-commercial use. You may not use it for any purpose other than to identify a property you may wish to purchase and to compare it with similar properties sold or for sale.";
+
+// ─── Derived values ──────────────────────────────────────────────────────────
+// VERIFY-IDX: §5.8(c): the "source" is the MLS (not the listing brokerage). Shown on the
+// listing's own row so it sits with the listing record.
+const listingBrokerage = listing?.listOfficeName ?? "Listing brokerage on file with NorthstarMLS";
+const mlsNumber = listing ? formatMlsId(listing.mlsId) : "";
+const lastChanged = listing ? formatDataFreshness(listing.modificationTimestamp) : "";
+
+// §5.8(h): errors reported here must be corrected (or referred to the MLS / listing
+// brokerage) within 48 hours. TODO-JIM: confirm this inbox is checked at least every 48 h.
+const errorSubject = listing
+  ? `Listing data correction: ${listing.address ?? ""}${mlsNumber ? ` (MLS #${mlsNumber})` : ""}`
+  : "Listing data correction";
+const errorHref = `mailto:${agent.email}?subject=${encodeURIComponent(errorSubject)}`;
 ---
 
-<section class="max-w-6xl mx-auto px-6 py-8 mt-8 border-t border-stone-200 text-xs text-stone-500 leading-relaxed">
-  <!-- LISTING SOURCE + DATA FRESHNESS -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
+<section
+  class={`${narrow ? "max-w-3xl" : "max-w-6xl"} mx-auto px-6 py-8 mt-8 border-t border-stone-200 text-xs text-stone-600 leading-relaxed`}
+  aria-label="Listing data disclosures"
+>
+  {/* ── Listing source ── */}
+  {/* §5.8(a)(ii): our brokerage + contact at least as prominent as the listing brokerage,
+      so both use the same type style here. */}
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-6">
+    {listing && (
+      <div>
+        <div class="uppercase tracking-widest text-stone-500 mb-1">Listed by</div>
+        <div class="text-sm text-stone-800">{listingBrokerage}</div>
+        <div class="text-stone-500 mt-1">
+          Source: {mls.name}
+          {mlsNumber && <span> · MLS #{mlsNumber}</span>}
+        </div>
+      </div>
+    )}
     <div>
-      <div class="uppercase tracking-widest text-xs text-stone-400 mb-1">Listing Source</div>
-      <div class="text-stone-700">
-        <span>Listed by {listingOfficeDisplay}</span>
+      <div class="uppercase tracking-widest text-stone-500 mb-1">Presented by</div>
+      <div class="text-sm text-stone-800">
+        {site.name}, {brokerage.name}
+      </div>
+      <div class="text-stone-500 mt-1">
+        <a href={`tel:${agent.phone}`} class="inline-block py-2 underline hover:text-stone-900">
+          {agent.phoneDisplay}
+        </a>
+        {" · "}
+        <a href={`mailto:${agent.email}`} class="inline-block py-2 underline hover:text-stone-900">
+          {agent.email}
+        </a>
       </div>
     </div>
-    <div class="sm:text-right">
-      <div class="uppercase tracking-widest text-xs text-stone-400 mb-1">Data Updated</div>
-      <div class="text-stone-700">{dataFreshness}</div>
-    </div>
+    {listing ? (
+      <div class="sm:text-right">
+        <div class="uppercase tracking-widest text-stone-500 mb-1">Last changed in MLS</div>
+        <div class="text-sm text-stone-800">{lastChanged}</div>
+      </div>
+    ) : (
+      <div class="sm:col-span-2">
+        <div class="uppercase tracking-widest text-stone-500 mb-1">Source</div>
+        <div class="text-sm text-stone-800">{mls.name}</div>
+        <div class="text-stone-500 mt-1">
+          Listings of all participating brokerages, each credited to its listing brokerage on its
+          detail page.
+        </div>
+      </div>
+    )}
   </div>
 
-  <!-- RELIABILITY DISCLAIMER -->
-  <p class="mb-4">{mls.reliabilityDisclaimer}</p>
+  {/* ── Disclaimer + limited-use notice ── */}
+  <p class="mb-2 font-medium text-stone-800">{ACCURACY_DISCLAIMER}</p>
+  <p class="mb-4">{LIMITED_USE_NOTICE}</p>
 
-  <!-- FAIR HOUSING + EHO BADGE -->
+  {/* ── Fair housing ── */}
   <div class="flex items-start gap-3 mb-4">
-    <!--
-      EHO PLACEHOLDER — replace with official Equal Housing Opportunity logo
-      before production. See header comment for source.
-    -->
-    <div
+    {/* TODO-JIM: swap this drawing for HUD's official Equal Housing Opportunity logo
+        (public-domain artwork from hud.gov) if the broker requires the exact mark. */}
+    <svg
+      class="shrink-0 w-8 h-8 text-stone-700"
+      viewBox="0 0 32 32"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      role="img"
       aria-label="Equal Housing Opportunity"
-      class="shrink-0 w-8 h-8 border border-stone-400 rounded-sm flex items-center justify-center text-[8px] font-semibold text-stone-600 text-center leading-tight"
     >
-      EHO
-    </div>
-    <p class="pt-0.5">{mls.fairHousingStatement}</p>
+      <path d="M3 15 16 4l13 11" />
+      <path d="M7 12v16h18V12" />
+      <path d="M11 17h10M11 22h10" />
+    </svg>
+    <p class="pt-0.5">
+      <span class="font-medium text-stone-800">Equal Housing Opportunity.</span>{" "}
+      {mls.fairHousingStatement}
+    </p>
   </div>
 
-  <!-- MLS ATTRIBUTION + COPYRIGHT -->
-  <div class="flex items-start gap-3 pt-4 border-t border-stone-100">
-    <!--
-      NORTHSTARMLS LOGO PLACEHOLDER — replace with official logo before production.
-    -->
-    <div
-      aria-label="NorthstarMLS"
-      class="shrink-0 px-2 py-1 border border-stone-400 rounded-sm text-xs font-semibold text-stone-600"
-    >
-      {mls.shortName}
-    </div>
-    <p class="pt-0.5">{mls.copyrightNotice}</p>
+  {/* ── Copyright + links ── */}
+  <div class="pt-4 border-t border-stone-100">
+    {/* TODO-JIM: replace the text badge with NorthstarMLS's logo only if NorthstarMLS
+        supplies one for this use; the 2026 rules don't require a logo. */}
+    <p>
+      <span class="font-medium text-stone-800">{mls.shortName}</span>
+      {" · "}
+      {mls.copyrightNotice}
+    </p>
+    <p class="mt-2">
+      <a href={errorHref} class="inline-block py-2 underline hover:text-stone-900">
+        Report an error in listing data
+      </a>
+      {" · "}
+      <a href="/terms" class="inline-block py-2 underline hover:text-stone-900">
+        Terms of Use
+      </a>
+      {" · "}
+      <a href="/disclaimers" class="inline-block py-2 underline hover:text-stone-900">
+        Disclaimers
+      </a>
+      {" · "}
+      <a href="/privacy" class="inline-block py-2 underline hover:text-stone-900">
+        Privacy
+      </a>
+    </p>
   </div>
 </section>
