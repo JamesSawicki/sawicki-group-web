@@ -190,7 +190,10 @@ export default function PhotoGallery({
   return (
     <div>
       {/* ── Desktop mosaic ──────────────────────────────────────────────── */}
-      <div className="hidden md:grid grid-cols-3 grid-rows-2 gap-2 aspect-[16/9] rounded-xl overflow-hidden">
+      {/* 16:9 when the window is tall enough; on shorter screens it gets shorter (never
+          below 240px) so the price, address and key stats show without scrolling.
+          390px = page header + back row + the hero price/stats block. */}
+      <div className="hidden md:grid grid-cols-3 grid-rows-2 gap-2 w-full aspect-[16/9] md:max-h-[max(240px,calc(100svh-390px))] rounded-xl overflow-hidden">
         {/* Primary tile — spans 2 rows on the left */}
         {mosaicPhotos[0] ? (
           <button

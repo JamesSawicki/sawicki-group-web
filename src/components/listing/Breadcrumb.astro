@@ -1,15 +1,25 @@
 ---
-/** Breadcrumb trail above the gallery: Home › Listings › {address}. */
+/**
+ * Breadcrumb trail: Home › Listings › {address}. Its own row above the gallery on phones
+ * and tablets; `inline` renders just the trail, for the desktop row it shares with "Back
+ * to map" (BackToSearch), which keeps the photos and price higher on short screens.
+ */
+
+// ─── Props ───────────────────────────────────────────────────────────────────
 interface Props {
   /** Street address shown as the current (last) crumb. */
   address?: string;
+  /** Render only the trail (no row wrapper), to sit inside another row. */
+  inline?: boolean;
+  /** Extra classes for the outer element (e.g. responsive visibility). */
+  class?: string;
 }
 
-const { address } = Astro.props;
+const { address, inline = false, class: className = "" } = Astro.props;
 ---
 
-<div class="max-w-6xl mx-auto px-6 pt-1">
-  <nav class="text-sm text-stone-400">
+<div class:list={[inline ? "min-w-0" : "max-w-6xl mx-auto px-6 pt-1", className]}>
+  <nav class:list={["text-sm text-stone-400", inline && "truncate"]}>
     <a href="/" class="inline-block py-2 hover:text-stone-600 transition-colors">
       Home
     </a>

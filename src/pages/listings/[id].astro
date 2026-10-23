@@ -145,14 +145,17 @@ const amenitiesList = parseList(listing.amenities);
   jsonLd={jsonLd}
   ogImage={schemaImages[0]}
 >
+  {/* Desktop: back link + breadcrumb share one row; phones/tablets: Neighborhood button here,
+      breadcrumb on its own row. */}
   <BackToSearch>
     <NeighborhoodMapButton
       latitude={listing.latitude}
       longitude={listing.longitude}
       mapboxToken={mapboxToken}
     />
+    <Breadcrumb address={listing.address} inline class="hidden lg:block" />
   </BackToSearch>
-  <Breadcrumb address={listing.address} />
+  <Breadcrumb address={listing.address} class="lg:hidden" />
 
   {/* ── Photo gallery ── */}
   <div class="max-w-6xl mx-auto px-6 pt-6">
