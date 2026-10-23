@@ -26,6 +26,9 @@ npm run dev      # http://localhost:4321 — needs the API running (see listing-
 npm run build    # local production build; does not deploy
 ```
 
+- **Docker image** (`Dockerfile`, built by Cloud Build): two stages, and the runtime ships
+  only `dist/` + production dependencies. Build-time-only packages (Tailwind, types) belong
+  in `devDependencies`, or they bloat the image.
 - Restart `npm run dev` after editing `.env.local` (Vite reads it once at startup).
 - **On a phone (same Wi-Fi):** run `npm run dev -- --host` and open `http://<PC-LAN-IP>:4321`.
   For the map and chat to work there, `.env.local` points `PUBLIC_API_BASE_URL` at the PC's
@@ -173,12 +176,14 @@ Many visitors browse on phones, and map search is the primary way people look fo
 - **Listing neighborhood map:** the page shows only static Mapbox images
   (`lib/map-utils.ts`: the summary card's Map tab on desktop, the Neighborhood button by
   "Back to map" on phones); `listing/NeighborhoodMap.tsx` loads mapbox-gl only when one
-  is clicked (streets-v12 + Satellite). Keep it that way: an interactive map on page
+  is clicked (streets-v12 + Satellite), adding mapbox-gl's CSS as a `?url` link at that
+  moment (a normal CSS import, even a dynamic one, gets linked on every page). Keep it that way: an interactive map on page
   load would add ~1 MB of JS and a billable map load to every listing view.
 - **Listing AI chat:** the conversation is `listing/ChatConversation.tsx`. Desktop embeds it in
   the summary card (in place of a "Contact us" button, with a direct contact link + phone
   under it; the card fits the window and the chat scrolls inside it). Phones/tablets open it
-  from a round "AI" bubble bottom-right (`ListingChat.tsx`, a bottom sheet) that opens with a
+  from a round "AI" bubble bottom-right (`ListingChat.tsx`, a bottom sheet, `client:media` so
+  desktops never download it) that opens with a
   written greeting + reply buttons (no AI call until the visitor asks). Nudge: after 15 s of
   visible time plus 5 photos viewed or half the page scrolled, the bubble pulses (not with
   reduced motion) and "Questions about this home?" appears; once per visit (sessionStorage).

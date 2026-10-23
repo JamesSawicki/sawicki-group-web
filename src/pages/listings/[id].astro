@@ -47,8 +47,6 @@ import { fetchWithTimeout, serviceUnavailableResponse } from "../../lib/api";
 
 // CSS for React islands is imported here in the .astro frontmatter, not inside the island,
 // so Vite resolves and bundles it through Astro's build (same pattern as Mapbox's CSS).
-// The neighborhood map's CSS (the library itself loads only when the map is opened).
-import "mapbox-gl/dist/mapbox-gl.css";
 import "yet-another-react-lightbox/styles.css";
 import "yet-another-react-lightbox/plugins/counter.css";
 
@@ -217,8 +215,9 @@ const amenitiesList = parseList(listing.amenities);
   )}
 
   {/* ── AI chat on phones/tablets: floating bubble (desktop embeds it in the summary card) ── */}
+  {/* client:media: desktops never download the bubble's code (below lg only). */}
   <ListingChat
-    client:load
+    client:media="(max-width: 1023px)"
     listingId={listing.id}
     apiBaseUrl={apiBase}
     listingAddress={[listing.address, listing.city].filter(Boolean).join(", ")}

@@ -17,7 +17,8 @@ re-measure when a feature changes) and keep the action list current.
 |---|---|---|---|---|
 | 1 | Static JS/CSS (`/_astro/*`) still go out uncompressed — mapbox-gl is 1.76 MB instead of ~476 KB gzipped. They bypass Astro middleware. | First visit to map search downloads ~2 MB of JS (cached for a year after). | Go-live: Cloudflare (free) in front of the custom domain (Brotli + edge cache), or precompressed assets served by a custom Node server. | Go-live checklist |
 | 2 | API search still loads full listing rows from Postgres and slims them in Java. | ~90 ms per search locally; DB → app transfer of full rows. | A JPA projection query for `view=summary` if search latency grows. | Watch |
-| 3 | Overpass (public) is slow and flaky (40–60 s per query, frequent 502s). | Amenity batches take hours. | Mitigated: shared tiles, resumable batches, 90-day refresh. Self-hosted Overpass or a POI vendor if it stays a bottleneck. | Mitigated |
+| 3 | Pages send no `Cache-Control`: every listing/blog/home view renders on Cloud Run and (listings) calls the API. | Server work and API calls scale 1:1 with views. | Go-live, with the CDN: a short edge cache on HTML (e.g. `s-maxage=300, stale-while-revalidate`) so most views never reach Cloud Run. | Go-live checklist |
+| 4 | Overpass (public) is slow and flaky (40–60 s per query, frequent 502s). | Amenity batches take hours. | Mitigated: shared tiles, resumable batches, 90-day refresh. Self-hosted Overpass or a POI vendor if it stays a bottleneck. | Mitigated |
 
 ### Done (2026-10-22 lean pass)
 
@@ -31,6 +32,17 @@ re-measure when a feature changes) and keep the action list current.
 | Chat: Haiku 4.5, 400-token reply cap, last 10 messages, usage logged, plain-text replies | Sonnet 4.5, 600 cap, unbounded history | measured 648 in + 67 out tokens ≈ $0.001 / message |
 | Amenity refresh every 90 days (was ~monthly) | ~3 isochrone calls / listing / month | ~1 / listing / month |
 
+### Done (2026-10-22 second pass)
+
+| Fix | Before | After |
+|---|---|---|
+| Removed unused public `GET /api/listings` (every row, sold included) | 32 MB per call to anyone | gone |
+| Listing JSON no longer includes `mediaJson` (importer-only, write-only in JSON) | 20.4 KB per listing view (API → site) | 10.5 KB |
+| Deleted MLS listings now remove their Cloudflare photos (cleanup read only the legacy id format) | every removed listing's photos stayed stored and billed | deleted |
+| `spring.jpa.open-in-view=false` | DB connection held while JSON is written | released when the query returns |
+| Site Docker image: two stages, production deps only, node:24-slim, `.env.local` excluded | 801 MB | 498 MB (faster Cloud Run cold starts) |
+| Listing page: phone chat hydrates below `lg` only (`client:media`); mapbox-gl CSS loads when the neighborhood map opens | desktop loaded the chat bubble JS + 40 KB map CSS on every view | neither until needed |
+
 ## Pages (measured, production build)
 
 Transfer sizes are what Chrome received (HTML compressed; `/_astro` JS not yet — action #1).
@@ -41,7 +53,7 @@ Transfer sizes are what Chrome received (HTML compressed; `/_astro` JS not yet �
 | Blog post (prerendered) | ~80 KB (static file, not gzipped) | 0 | — | 3 | ~7 ms | 0.04 s | 1.2 MB | none |
 | Map search `/listings` (desktop) | **31 KB gz** (was 7.1 MB) | 2.0 MB (mapbox-gl 1.76 MB) | — | 25 | ~220 ms (was 1.57 s) | 1.07 s (was 2.15 s) | 24 MB (was 29) | 1 Mapbox map load + tiles |
 | Map search `/listings` (phone) | 31 KB gz | 2.0 MB | — | 20 | ~220 ms | 1.13 s (was 1.57 s) | 20 MB (was 27) | 1 Mapbox map load + tiles |
-| Listing detail (desktop) | ~25 KB gz | 275 KB | 365 KB (was 468) | 26 | ~0.1–0.3 s | 0.6–1.0 s | 3 MB | 1 Mapbox static image; 6 Cloudflare deliveries (was 11) |
+| Listing detail (desktop) | ~25 KB gz | 275 KB (less now: no chat bubble JS, no map CSS) | 365 KB (was 468) | 26 | ~0.1–0.3 s | 0.6–1.0 s | 3 MB | 1 Mapbox static image; 6 Cloudflare deliveries (was 11) |
 | Listing detail (phone) | ~25 KB gz | 275 KB | 357 KB (was 506) | 24 | ~0.1 s | 0.31 s | 2.9 MB | 1 Mapbox static image; 4 Cloudflare deliveries (was 10) |
 | + open neighborhood map | — | +1.72 MB (mapbox-gl, once) | — | +20 | — | — | +23 MB | 1 Mapbox map load + tiles |
 

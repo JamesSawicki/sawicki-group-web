@@ -1,32 +1,33 @@
-# Use the official Node.js 20 image as the base
-FROM node:22-slim
+# Two stages: build with all dependencies, then ship only the built site and production
+# dependencies. The runtime image leaves out dev tooling and source, so it's smaller and
+# Cloud Run cold-starts faster. Node 24 (Astro 7 needs >= 22.23.4; 22 was the bare minimum).
 
-# Set the working directory inside the container
+# ── Build ────────────────────────────────────────────────────────────────────
+FROM node:24-slim AS build
 WORKDIR /app
 
-# Copy package files first — Docker caches layers, so copying
-# package.json before the rest of the code means npm install
-# only re-runs when dependencies actually change, not on every
-# code change. This speeds up subsequent builds significantly.
+# package files first: Docker reuses the install layer until dependencies change.
 COPY package*.json ./
+RUN npm ci
 
-# Install dependencies
-RUN npm install
-
-# Copy the rest of the source code
 COPY . .
-
-# Build the Astro site
 RUN npm run build
 
-# Expose port 4321 — this is the port Astro's Node adapter listens on
-EXPOSE 4321
+# ── Runtime ──────────────────────────────────────────────────────────────────
+FROM node:24-slim
+WORKDIR /app
+ENV NODE_ENV=production
 
-# Set the host so the server accepts external connections
-# By default Node servers only listen on localhost, which doesn't
-# work inside a container. 0.0.0.0 means "accept from anywhere".
+COPY package*.json ./
+RUN npm ci --omit=dev && npm cache clean --force
+
+COPY --from=build /app/dist ./dist
+
+# Astro's Node adapter listens on PORT; 0.0.0.0 accepts connections from outside the container.
 ENV HOST=0.0.0.0
 ENV PORT=4321
+EXPOSE 4321
 
-# Start the server
+# Run as the image's unprivileged user.
+USER node
 CMD ["node", "./dist/server/entry.mjs"]

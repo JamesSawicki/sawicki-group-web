@@ -6,4 +6,8 @@ dist
 .gitignore
 firebase.json
 .firebaserc
-README.md
+README.md.astro
+.audit
+.env.local
+.env.*
+npm-debug.log

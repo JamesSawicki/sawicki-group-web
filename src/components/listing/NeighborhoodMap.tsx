@@ -4,7 +4,7 @@
  * (phones) via openNeighborhoodMap() (lib/map-utils.ts).
  *
  * The page only shows a static map image; this component loads mapbox-gl on first open
- * (a dynamic import, so the library isn't part of the listing page's JavaScript) and
+ * (a dynamic import of the library and its CSS, so neither is part of the listing page) and
  * only then counts as a Mapbox map load. Streets style for maximum detail (street names,
  * businesses, parks, schools), with a Satellite toggle; the property is the only pin.
  * Closes with the X button, Escape, or a click on the dark backdrop.
@@ -18,6 +18,20 @@ import {
   PIN_COLOR,
   SATELLITE_STYLE,
 } from "../../lib/map-utils";
+import mapboxCssUrl from "mapbox-gl/dist/mapbox-gl.css?url";
+
+/**
+ * Adds mapbox-gl's stylesheet on first open. Imported as a URL (`?url`), not as CSS:
+ * Astro links every CSS import an island can reach, even dynamic ones, so a plain import
+ * would load it on every listing view.
+ */
+function loadMapboxCss(): void {
+  if (document.querySelector(`link[href="${mapboxCssUrl}"]`)) return;
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = mapboxCssUrl;
+  document.head.appendChild(link);
+}
 
 interface Props {
   /** Property location. */
@@ -62,6 +76,7 @@ export default function NeighborhoodMap({ latitude, longitude, address, mapboxTo
     if (!open || mapRef.current || !containerRef.current) return;
     let cancelled = false;
     (async () => {
+      loadMapboxCss();
       const { default: mapboxgl } = await import("mapbox-gl");
       if (cancelled || !containerRef.current) return;
       mapboxgl.accessToken = mapboxToken;
