@@ -1,0 +1,298 @@
+---
+/**
+ * Terms of Use (/terms): site use, the NorthstarMLS listing-data license terms (§5.11(f),
+ * §5.9(a), §8.3), the AI chat, Close to Home, and the usual warranty/liability/governing-law
+ * terms. Rule numbers are NorthstarMLS Rules eff. 2026-07-01 (docs/compliance/).
+ *
+ * Two parts switch on later via the constants below, so the page never describes something
+ * the site doesn't do yet: the NorthstarMLS EULA link (§5.8(j)) and account registration
+ * terms (§5.12(c)–(d), for subscriber-only features). Draft for review with the broker.
+ */
+// ─── Imports ─────────────────────────────────────────────────────────────────
+import Layout from "../layouts/Layout.astro";
+import { agent, brokerage, mls, site } from "../lib/site.config";
+import { absoluteUrl, breadcrumbList, webPage } from "../lib/structured-data";
+
+// ─── Page settings ───────────────────────────────────────────────────────────
+/** Shown at the top; bump on every substantive change. */
+const LAST_UPDATED = "October 23, 2026";
+/**
+ * VERIFY-IDX: §5.8(j). Link to the NorthstarMLS EULA once the site asks visitors to accept
+ * it. Empty = the EULA paragraph is not shown (the site doesn't ask for assent yet).
+ * TODO-JIM: set when the EULA gate ships.
+ */
+const EULA_URL = "";
+/**
+ * §5.12: flip to true when visitor accounts (e.g. subscriber-only sold listings) launch;
+ * the registration terms below then become part of the page. TODO-JIM.
+ */
+const ACCOUNTS_LAUNCHED = false;
+
+// ─── Derived values ──────────────────────────────────────────────────────────
+const description = `Terms of use for the ${site.name} website, including listing data from ${mls.name} and our AI listing assistant.`;
+const pageUrl = absoluteUrl("/terms");
+const jsonLd = [
+  webPage("WebPage", "/terms", "Terms of Use", description, {
+    breadcrumb: { "@id": `${pageUrl}#breadcrumb` },
+  }),
+  breadcrumbList(pageUrl, [
+    { name: "Home", path: "/" },
+    { name: "Terms of Use", path: "/terms" },
+  ]),
+];
+---
+
+<Layout title="Terms of Use" description={description} jsonLd={jsonLd}>
+  <section class="max-w-3xl mx-auto px-6 py-20">
+    <p class="text-sm font-semibold text-amber-700 uppercase tracking-widest mb-4">Legal</p>
+    <h1 class="text-4xl font-semibold text-stone-900 mb-4">Terms of Use</h1>
+    <p class="text-stone-500 mb-12">Last updated: {LAST_UPDATED}</p>
+
+    <div class="text-stone-600 leading-relaxed space-y-10">
+      {/* ── Who we are ── */}
+      <div>
+        <h2 class="text-xl font-semibold text-stone-900 mb-3">Who we are</h2>
+        <p>
+          This website is operated by {site.name}, a team of real estate licensees with{" "}
+          {brokerage.name}, a {brokerage.stateName} real estate brokerage (together, "we" or "us").
+          By using the site you agree to these terms. If you don't agree, please don't use the site.
+        </p>
+      </div>
+
+      {/* ── Using the site ── */}
+      <div>
+        <h2 class="text-xl font-semibold text-stone-900 mb-3">Using the site</h2>
+        <p>
+          You may use the site to look for a home and to learn about the local market. You agree not
+          to:
+        </p>
+        <ul class="list-disc pl-6 mt-3 space-y-2">
+          <li>
+            copy, scrape, crawl, or download listing data with automated tools, or try to get around
+            limits we place on access;
+          </li>
+          <li>use the site or its data to build a database, product, or service of your own;</li>
+          <li>
+            interfere with the site, probe its security, or use it for anything unlawful or
+            discriminatory.
+          </li>
+        </ul>
+        <p class="mt-4">
+          We may monitor use of the site to protect the listing data and may block access that
+          breaks these terms.
+        </p>
+      </div>
+
+      {/* ── Listing data ── */}
+      <div>
+        <h2 class="text-xl font-semibold text-stone-900 mb-3">Listing data from {mls.name}</h2>
+        <p>
+          Homes for sale on this site come from {mls.name}, the multiple listing service operated by
+          Regional Multiple Listing Service of Minnesota, Inc., and include listings of other
+          brokerages. Each listing names its listing brokerage. We don't change the listing data we
+          receive.
+        </p>
+        <ul class="list-disc pl-6 mt-3 space-y-2">
+          {/* VERIFY-IDX: §5.11(f) limited-use notice, in the rule's terms. */}
+          <li>
+            Listing information is for your personal, non-commercial use. You may use it only to
+            identify a property you may wish to purchase and to compare it with similar properties
+            sold or for sale.
+          </li>
+          <li>
+            Please don't share listing information with others except to help with buying or selling
+            a property.
+          </li>
+          {/* §8.3: the compilation belongs to the MLS. */}
+          <li>
+            {mls.name}'s compilation of listing data is protected by copyright and owned by Regional
+            Multiple Listing Service of Minnesota, Inc. Listing photos and descriptions belong to
+            their owners.
+          </li>
+          <li>
+            Data believed to be accurate but should be independently verified. Listings can change
+            or go off the market at any time. See our{" "}
+            <a href="/disclaimers" class="underline">
+              Disclaimers
+            </a>
+            .
+          </li>
+        </ul>
+        {EULA_URL && (
+          <p class="mt-4">
+            Before you view listing data, we ask you to accept the{" "}
+            <a href={EULA_URL} class="underline">
+              {mls.name} End User License Agreement
+            </a>
+            , which applies in addition to these terms.
+          </p>
+        )}
+        <p class="mt-4">
+          {mls.name} and other {mls.name} participants may use this site, including posing as
+          visitors, to check that it follows the {mls.name} rules.
+        </p>
+      </div>
+
+      {/* ── AI listing assistant ── */}
+      <div>
+        <h2 class="text-xl font-semibold text-stone-900 mb-3">AI listing assistant</h2>
+        <p>
+          Listing pages offer a chat that answers questions about the home using artificial
+          intelligence (AI). When you use it:
+        </p>
+        <ul class="list-disc pl-6 mt-3 space-y-2">
+          <li>
+            Answers are generated automatically from the listing data and the Close to Home
+            information on the page. They are for general information only and can be incomplete or
+            wrong. Confirm anything important with us, the listing brokerage, or another qualified
+            source.
+          </li>
+          <li>
+            The assistant is not a real estate licensee, and its answers are not legal, tax,
+            financial, lending, inspection, or appraisal advice. It does not value homes.
+          </li>
+          <li>
+            Chatting does not make you our client or create any agency or brokerage relationship.
+            The assistant cannot make or accept offers, sign agreements, or commit anyone to
+            anything.
+          </li>
+          <li>
+            If you ask to be contacted, the assistant prepares a request for you to review. Nothing
+            is sent until you press Send.
+          </li>
+          <li>
+            Please don't enter sensitive personal or financial information. See our{" "}
+            <a href="/privacy" class="underline">
+              Privacy Policy
+            </a>{" "}
+            for how chat messages are handled.
+          </li>
+        </ul>
+      </div>
+
+      {/* ── Close to Home + maps ── */}
+      <div>
+        <h2 class="text-xl font-semibold text-stone-900 mb-3">Close to Home and maps</h2>
+        <p>
+          "Close to Home" (nearby groceries, parks, transit and so on) and the maps are added by us
+          from third-party sources, including Mapbox, OpenStreetMap contributors, and Overture Maps
+          Foundation. They are not part of the {mls.name} listing, are estimates, and may be
+          incomplete or out of date. Travel times assume typical conditions.
+        </p>
+      </div>
+
+      {/* ── No relationship created ── */}
+      <div>
+        <h2 class="text-xl font-semibold text-stone-900 mb-3">
+          Working with us is a separate agreement
+        </h2>
+        <p>
+          Using this site, sending a message, or chatting does not create an agency relationship or
+          any obligation to pay us. Any representation is set up separately, in writing, with the
+          disclosures {brokerage.stateName} law requires, and we sign a written agreement with a
+          buyer before touring a home. Brokerage compensation is not set by law and is fully
+          negotiable.
+        </p>
+      </div>
+
+      {/* ── Accounts (VB, §5.12) ── */}
+      <div>
+        <h2 class="text-xl font-semibold text-stone-900 mb-3">Accounts</h2>
+        {ACCOUNTS_LAUNCHED ? (
+          <div class="space-y-3">
+            {/* VERIFY-IDX: §5.12(b)–(d) registrant terms. Each bullet maps to a clause. */}
+            <p>
+              Some features (such as recently sold homes) are available only to registered
+              customers. By registering, you:
+            </p>
+            <ul class="list-disc pl-6 space-y-2">
+              <li>
+                acknowledge that you have a customer relationship with {brokerage.name} through{" "}
+                {site.name}, which by itself is the relationship {brokerage.stateName} law provides
+                by default and not a representation agreement;
+              </li>
+              <li>
+                confirm that you are genuinely interested in buying or selling a property of the
+                kind shown on this site;
+              </li>
+              <li>
+                agree that information you get through your account is for your personal,
+                non-commercial use;
+              </li>
+              <li>
+                agree not to share it with anyone except as you reasonably expect will help you buy
+                or sell a listed property;
+              </li>
+              <li>
+                acknowledge that Regional Multiple Listing Service of Minnesota, Inc. owns a valid
+                copyright in the {mls.name} compilation of listing data.
+              </li>
+            </ul>
+            <p>
+              Registering costs nothing and creates no obligation to pay us. Your account uses a
+              confirmed email address of your own, a username and a password; passwords expire and
+              can be renewed. We keep account records for at least 180 days after your password last
+              expires. {mls.name} and its participants may register to check that the site follows
+              the {mls.name} rules. Any agreement to represent you is separate, clearly labeled, and
+              signed by typing your name.
+            </p>
+          </div>
+        ) : (
+          <p>We don't offer visitor accounts at this time.</p>
+        )}
+      </div>
+
+      {/* ── Our content ── */}
+      <div>
+        <h2 class="text-xl font-semibold text-stone-900 mb-3">Our content and links</h2>
+        <p>
+          The site's design, text, and articles belong to {site.name} or our licensors; you may
+          share links to them. Links to other websites are for convenience; we don't control those
+          sites and aren't responsible for them.
+        </p>
+      </div>
+
+      {/* ── Warranties + liability ── */}
+      <div>
+        <h2 class="text-xl font-semibold text-stone-900 mb-3">No warranties; limit of liability</h2>
+        <p>
+          The site and everything on it are provided "as is" and "as available," without warranties
+          of any kind, to the fullest extent the law allows. We don't promise the site will be
+          accurate, complete, current, or always available. To the fullest extent the law allows,
+          we, {brokerage.name}, and {mls.name} are not liable for any indirect, incidental, or
+          consequential damages arising from your use of the site or reliance on its information.
+          Nothing in these terms limits rights you have under law that can't be waived.
+        </p>
+      </div>
+
+      {/* ── Governing law ── */}
+      <div>
+        <h2 class="text-xl font-semibold text-stone-900 mb-3">Governing law</h2>
+        {/* TODO-JIM: confirm with the broker (venue/county, and whether the brokerage's
+            standard website terms must be used instead of these). */}
+        <p>
+          These terms are governed by the laws of the State of {brokerage.stateName}, without regard
+          to conflict-of-law rules. Any dispute about them will be decided in the state or federal
+          courts located in {brokerage.stateName}.
+        </p>
+      </div>
+
+      {/* ── Changes + contact ── */}
+      <div>
+        <h2 class="text-xl font-semibold text-stone-900 mb-3">Changes and contact</h2>
+        <p>
+          We may update these terms; the date at the top shows the latest version. Questions, or an
+          error in listing data? Contact {agent.name} at{" "}
+          <a href={`mailto:${agent.email}`} class="underline">
+            {agent.email}
+          </a>{" "}
+          or{" "}
+          <a href={`tel:${agent.phone}`} class="underline">
+            {agent.phoneDisplay}
+          </a>
+          .
+        </p>
+      </div>
+    </div>
+  </section>
+</Layout>

@@ -1,0 +1,166 @@
+---
+/**
+ * Disclaimers (/disclaimers): listing-data accuracy and source, compensation (§7.3), not
+ * professional advice, AI answers, Close to Home / map data, market articles, fair housing,
+ * and who we are as a licensee (Minn. Stat. 82.69). Ends with the same NorthstarMLS
+ * disclosure block the listing pages use, so the MLS wording lives in one component.
+ *
+ * Broker details (license number, primary broker, office address) render only once they're
+ * in site.config.ts; never type them here. Draft for review with the broker.
+ */
+// ─── Imports ─────────────────────────────────────────────────────────────────
+import Layout from "../layouts/Layout.astro";
+import ListingDisclosure from "../components/ListingDisclosure.astro";
+import { agent, brokerage, mls, office, site } from "../lib/site.config";
+import { absoluteUrl, breadcrumbList, webPage } from "../lib/structured-data";
+
+// ─── Page settings ───────────────────────────────────────────────────────────
+/** Shown at the top; bump on every substantive change. */
+const LAST_UPDATED = "October 23, 2026";
+
+// ─── Derived values ──────────────────────────────────────────────────────────
+const description = `Disclaimers for the ${site.name} website: listing data from ${mls.name}, AI answers, neighborhood data, and fair housing.`;
+const pageUrl = absoluteUrl("/disclaimers");
+const jsonLd = [
+  webPage("WebPage", "/disclaimers", "Disclaimers", description, {
+    breadcrumb: { "@id": `${pageUrl}#breadcrumb` },
+  }),
+  breadcrumbList(pageUrl, [
+    { name: "Home", path: "/" },
+    { name: "Disclaimers", path: "/disclaimers" },
+  ]),
+];
+// Office line, from whatever parts site.config has (street address is still blank there).
+const officeAddress = [
+  office.streetAddress,
+  [office.addressLocality, office.addressRegion].filter(Boolean).join(", "),
+  office.postalCode,
+]
+  .filter(Boolean)
+  .join(" ");
+---
+
+<Layout title="Disclaimers" description={description} jsonLd={jsonLd}>
+  <section class="max-w-3xl mx-auto px-6 pt-20 pb-8">
+    <p class="text-sm font-semibold text-amber-700 uppercase tracking-widest mb-4">Legal</p>
+    <h1 class="text-4xl font-semibold text-stone-900 mb-4">Disclaimers</h1>
+    <p class="text-stone-500 mb-12">Last updated: {LAST_UPDATED}</p>
+
+    <div class="text-stone-600 leading-relaxed space-y-10">
+      {/* ── Who we are ── */}
+      {/* Minn. Stat. 82.69: the brokerage name, clearly and conspicuously. */}
+      <div>
+        <h2 class="text-xl font-semibold text-stone-900 mb-3">Who we are</h2>
+        <p>
+          {site.name} is a real estate team with <strong>{brokerage.name}</strong>
+          {officeAddress && <span>, {officeAddress}</span>}. {agent.name} is a real estate licensee
+          ({agent.licenseText}) with {brokerage.name}. You can reach us at{" "}
+          <a href={`tel:${agent.phone}`} class="underline">
+            {agent.phoneDisplay}
+          </a>{" "}
+          or{" "}
+          <a href={`mailto:${agent.email}`} class="underline">
+            {agent.email}
+          </a>
+          .
+        </p>
+        {/* TODO-JIM: add the brokerage's MN license number and primary broker once they're
+            in site.config.ts (requested fields: brokerage.licenseNumber,
+            brokerage.primaryBroker), if the broker wants them shown. */}
+      </div>
+
+      {/* ── Listing information ── */}
+      <div>
+        <h2 class="text-xl font-semibold text-stone-900 mb-3">Listing information</h2>
+        <p>
+          Listings on this site come from {mls.name} and include homes listed by other brokerages;
+          each one names its listing brokerage. Unless a listing says {brokerage.name}
+          listed it, we are not the listing brokerage and do not represent the seller. Listing
+          details, including square footage, lot size, room sizes, taxes, school assignments, and
+          status, are supplied by the listing brokerage and can change without notice. Data believed
+          to be accurate but should be independently verified. If you rely on a detail to make a
+          decision, verify it yourself (for example, by measurement, with the county, or with the
+          school district).
+        </p>
+        <p class="mt-4">
+          See something wrong? Tell us at{" "}
+          <a href={`mailto:${agent.email}`} class="underline">
+            {agent.email}
+          </a>
+          . We will fix our display, or refer the problem to the listing brokerage or {mls.name},
+          within 48 hours.
+        </p>
+      </div>
+
+      {/* ── Compensation (§7.3) ── */}
+      <div>
+        <h2 class="text-xl font-semibold text-stone-900 mb-3">Compensation</h2>
+        <p>
+          Brokerage compensation is not set by law and is fully negotiable. Searching this site,
+          chatting, or contacting us costs nothing and creates no obligation; what we're paid when
+          we represent you is agreed in writing before we work together.
+        </p>
+      </div>
+
+      {/* ── Not advice ── */}
+      <div>
+        <h2 class="text-xl font-semibold text-stone-900 mb-3">
+          Not legal, tax, or financial advice
+        </h2>
+        <p>
+          Content on this site is general information. It is not legal, tax, financial, lending,
+          insurance, inspection, or appraisal advice. Talk to a qualified professional about your
+          own situation.
+        </p>
+      </div>
+
+      {/* ── AI answers ── */}
+      <div>
+        <h2 class="text-xl font-semibold text-stone-900 mb-3">AI-generated answers</h2>
+        <p>
+          The chat on listing pages is an AI assistant, not a person. Its answers are generated
+          automatically from the listing and nearby-places data and can be incomplete or wrong. They
+          are not statements by the listing brokerage or the seller and are not part of the{" "}
+          {mls.name} listing. Confirm anything important before you rely on it.
+        </p>
+      </div>
+
+      {/* ── Close to Home + maps (§5.8(e)) ── */}
+      <div>
+        <h2 class="text-xl font-semibold text-stone-900 mb-3">Close to Home and map data</h2>
+        <p>
+          "Close to Home" and our maps are not part of the {mls.name} listing. We add them from
+          third parties: map and travel-time data via Mapbox, places from © OpenStreetMap
+          contributors and Overture Maps Foundation. Places may be missing, closed, or mislabeled;
+          counts and travel times are estimates; distances are approximate. Nothing on the site
+          rates neighborhoods or the people who live in them.
+        </p>
+      </div>
+
+      {/* ── Market articles (§5.5) ── */}
+      <div>
+        <h2 class="text-xl font-semibold text-stone-900 mb-3">Market updates</h2>
+        <p>
+          Our articles share our views and market data as of the date they were published. Mortgage
+          rates quoted are national averages and are not a loan offer; your rate depends on your
+          lender and situation. Some articles are drafted with the help of AI. Past market trends
+          don't guarantee future results.
+        </p>
+      </div>
+
+      {/* ── Fair housing ── */}
+      <div>
+        <h2 class="text-xl font-semibold text-stone-900 mb-3">Equal Housing Opportunity</h2>
+        <p>
+          {mls.fairHousingStatement} We do not discriminate on the basis of race, color, creed,
+          religion, national origin, sex, gender identity, sexual orientation, marital status,
+          familial status, disability, or status with regard to public assistance, as protected by
+          the federal Fair Housing Act and the Minnesota Human Rights Act.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  {/* ── NorthstarMLS disclosure (same block as on listing pages) ── */}
+  <ListingDisclosure narrow />
+</Layout>
