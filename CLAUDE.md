@@ -58,6 +58,14 @@ npm run build    # local production build; does not deploy
 - **Blog posts** in `src/content/blog/` arrive as `draft: true`; publishing means flipping
   that to `false`.
 
+## Logging
+
+- Every request gets a request id (`middleware.ts` + `lib/request-context.ts`), echoed as
+  `X-Request-Id`; `fetchWithTimeout` forwards it to the API, so a page view and the API
+  calls behind it share one id in the logs. Use `fetchWithTimeout` for every SSR API call.
+- Never log chat or contact-form content, API keys, or full visitor IPs. (A JSON access log
+  for the site is on the to-do list.)
+
 ## Cost scorecard (every feature)
 
 `docs/cost-scorecard.md` tracks what each feature costs: page weight, requests, latency,

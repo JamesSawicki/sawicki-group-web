@@ -1,4 +1,5 @@
-import type { MiddlewareHandler } from "astro";
+import type { APIContext, MiddlewareHandler, MiddlewareNext } from "astro";
+import { REQUEST_ID_HEADER, requestContext, requestIdFrom } from "./lib/request-context";
 
 // ─────────────────────────────────────────────
 // IN-MEMORY RATE LIMITER
@@ -74,6 +75,20 @@ setInterval(
 // Astro runs this before every request.
 // ─────────────────────────────────────────────
 export const onRequest: MiddlewareHandler = async (context, next) => {
+  // Every request gets an id (kept from X-Request-Id when valid). Rendering runs inside
+  // requestContext, so API calls made for this page forward it (see lib/api.ts), and
+  // the response carries it for debugging.
+  const requestId = requestIdFrom(context.request.headers.get(REQUEST_ID_HEADER));
+  const response = await requestContext.run({ requestId }, () => handle(context, next));
+  try {
+    response.headers.set(REQUEST_ID_HEADER, requestId);
+  } catch {
+    // Some responses (e.g. redirects) have immutable headers; the id is optional there.
+  }
+  return response;
+};
+
+async function handle(context: APIContext, next: MiddlewareNext): Promise<Response> {
   const { request } = context;
   const url = new URL(request.url);
   const path = url.pathname;
@@ -98,7 +113,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
 
   // Request is allowed — continue to the page or API endpoint
   return compress(request, await next());
-};
+}
 
 // ─────────────────────────────────────────────
 // RESPONSE COMPRESSION

@@ -25,6 +25,8 @@
  *  byte; it clears once response headers arrive. Tune per-call via `timeoutMs`. */
 export const DEFAULT_FETCH_TIMEOUT_MS = 8000;
 
+import { currentRequestId, REQUEST_ID_HEADER } from "./request-context";
+
 export interface FetchWithTimeoutOptions extends RequestInit {
   /** Milliseconds before the request is aborted. Defaults to DEFAULT_FETCH_TIMEOUT_MS. */
   timeoutMs?: number;
@@ -43,8 +45,12 @@ export async function fetchWithTimeout(
 ): Promise<Response> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
+  // Forward this page's request id, so the API's logs for this page view share it.
+  const headers = new Headers(init.headers);
+  const requestId = currentRequestId();
+  if (requestId && !headers.has(REQUEST_ID_HEADER)) headers.set(REQUEST_ID_HEADER, requestId);
   try {
-    return await fetch(input, { ...init, signal: controller.signal });
+    return await fetch(input, { ...init, headers, signal: controller.signal });
   } finally {
     // Always clear the timer, whether the fetch resolved, rejected, or aborted.
     clearTimeout(timer);
