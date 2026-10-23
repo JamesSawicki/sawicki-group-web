@@ -23,6 +23,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import { openListingPhoto, photoUrl } from "../../lib/photo-utils";
 import { openNeighborhoodMap } from "../../lib/map-utils";
 import ChatConversation from "./ChatConversation";
+import { notePhotoViewed, openListingChat, SHOWING_REQUEST } from "../../lib/chat-events";
 
 /** id of the marker placed right after the gallery + hero on the listing page. */
 export const HERO_END_ID = "listing-hero-end";
@@ -78,7 +79,10 @@ function PhotoCarousel({ photoIds, accountHash, size, address, active }: Carouse
 
   useEffect(() => {
     if (!embla) return;
-    const onSelect = () => setSelected(embla.selectedScrollSnap());
+    const onSelect = () => {
+      setSelected(embla.selectedScrollSnap());
+      notePhotoViewed(embla.selectedScrollSnap());
+    };
     embla.on("select", onSelect);
     return () => {
       embla.off("select", onSelect);
@@ -242,8 +246,14 @@ export default function ListingSummary({
             <div className="font-semibold text-stone-900 leading-tight">{price}</div>
             <div className="text-xs text-stone-500 truncate">{address}</div>
           </div>
+          {/* Opens the chat and starts a showing request (the contact page stays the
+              no-JavaScript fallback and is linked from the chat). */}
           <a
             href={contactHref}
+            onClick={(e) => {
+              e.preventDefault();
+              openListingChat(SHOWING_REQUEST);
+            }}
             className="shrink-0 inline-flex items-center h-11 px-4 rounded-lg bg-stone-900 text-white text-sm font-medium"
           >
             Contact

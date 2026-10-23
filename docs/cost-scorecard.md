@@ -58,6 +58,7 @@ Transfer sizes are what Chrome received (HTML compressed; `/_astro` JS not yet �
 | Listing AI chat | `ListingChat.tsx`, API `/api/chat` | 1 Anthropic call per message (~2,150 in + ~100 out tokens, measured: full features + Close to Home + contact tool; was ~650 in) | Anthropic tokens | Haiku 4.5 (`app.chat.model`); last 10 messages; 400-token cap; 10 messages / IP / hour. Usage logged per message. |
 | Close to Home (amenity scores) | API `amenity/` | per listing every 90 days: 3 Mapbox isochrone calls + Overpass (shared tiles in batches) | Mapbox Isochrone API | Resumable batches; ~1,000 listings ≈ 1,000 isochrone calls/month. |
 | Structured data, sitemaps, RSS, robots, llms.txt | `structured-data.ts`, `src/pages/*.ts` | sitemap-listings: 1 slim API call per crawl (cached 1 h) | none | JSON-LD adds ~5–15 KB per page. |
+| Phone chat nudge + greeting | `ListingChat.tsx`, `lib/chat-events.ts` | a 1 s timer + scroll/photo listeners until it fires (once per visit) | none: the greeting is written in, not generated; an AI call only happens when the visitor asks | ~1 KB of JS. |
 | Logging & monitoring | API `logging/`, Actuator; site `middleware.ts` | 1 access line per request; 1 line per outbound call (media downloads/uploads at DEBUG); metrics in memory | none (log storage: Railway plan / Cloud Logging 50 GiB free) | Prod INFO + JSON; all-SQL logging off (was on in every profile), slow SQL > 200 ms only. ~1 KB of logs per request. |
 | Contact form | `/api/contact` | 1 email per submission | Resend | |
 

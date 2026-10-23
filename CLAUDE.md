@@ -174,8 +174,12 @@ Many visitors browse on phones, and map search is the primary way people look fo
 - **Listing AI chat:** the conversation is `listing/ChatConversation.tsx`. Desktop embeds it in
   the summary card (in place of a "Contact us" button, with a direct contact link + phone
   under it; the card fits the window and the chat scrolls inside it). Phones/tablets open it
-  from a round "AI" bubble bottom-right (`ListingChat.tsx`, a bottom sheet). "AI" is a
-  placeholder for the logo.
+  from a round "AI" bubble bottom-right (`ListingChat.tsx`, a bottom sheet) that opens with a
+  written greeting + reply buttons (no AI call until the visitor asks). Nudge: after 15 s of
+  visible time plus 5 photos viewed or half the page scrolled, the bubble pulses (not with
+  reduced motion) and "Questions about this home?" appears; once per visit (sessionStorage).
+  The mini header's Contact opens the chat with a showing request. Page events live in
+  `lib/chat-events.ts`. "AI" is a placeholder for the logo.
 - **Check it:** `npm run audit:mobile` (with `npm run dev` running) loads every main page at
   375 / 768 / 1280px, fails on any page wider than the screen, reports small tap targets and
   text, and saves phone screenshots to `.audit/`. For a quick look, Chrome DevTools device

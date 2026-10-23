@@ -11,6 +11,7 @@
  */
 import { useEffect, useRef, useState } from "react";
 import ContactRequestCard, { type ContactRequest } from "./ContactRequestCard";
+import { SHOWING_REQUEST } from "../../lib/chat-events";
 
 interface Props {
   /** The server builds the system prompt from this id; the client never sends prompt text. */
@@ -21,6 +22,13 @@ interface Props {
   listingPath: string;
   /** Whether the conversation is on screen (it only scrolls itself to new messages then). */
   active: boolean;
+  /**
+   * Opening line shown as the assistant's first bubble, with reply buttons (phones). It's
+   * written here, not by the AI, so opening the chat costs nothing until the visitor asks.
+   */
+  greeting?: string;
+  /** A message to send as the visitor (e.g. from the mini header's Contact); sent once per id. */
+  pendingMessage?: { text: string; id: number };
 }
 
 /** A message in the thread; assistant replies may carry a contact request. */
@@ -37,8 +45,15 @@ interface ChatReply {
 }
 
 /** One-tap starters shown before the first message (labels and what they send). */
+/** Reply buttons under the greeting (phones). */
+const GREETING_REPLIES = [
+  { label: "Tell me more", text: "Tell me more about this home: what stands out?" },
+  { label: "Schedule a showing", text: SHOWING_REQUEST },
+  { label: "What's nearby?", text: "What's nearby: groceries, parks, coffee, transit?" },
+];
+
 const STARTERS = [
-  { label: "Schedule a showing", text: "I'd like to schedule a showing." },
+  { label: "Schedule a showing", text: SHOWING_REQUEST },
   { label: "What's nearby?", text: "What's nearby: groceries, parks, coffee, transit?" },
   { label: "Taxes & fees", text: "What are the property taxes and any HOA fees?" },
 ];
@@ -49,6 +64,8 @@ export default function ChatConversation({
   listingAddress,
   listingPath,
   active,
+  greeting,
+  pendingMessage,
 }: Props) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState<string>("");
@@ -105,6 +122,14 @@ export default function ChatConversation({
     }
   };
 
+  // Send a message handed in from outside (once per id).
+  const sentPendingId = useRef<number | null>(null);
+  useEffect(() => {
+    if (!pendingMessage || sentPendingId.current === pendingMessage.id) return;
+    sentPendingId.current = pendingMessage.id;
+    send(pendingMessage.text);
+  }, [pendingMessage]); // eslint-disable-line react-hooks/exhaustive-deps
+
   return (
     <div className="flex flex-col flex-1 min-h-0 h-full">
       {/* ── Thread ── */}
@@ -112,7 +137,29 @@ export default function ChatConversation({
         ref={threadRef}
         className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-4 space-y-4"
       >
-        {messages.length === 0 && (
+        {greeting && (
+          <div className="flex justify-start">
+            <div className="max-w-[85%] rounded-2xl rounded-bl-sm px-4 py-2.5 text-sm leading-relaxed bg-stone-100 text-stone-800">
+              {greeting}
+              {messages.length === 0 && (
+                <div className="flex flex-wrap gap-2 mt-3">
+                  {GREETING_REPLIES.map((r) => (
+                    <button
+                      key={r.label}
+                      type="button"
+                      onClick={() => send(r.text)}
+                      className="h-9 px-3 rounded-full bg-white border border-stone-300 text-xs font-medium text-stone-800 hover:bg-stone-50"
+                    >
+                      {r.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {!greeting && messages.length === 0 && (
           <div className="text-center px-2 mt-2">
             {/* Hidden on short windows so the starters fit in the desktop card. */}
             <p className="text-sm text-stone-500 [@media(max-height:640px)]:hidden">

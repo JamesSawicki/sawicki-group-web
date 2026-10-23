@@ -41,6 +41,7 @@ import Zoom from "yet-another-react-lightbox/plugins/zoom";
 import Counter from "yet-another-react-lightbox/plugins/counter";
 import Fullscreen from "yet-another-react-lightbox/plugins/fullscreen";
 import { OPEN_PHOTO_EVENT } from "../lib/photo-utils";
+import { notePhotoViewed } from "../lib/chat-events";
 
 interface VirtualTourLink {
   provider: string;
@@ -130,7 +131,18 @@ export default function PhotoGallery({
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [lightboxSet, setLightboxSet] = useState<"photos" | "floorPlans">("photos");
 
-  const [emblaRef] = useEmblaCarousel({ loop: false });
+  const [emblaRef, embla] = useEmblaCarousel({ loop: false });
+
+  // Photo views feed the phone chat's nudge ("has looked at a few photos").
+  useEffect(() => {
+    if (!embla) return;
+    const onSelect = () => notePhotoViewed(embla.selectedScrollSnap());
+    if (window.matchMedia("(max-width: 767px)").matches) notePhotoViewed(0); // first photo shows on load
+    embla.on("select", onSelect);
+    return () => {
+      embla.off("select", onSelect);
+    };
+  }, [embla]);
 
   // Other islands open the lightbox at a photo (see openListingPhoto).
   useEffect(() => {
@@ -343,7 +355,12 @@ export default function PhotoGallery({
           finite: true,
         }}
         // Keep our index in step with swipes/arrows, so the strip highlights the right photo.
-        on={{ view: ({ index }) => setLightboxIndex(index) }}
+        on={{
+          view: ({ index }) => {
+            setLightboxIndex(index);
+            if (lightboxSet === "photos") notePhotoViewed(index);
+          },
+        }}
         // Leave room under the photo for the strip.
         styles={{ slide: { paddingBottom: STRIP_HEIGHT + 16 } }}
         render={{
