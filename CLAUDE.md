@@ -305,7 +305,7 @@ Many visitors browse on phones, and map search is the primary way people look fo
   visible time plus 5 photos viewed or half the page scrolled, the bubble pulses (not with
   reduced motion) and "Questions about this home?" appears; once per visit (sessionStorage).
   The mini header's Contact opens the chat with a showing request. Page events live in
-  `lib/chat-events.ts`. "AI" is a placeholder for the logo.
+  `lib/chat-events.ts`. The bubble says "AI", not our logo (the chat must read as AI).
 - **Check it:** `npm run audit:mobile` (with `npm run dev` running) loads every main page at
   375 / 768 / 1280px, fails on any page wider than the screen, reports small tap targets and
   text, and saves phone screenshots to `.audit/`. For a quick look, Chrome DevTools device

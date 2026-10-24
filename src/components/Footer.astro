@@ -8,6 +8,7 @@
  */
 // ─── Imports ─────────────────────────────────────────────────────────────────
 import BrokerageCredit from "./brand/BrokerageCredit.astro";
+import Logo from "./brand/Logo.astro";
 import { agent, primaryContact, site, social, socialLabels } from "../lib/site.config";
 
 // ─── Derived values ──────────────────────────────────────────────────────────
@@ -35,7 +36,7 @@ const linkClass = "py-1.5 hover:text-stone-900 transition-colors";
   <div class="max-w-6xl mx-auto px-6 py-12 grid grid-cols-1 sm:grid-cols-3 gap-8 text-sm text-stone-500">
     {/* ── Who we are ── */}
     <div>
-      <div class="font-semibold text-stone-900 mb-3">{site.name}</div>
+      <Logo variant="compact" class="h-10 w-auto mb-4" />
       <BrokerageCredit />
       {socialLinks.map((link) => (
         <a

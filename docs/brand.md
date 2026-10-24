@@ -6,30 +6,53 @@ build. Values still unknown are empty with a `TODO-JIM:` comment (grep for it); 
 leaves empty values out rather than showing a blank. Never guess a license number or
 contact detail.
 
-| To change...                         | Edit                                                                                                                                                                       |
-| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| The team name or tagline             | `site.name` (the `SITE_NAME` const), `site.tagline`                                                                                                                        |
-| The logo                             | Put the file in `public/`, then set `logos.full` (or `mark`, `fullOnDark`) with its `src`, `width`, `height` and `alt`                                                     |
-| What the header shows                | `site.headerLogo`: `"wordmark"` (the name in type, today), `"full"`, `"mark"` or `"fullOnDark"`                                                                            |
-| The favicon                          | Put the file in `public/` and set `site.faviconPath`                                                                                                                       |
-| The link-preview image               | Replace `public/og-default.jpg` (1200×630) or set `site.ogImagePath`                                                                                                       |
+| To change...                         | Edit                                                                                                                                                                                            |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The team name or tagline             | `site.name` (the `SITE_NAME` const), `site.tagline`                                                                                                                                             |
+| The logo                             | Replace the original in `public/brand/sawicki/`, run `npm run brand:assets` (rebuilds the web copies and icons), and update the sizes in `logos` if they changed                                |
+| What the header shows                | `site.headerLogo`: `"compact"` (today), any other `logos` variant, or `"wordmark"` (the name in type)                                                                                           |
+| The favicon / home-screen icon       | Built by `npm run brand:assets` (`favicon.ico`, `favicon-32.png`, `apple-touch-icon.png`, `icon-512.png`); paths in `site.faviconPath`, `site.appleTouchIconPath`                               |
+| The link-preview image               | Replace `public/og-default.jpg` (1200×630) or set `site.ogImagePath`                                                                                                                            |
 | A bio, headshot or highlights        | That person's entry in `team` (Jim's is the `jim` const above it). A member with a `bio` gets an About-page profile automatically; `brokerageSince` (a year) shows on the home page's team card |
-| A phone number                       | The person's `phone: { tel: "digits only", display: "(952) 212-1586" }`; office/brokerage phones in `office.phone` / `brokerage.phone`                                     |
-| An email                             | The person's `email` (Jim's is also where the contact form sends; a home-page lead goes to its area's specialist's email, Jim's if unset)                                  |
-| A home-page market                   | `markets`: name, places, map box (`bounds`), specialist (`specialistId`), optional photo (`image`)                                                                         |
-| Track-record figures / designations  | `proofPoints` (value, label, source); the home page's proof bar appears once there's one                                                                                   |
-| Client reviews                       | `reviews`: exact words, with permission, plus where they were posted; the home page section appears once there's one                                                       |
-| A license number                     | The person's `licenseNumber` (shown in the footer and JSON-LD) or `brokerage.licenseNumber`                                                                                |
-| The brokerage name, logo, phone, URL | `brokerage` (shown in the footer on every page and on the Contact page: NorthstarMLS §5.8(a)(ii) and Minnesota ad rules); `logoOnDark` is the white logo for navy sections |
-| The office address                   | `office` (JSON-LD shows the address once `streetAddress` is set)                                                                                                           |
-| Social links                         | `social` (URL) and `socialLabels` (link text); TypeScript requires both                                                                                                    |
-| The chat bubble's "AI" placeholder   | `chatBubble.label`, or set `logos.mark` (the bubble uses it as its image once the island reads `chatBubble`)                                                               |
-| The blog's name / AI byline          | `site.blogName`, `site.aiAuthorName`                                                                                                                                       |
-| The accent color (eyebrows, links)   | `--color-accent` / `--color-accent-strong` in `src/styles/global.css` (classes `text-accent`, `hover:text-accent-strong`)                                                  |
-| The logo colors                      | `--color-brand-navy` / `--color-brand-gold` in `src/styles/global.css`, and `brandColors` in `site.config.ts` for code that can't use classes                              |
-| MLS disclaimers                      | `mls` — VERIFY-IDX wording; follow NorthstarMLS rules, don't reword casually                                                                                               |
+| A phone number                       | The person's `phone: { tel: "digits only", display: "(952) 212-1586" }`; office/brokerage phones in `office.phone` / `brokerage.phone`                                                          |
+| An email                             | The person's `email` (Jim's is also where the contact form sends; a home-page lead goes to its area's specialist's email, Jim's if unset)                                                       |
+| A home-page market                   | `markets`: name, places, map box (`bounds`), specialist (`specialistId`), optional photo (`image`)                                                                                              |
+| Track-record figures / designations  | `proofPoints` (value, label, source); the home page's proof bar appears once there's one                                                                                                        |
+| Client reviews                       | `reviews`: exact words, with permission, plus where they were posted; the home page section appears once there's one                                                                            |
+| A license number                     | The person's `licenseNumber` (shown in the footer and JSON-LD) or `brokerage.licenseNumber`                                                                                                     |
+| The brokerage name, logo, phone, URL | `brokerage` (shown in the footer on every page and on the Contact page: NorthstarMLS §5.8(a)(ii) and Minnesota ad rules); `logoOnDark` is the white logo for navy sections                      |
+| The office address                   | `office` (JSON-LD shows the address once `streetAddress` is set)                                                                                                                                |
+| Social links                         | `social` (URL) and `socialLabels` (link text); TypeScript requires both                                                                                                                         |
+| The chat bubble's "AI" label         | `chatBubble.label`. It stays "AI" rather than our logo: the chat must always read as AI (§5.8(e)), and the 4:1 key is a sliver in the round bubble                                              |
+| The blog's name / AI byline          | `site.blogName`, `site.aiAuthorName`                                                                                                                                                            |
+| The accent color (eyebrows, links)   | `--color-accent` / `--color-accent-strong` in `src/styles/global.css` (classes `text-accent`, `hover:text-accent-strong`)                                                                       |
+| The logo colors                      | `--color-brand-navy` / `--color-brand-gold` in `src/styles/global.css`, and `brandColors` in `site.config.ts` for code that can't use classes                                                   |
+| MLS disclaimers                      | `mls` — VERIFY-IDX wording; follow NorthstarMLS rules, don't reword casually                                                                                                                    |
 
 ## Logo files
+
+Our team logo (supplied by Jim, 2026-10-24) lives in `public/brand/sawicki/`: the originals
+(1370×433 transparent PNGs) and the web copies `npm run brand:assets` builds from them.
+Wherever our logo appears, the Coldwell Banker Realty logo appears beside or right under it
+(header, home page hero, footer), as Minn. Stat. 82.69 requires for a team name.
+
+| File                                    | What                                         | Used for (`logos` variant)      |
+| --------------------------------------- | -------------------------------------------- | ------------------------------- |
+| `sawicki-full-color.png`                | Original: navy S + name, gold key + tagline  | source                          |
+| `sawicki-full-reverse.png`              | Original: white S + name + tagline, gold key | source                          |
+| `sawicki-full-black.png`                | Original: all black                          | print / one-color uses          |
+| `sawicki-full-white.png`                | Original: all white                          | photo overlays                  |
+| `sawicki-icon-navy.jpg`                 | Original: SG key on a navy square (556×557)  | social profile picture          |
+| `logo-compact-web.png`                  | Key + name, no tagline (640×160)             | `compact`: header, footer       |
+| `logo-compact-on-dark-web.png`          | Same, white type                             | `compactOnDark`: home page hero |
+| `logo-full-web.png`                     | Key + name + tagline (800×253)               | `full`: JSON-LD logo            |
+| `logo-full-on-dark-web.png`             | Same, white type                             | `fullOnDark`                    |
+| `mark-web.png` / `mark-on-dark-web.png` | The SG key alone (400×100)                   | `mark` / `markOnDark`           |
+
+The tagline is only legible when the logo is at least ~300px wide, so small slots use the
+compact version. `public/logo.png` and `public/og-default.jpg` (link previews) are the full
+logo on white. The banner and presentation JPGs Jim sent (handshake/skyline photo, 3:2
+slides) aren't on the site: the photo's stock license is unknown (TODO-JIM if wanted).
 
 Brokerage logos (supplied by Jim, 2026-10-23) live in `public/brand/coldwell-banker/` and are
 served at `/brand/coldwell-banker/<file>`. Use them only as Coldwell Banker's brand rules allow

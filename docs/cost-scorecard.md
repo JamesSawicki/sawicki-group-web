@@ -38,6 +38,7 @@ re-measure when a feature changes) and keep the action list current.
 | Chat: Haiku 4.5, 400-token reply cap, last 10 messages, usage logged, plain-text replies | Sonnet 4.5, 600 cap, unbounded history | measured 648 in + 67 out tokens ≈ $0.001 / message |
 | Chat on Haiku 5.5, thinking off (2026-10-24) | Haiku 4.5 ($1 / $5 per M) | $0.10 / $0.50 per M; ~$0.0033 → ~$0.0004 / message even with ~30% more tokens counted (test: 476 in + 114 out tokens) |
 | Blog agent payments computed in code; Opus 5.5 (2026-10-24) | Sonnet 5, model did the math | measured 997 in + 1,587 out ≈ 3.6¢ / weekly post (~16¢ / month); `BLOG_MODEL=claude-sonnet-5-5` about halves it |
+| Team logo images in header, hero, footer (2026-10-24) | team name in type | +2 image requests on the home page (9 KB compact + 9 KB on-dark), +1 elsewhere (header and footer share one file); favicon.ico 3 KB |
 | Amenity refresh every 90 days (was ~monthly) | ~3 isochrone calls / listing / month | ~1 / listing / month |
 
 ### Done (2026-10-22 second pass)

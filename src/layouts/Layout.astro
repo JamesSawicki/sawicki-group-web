@@ -74,7 +74,9 @@ const showEulaGate = requiresEula && !Astro.cookies.has(EULA_COOKIE);
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
     {noindex && <meta name="robots" content="noindex, follow" />}
-    <link rel="icon" href={site.faviconPath} />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" href={site.faviconPath} type="image/png" sizes="32x32" />
+    <link rel="apple-touch-icon" href={site.appleTouchIconPath} />
     <link
       rel="alternate"
       type="application/rss+xml"

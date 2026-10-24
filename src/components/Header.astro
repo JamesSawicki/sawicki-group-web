@@ -2,8 +2,8 @@
 /**
  * Site header: logo, navigation, and the Contact call to action.
  *
- * The logo slot shows `site.headerLogo` from site.config.ts: the name in type
- * ("wordmark", today) or a logo image variant.
+ * The logo slot shows `site.headerLogo` from site.config.ts (the "compact" team logo: SG key
+ * and name), with the Coldwell Banker Realty logo beside it.
  *
  * Below the `md` breakpoint (768px) the links don't fit in one row, so they move into a
  * dropdown opened by a menu button; Contact stays visible beside it as the main action.
@@ -35,7 +35,7 @@ const links = [
         <Logo
           variant={site.headerLogo}
           loading="eager"
-          class={site.headerLogo === "wordmark" ? undefined : "h-10 w-auto"}
+          class={site.headerLogo === "wordmark" ? undefined : "h-8 sm:h-10 w-auto"}
         />
       </span>
       <span class="hidden sm:block h-7 w-px bg-stone-300 shrink-0" aria-hidden="true"></span>

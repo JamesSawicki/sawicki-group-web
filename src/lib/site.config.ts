@@ -65,7 +65,8 @@ export interface TeamMember {
 }
 
 /** Which logo a slot shows: an image variant, or the site name set in type. */
-export type LogoVariant = "full" | "mark" | "fullOnDark" | "wordmark";
+export type LogoVariant =
+  "full" | "compact" | "mark" | "fullOnDark" | "compactOnDark" | "markOnDark" | "wordmark";
 
 // ─── Site ────────────────────────────────────────────────────────────────────
 
@@ -84,10 +85,12 @@ export const site = {
   siteUrl: "https://sawicki-group-web-43343667811.us-central1.run.app",
   /** Default link-preview image (1200×630), in /public. */
   ogImagePath: "/og-default.jpg",
-  /** Browser-tab icon, in /public. TODO-JIM: this is still Astro's default icon; supply an SG mark. */
-  faviconPath: "/favicon.svg",
+  /** Browser-tab icon, in /public (the SG letters on navy; /favicon.ico has 16/32/48px). */
+  faviconPath: "/favicon-32.png",
+  /** Phone home-screen icon (180×180, the SG key on navy). */
+  appleTouchIconPath: "/apple-touch-icon.png",
   /** What the header shows: "wordmark" (the name in type) or a logo image variant. */
-  headerLogo: "wordmark" as LogoVariant,
+  headerLogo: "compact" as LogoVariant,
   /** Name of the blog (nav, RSS, JSON-LD). */
   blogName: "Market Updates",
   /** Byline for AI-written blog posts. */
@@ -101,19 +104,54 @@ export const site = {
 /**
  * Logo files in /public. Render them with `components/brand/Logo.astro`; a variant that's
  * null falls back to the wordmark, so a slot can name a logo before the file exists.
+ *
+ * Web copies in /brand/sawicki/, built from the originals there by `npm run brand:assets`
+ * (scripts/brand-assets.mjs). Our team logo always appears with the Coldwell Banker Realty
+ * logo nearby (Minn. Stat. 82.69: a team name only with the brokerage conspicuous).
  */
 export const logos: Record<Exclude<LogoVariant, "wordmark">, BrandImage | null> = {
-  /** Full logo: SG key mark, name and tagline (trimmed). Also the JSON-LD logo. */
+  /** Full logo: SG key, name and tagline, on light backgrounds (the tagline needs ~300px of width). Also the JSON-LD logo. */
   full: {
-    src: "/logo.png",
-    width: 1200,
-    height: 412,
-    alt: `${site.name} — ${site.tagline}`,
+    src: "/brand/sawicki/logo-full-web.png",
+    width: 800,
+    height: 253,
+    alt: `${site.name}: ${site.tagline}`,
   },
-  /** TODO-JIM: the SG key mark alone (square, ideally SVG) — for the favicon and chat bubble. */
-  mark: null,
-  /** TODO-JIM: a light version of the full logo for dark backgrounds (e.g. the home page CTA). */
-  fullOnDark: null,
+  /** SG key and name, no tagline (too small to read at header size). The header logo. */
+  compact: {
+    src: "/brand/sawicki/logo-compact-web.png",
+    width: 640,
+    height: 160,
+    alt: site.name,
+  },
+  /** The SG key alone (4:1), on light backgrounds. */
+  mark: {
+    src: "/brand/sawicki/mark-web.png",
+    width: 400,
+    height: 100,
+    alt: site.name,
+  },
+  /** Full logo with white type and the gold key, for large navy areas (the tagline needs ~300px of width). */
+  fullOnDark: {
+    src: "/brand/sawicki/logo-full-on-dark-web.png",
+    width: 800,
+    height: 253,
+    alt: `${site.name}: ${site.tagline}`,
+  },
+  /** SG key and name with white type, for navy sections (the home page hero). */
+  compactOnDark: {
+    src: "/brand/sawicki/logo-compact-on-dark-web.png",
+    width: 640,
+    height: 160,
+    alt: site.name,
+  },
+  /** The SG key with a white S, for navy sections. */
+  markOnDark: {
+    src: "/brand/sawicki/mark-on-dark-web.png",
+    width: 400,
+    height: 100,
+    alt: site.name,
+  },
 };
 
 /**
@@ -388,7 +426,9 @@ export const socialLabels: Record<keyof typeof social, string> = {
  */
 export const chatBubble: { label: string; image: BrandImage | null } = {
   label: "AI",
-  image: logos.mark,
+  // Stays the "AI" label: the chat must always read as AI (NorthstarMLS §5.8(e)), and the
+  // 4:1 SG key would be a sliver in the 28px round bubble.
+  image: null,
 };
 
 // ─── MLS IDX compliance ──────────────────────────────────────────────────────

@@ -3,14 +3,16 @@
  * Home page hero: the promise on the left, and a lead card on the right with two equal
  * paths, "I'm buying" (search) and "I'm selling" (request a home value analysis). The
  * Buying/Selling switch is CSS-only (radio inputs + `:has`), so it works before any JS.
- * Our brokerage's logo sits in the hero (Minn. Stat. 82.69: broker named in advertising).
+ * The hero opens with our team logo beside our brokerage's (Minn. Stat. 82.69: broker named
+ * in advertising; the team name only with the brokerage conspicuous).
  */
 // ─── Imports ─────────────────────────────────────────────────────────────────
 import ContactLine from "../brand/ContactLine.astro";
+import Logo from "../brand/Logo.astro";
 import Field from "./Field.astro";
 import HomeSearch from "./HomeSearch";
 import LeadForm from "./LeadForm.astro";
-import { brokerage, markets, primaryContact, site } from "../../lib/site.config";
+import { brokerage, markets, primaryContact } from "../../lib/site.config";
 
 // ─── Props ───────────────────────────────────────────────────────────────────
 interface Props {
@@ -43,9 +45,23 @@ const tab =
     {/* On phones the order is promise, lead card, proof, so the card shows on the first
         screen; from lg the card is a right-hand column spanning both rows. */}
     <div class="lg:pt-6">
-      <p class="text-xs sm:text-sm font-semibold uppercase tracking-[0.2em] text-brand-gold mb-4">
-        {site.name} · Twin Cities
-      </p>
+      {/* ── Team + brokerage logos ── */}
+      <div class="flex items-center gap-4 sm:gap-5 mb-8">
+        <Logo variant="compactOnDark" loading="eager" class="h-10 sm:h-12 w-auto" />
+        {brokerage.logoOnDark && (
+          <>
+            <span class="h-10 sm:h-12 w-px bg-white/30 shrink-0" aria-hidden="true" />
+            <img
+              src={brokerage.logoOnDark.src}
+              width={brokerage.logoOnDark.width}
+              height={brokerage.logoOnDark.height}
+              alt={brokerage.logoOnDark.alt}
+              loading="eager"
+              class="h-7 sm:h-9 w-auto shrink-0"
+            />
+          </>
+        )}
+      </div>
       <h1 class="font-serif text-4xl sm:text-5xl leading-[1.1] mb-5">
         Twin Cities real estate, handled with precision.
       </h1>
@@ -83,15 +99,6 @@ const tab =
           </span>
         </li>
       </ul>
-      {brokerage.logoOnDark && (
-        <img
-          src={brokerage.logoOnDark.src}
-          width={brokerage.logoOnDark.width}
-          height={brokerage.logoOnDark.height}
-          alt={brokerage.logoOnDark.alt}
-          class="h-9 w-auto opacity-90"
-        />
-      )}
     </div>
 
     {/* ── Lead card ── */}
