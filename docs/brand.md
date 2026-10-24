@@ -13,7 +13,7 @@ contact detail.
 | What the header shows                | `site.headerLogo`: `"wordmark"` (the name in type, today), `"full"`, `"mark"` or `"fullOnDark"`                                                                            |
 | The favicon                          | Put the file in `public/` and set `site.faviconPath`                                                                                                                       |
 | The link-preview image               | Replace `public/og-default.jpg` (1200×630) or set `site.ogImagePath`                                                                                                       |
-| A bio, headshot or highlights        | That person's entry in `team` (Jim's is the `jim` const above it). A member with a `bio` gets an About-page profile automatically                                          |
+| A bio, headshot or highlights        | That person's entry in `team` (Jim's is the `jim` const above it). A member with a `bio` gets an About-page profile automatically; `brokerageSince` (a year) shows on the home page's team card |
 | A phone number                       | The person's `phone: { tel: "digits only", display: "(952) 212-1586" }`; office/brokerage phones in `office.phone` / `brokerage.phone`                                     |
 | An email                             | The person's `email` (Jim's is also where the contact form sends; a home-page lead goes to its area's specialist's email, Jim's if unset)                                  |
 | A home-page market                   | `markets`: name, places, map box (`bounds`), specialist (`specialistId`), optional photo (`image`)                                                                         |

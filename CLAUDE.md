@@ -38,6 +38,15 @@ npm run build    # local production build; does not deploy
   `PUBLIC_GA_MEASUREMENT_ID` (none = no tracking) (`.env.local`); `RESEND_API_KEY` for the
   contact form; server-only `SITE_API_KEY` (never `PUBLIC_`), `TRUSTED_PROXY_HOPS`,
   `CONTACT_DAILY_SEND_CAP`. Never commit `.env*`.
+- **Without `RESEND_API_KEY`** every `/api/contact` request errors (the Resend client is
+  built at import), so local forms can't send. Validation and the honeypot can be tested
+  with a dummy key in `.env.local`; it can't send real email.
+- **Only port 4321 gets search suggestions:** the API's dev CORS patterns name that port, so
+  a second dev server on another port (e.g. a worktree's) gets 403s from browser API calls.
+  Test those flows on 4321, or relay the calls in Playwright.
+- **Two sessions or agents at once:** give each its own git worktree and branch
+  (`.claude/worktrees/`, own `npm ci`, copied `.env.local`), never one shared folder. Merge
+  `origin/dev` into the branch, then fast-forward `dev`. Pull before every push.
 
 ## Conventions
 
