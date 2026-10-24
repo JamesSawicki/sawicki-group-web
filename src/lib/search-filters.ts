@@ -6,6 +6,7 @@
  * refetches), so both always send the API the same thing.
  */
 import type { Listing } from "../types/listing";
+import type { MapBounds } from "./site.config";
 
 /** Every filter as the string a form field holds; "" means "not set". */
 export interface SearchFilters {
@@ -141,6 +142,26 @@ export function applyFiltersToParams(filters: SearchFilters, params: URLSearchPa
     if (value === "" || value === false) params.delete(key);
     else params.set(key, String(value));
   }
+}
+
+// A city with one listing has a zero-size box; the map needs some area to frame.
+const MIN_SPAN_DEGREES = 0.02;
+
+/** A link to the /listings map search framed on `bounds` (padded if it's tiny). */
+export function mapSearchPath(bounds: MapBounds): string {
+  const pad = (min: number, max: number): [number, number] => {
+    const extra = Math.max(0, MIN_SPAN_DEGREES - (max - min)) / 2;
+    return [min - extra, max + extra];
+  };
+  const [minLat, maxLat] = pad(bounds.minLat, bounds.maxLat);
+  const [minLng, maxLng] = pad(bounds.minLng, bounds.maxLng);
+  const params = new URLSearchParams({
+    minLat: minLat.toFixed(4),
+    maxLat: maxLat.toFixed(4),
+    minLng: minLng.toFixed(4),
+    maxLng: maxLng.toFixed(4),
+  });
+  return `/listings?${params}`;
 }
 
 /** How many filters differ from the defaults; shown on the "Filters" button. */

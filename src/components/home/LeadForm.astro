@@ -1,0 +1,103 @@
+---
+/**
+ * A home-page lead form: the fields come in through the slot; this adds the honeypot,
+ * the hidden `leadForm` name (analytics tells the forms apart by it, never by the
+ * fields), the submit button, and the sending / error / thank-you states. Posts to
+ * /api/contact with fetch, so the page doesn't reload.
+ */
+// ─── Props ───────────────────────────────────────────────────────────────────
+interface Props {
+  /** Which form this is (analytics `generate_lead` form). */
+  formName: "home_value" | "home_contact";
+  /** Submit button text. */
+  submitLabel: string;
+  /** Shown in place of the form once it's sent. */
+  successText: string;
+  /** Extra hidden fields, e.g. `{ intent: "Sell a home" }`. */
+  hidden?: Record<string, string>;
+  /** Button style: "gold" on the navy hero, "navy" on light sections. */
+  tone?: "gold" | "navy";
+}
+
+const { formName, submitLabel, successText, hidden = {}, tone = "navy" } = Astro.props;
+
+// ─── Derived values ──────────────────────────────────────────────────────────
+const button =
+  tone === "gold"
+    ? "bg-brand-gold text-brand-navy hover:brightness-105"
+    : "bg-brand-navy text-white hover:bg-brand-navy/90";
+---
+
+<div>
+  <form data-lead-form class="flex flex-col gap-4">
+    {/* ── Hidden fields ── */}
+    <input type="hidden" name="leadForm" value={formName} />
+    {Object.entries(hidden).map(([name, value]) => (
+      <input type="hidden" name={name} value={value} />
+    ))}
+    {/* Honeypot: hidden from people; bots that fill it get a fake "sent" (api/contact.ts). */}
+    <div
+      aria-hidden="true"
+      style="position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden"
+    >
+      <label>
+        Leave this empty <input type="text" name="website" tabindex="-1" autocomplete="off" />
+      </label>
+    </div>
+
+    {/* ── Fields ── */}
+    <slot />
+
+    {/* ── Submit ── */}
+    <button
+      type="submit"
+      data-label={submitLabel}
+      class={`h-12 rounded-lg px-6 font-semibold transition disabled:opacity-60 ${button}`}
+    >
+      {submitLabel}
+    </button>
+    <p
+      data-lead-error
+      role="alert"
+      class="hidden text-sm text-red-700 bg-red-50 rounded-lg px-3 py-2"
+    ></p>
+  </form>
+
+  {/* ── Sent ── */}
+  <div data-lead-success hidden role="status" class="rounded-lg bg-white p-6 text-stone-700">
+    <p class="font-semibold text-stone-900 mb-1">Thank you. Your request is in.</p>
+    <p class="text-sm leading-relaxed">{successText}</p>
+  </div>
+</div>
+
+<script>
+  // One script for every lead form on the page (Astro bundles it once).
+  for (const form of document.querySelectorAll<HTMLFormElement>("form[data-lead-form]")) {
+    const button = form.querySelector<HTMLButtonElement>("button[type=submit]")!;
+    const error = form.querySelector<HTMLElement>("[data-lead-error]")!;
+    const success = form.parentElement!.querySelector<HTMLElement>("[data-lead-success]")!;
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      error.classList.add("hidden");
+      button.disabled = true;
+      button.textContent = "Sending…";
+      try {
+        const res = await fetch("/api/contact", { method: "POST", body: new FormData(form) });
+        const result = (await res.json()) as { success: boolean; error?: string };
+        if (!result.success) throw new Error(result.error);
+        form.hidden = true;
+        success.hidden = false;
+      } catch (err) {
+        error.textContent =
+          err instanceof Error && err.message
+            ? err.message
+            : "Something went wrong. Please try again, or call or email us.";
+        error.classList.remove("hidden");
+      } finally {
+        button.disabled = false;
+        button.textContent = button.dataset.label ?? "Send";
+      }
+    });
+  }
+</script>

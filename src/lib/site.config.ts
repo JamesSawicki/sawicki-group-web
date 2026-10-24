@@ -141,6 +141,8 @@ export const brokerage: {
   state: string;
   stateName: string;
   logo: BrandImage | null;
+  /** White version of `logo`, for dark backgrounds (the home page hero). */
+  logoOnDark: BrandImage | null;
   licenseNumber: string;
   phone: Phone | null;
   url: string;
@@ -164,6 +166,13 @@ export const brokerage: {
     src: "/brand/coldwell-banker/cbr-horizontal-black-web.png",
     width: 342,
     height: 80,
+    alt: "Coldwell Banker Realty",
+  },
+  /** 342×92 web copy of public/brand/coldwell-banker/cbr-horizontal-white.png. */
+  logoOnDark: {
+    src: "/brand/coldwell-banker/cbr-horizontal-white-web.png",
+    width: 342,
+    height: 92,
     alt: "Coldwell Banker Realty",
   },
   /** License numbers aren't required on the site (the brokerage confirmed, 2026-10-23). */
@@ -250,6 +259,112 @@ export const agent = {
   phoneDisplay: jim.phone.display,
 };
 
+// ─── Markets ─────────────────────────────────────────────────────────────────
+
+/** A map box in degrees, as `/listings` takes it in its URL (minLat, maxLat, ...). */
+export interface MapBounds {
+  minLat: number;
+  maxLat: number;
+  minLng: number;
+  maxLng: number;
+}
+
+/** One of the areas the home page is organized around, with the team member who covers it. */
+export interface MarketArea {
+  /** Stable id: sent with home-page leads (`area`) so /api/contact can route them. */
+  id: string;
+  /** Display name, e.g. "Lake Minnetonka & West Metro". */
+  name: string;
+  /** `team` id of the specialist; leads for this area go to their email (Jim's if unset). */
+  specialistId: string;
+  /** Places we name on the card: facts about where, never about who lives there. */
+  places: string[];
+  /**
+   * The area's map box: the card's "Search" link opens /listings on it, and the home page
+   * counts the for-sale listings inside it. Approximate; boxes don't overlap.
+   */
+  bounds: MapBounds;
+  /** Optional photo of the area (one we own the rights to); the card is typographic without it. */
+  image: BrandImage | null;
+}
+
+/**
+ * The three markets, in display order (Jim, 2026-10-23): Kathy covers Lake Minnetonka and
+ * the outer west metro; Jim covers Minneapolis with the south metro and Saint Paul with the
+ * east metro.
+ */
+export const markets: MarketArea[] = [
+  {
+    id: "lake-minnetonka",
+    name: "Lake Minnetonka & West Metro",
+    specialistId: "kathy-sawicki",
+    places: [
+      "Wayzata",
+      "Minnetonka",
+      "Orono",
+      "Excelsior",
+      "Mound",
+      "Minnetrista",
+      "Independence",
+      "Medina",
+    ],
+    bounds: { minLat: 44.86, maxLat: 45.08, minLng: -93.82, maxLng: -93.4 },
+    image: null, // TODO-JIM: a Lake Minnetonka photo we own (about 1200×800)
+  },
+  {
+    id: "minneapolis",
+    name: "Minneapolis & South Metro",
+    specialistId: "jim-sawicki",
+    places: ["Minneapolis", "Edina", "Richfield", "Bloomington", "Burnsville", "Lakeville"],
+    bounds: { minLat: 44.62, maxLat: 45.06, minLng: -93.4, maxLng: -93.17 },
+    image: null, // TODO-JIM: a Minneapolis photo we own
+  },
+  {
+    id: "saint-paul",
+    name: "Saint Paul & East Metro",
+    specialistId: "jim-sawicki",
+    places: ["Saint Paul", "Roseville", "Maplewood", "Woodbury", "Stillwater", "Eagan"],
+    bounds: { minLat: 44.78, maxLat: 45.1, minLng: -93.17, maxLng: -92.75 },
+    image: null, // TODO-JIM: a Saint Paul photo we own
+  },
+];
+
+// ─── Proof ───────────────────────────────────────────────────────────────────
+
+/** A fact about our track record, shown in the home page's proof bar. */
+export interface ProofPoint {
+  /** The figure, e.g. "250+". */
+  value: string;
+  /** What it counts, e.g. "homes sold". */
+  label: string;
+  /** Where it can be checked (kept for us; shown as a footnote when set). */
+  source: string;
+}
+
+/**
+ * Track-record facts (homes sold, volume, designations, awards). Only numbers we can back
+ * with records; the proof bar is hidden while this is empty.
+ * TODO-JIM: supply figures + their source (e.g. "Coldwell Banker production report, 2025").
+ */
+export const proofPoints: ProofPoint[] = [];
+
+/** A client review, quoted exactly and with the client's permission. */
+export interface Review {
+  /** The client's words, unedited (FTC 16 CFR 465: no edited or invented reviews). */
+  quote: string;
+  /** How the client agreed to be named, e.g. "Sarah K.". */
+  name: string;
+  /** e.g. "Sold in Wayzata, 2025". */
+  context: string;
+  /** Where it was posted, e.g. "Google", "Zillow". */
+  source: string;
+  /** Link to the original review, if public. */
+  url: string;
+}
+
+/** Client reviews for the home page; the section is hidden while this is empty. */
+export const reviews: Review[] = [];
+
 // ─── Social and chat ─────────────────────────────────────────────────────────
 
 /** Official social profiles (footer links, schema.org sameAs). Add each channel as it goes live. */
@@ -292,6 +407,12 @@ export const mls = {
   /** VERIFY-IDX: Coldwell Banker franchise + NAR Fair Housing wording. */
   fairHousingStatement:
     "The Sawicki Group and Coldwell Banker Realty are committed to the principles of the Fair Housing Act and the Equal Opportunity Act.",
+  /**
+   * VERIFY-IDX: §5.5(a), the required line under any summary of MLS data (counts, market
+   * stats), followed by the period: "... for the period (date) through (date)."
+   */
+  compositeReportSource:
+    "Based on information from the REGIONAL MULTIPLE LISTING SERVICE OF MINNESOTA, INC for the period",
 } as const;
 
 // ─── Everything at once ──────────────────────────────────────────────────────
@@ -303,6 +424,9 @@ export const siteConfig = {
   team,
   primaryContact,
   office,
+  markets,
+  proofPoints,
+  reviews,
   social,
   socialLabels,
   site,

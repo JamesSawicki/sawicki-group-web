@@ -1,0 +1,70 @@
+---
+/**
+ * "Meet the team": a card per team member (site.config.ts `team`) with headshot (initials
+ * until one is set), title, the markets they cover, and direct contact. Values that
+ * aren't known yet are simply left off the card.
+ */
+// ─── Imports ─────────────────────────────────────────────────────────────────
+import ContactLine from "../brand/ContactLine.astro";
+import Initials from "./Initials.astro";
+import { brokerage, markets, team } from "../../lib/site.config";
+
+// ─── Derived values ──────────────────────────────────────────────────────────
+const members = team.map((member) => ({
+  member,
+  covers: markets.filter((area) => area.specialistId === member.id).map((area) => area.name),
+}));
+---
+
+<section class="max-w-6xl mx-auto px-4 sm:px-6 py-16 md:py-24">
+  {/* ── Heading ── */}
+  <div class="max-w-2xl mb-10">
+    <p class="text-sm font-semibold uppercase tracking-[0.2em] text-accent mb-3">Meet the team</p>
+    <h2 class="font-serif text-3xl md:text-4xl text-stone-900">
+      The people you'll actually work with
+    </h2>
+  </div>
+
+  {/* ── Cards ── */}
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    {members.map(({ member, covers }) => (
+      <article class="flex flex-col sm:flex-row gap-6 rounded-2xl border border-stone-200 p-6 sm:p-8">
+        {member.headshot ? (
+          <img
+            src={member.headshot.src}
+            width={member.headshot.width}
+            height={member.headshot.height}
+            alt={member.headshot.alt}
+            loading="lazy"
+            class="w-24 h-24 rounded-full object-cover shrink-0"
+          />
+        ) : (
+          <Initials name={member.name} size="lg" />
+        )}
+        <div class="min-w-0">
+          <h3 class="font-serif text-2xl text-stone-900">{member.name}</h3>
+          <p class="text-sm text-stone-500 mb-4">
+            {[member.jobTitle, brokerage.name].filter(Boolean).join(" · ")}
+          </p>
+          {covers.length > 0 && (
+            <p class="text-sm text-stone-700 mb-4">
+              <span class="font-semibold">Covers:</span> {covers.join("; ")}
+            </p>
+          )}
+          <div class="flex flex-col text-sm text-brand-navy font-medium">
+            <ContactLine phone={member.phone} class="inline-block py-2 hover:underline" />
+            <ContactLine email={member.email} class="inline-block py-2 hover:underline break-all" />
+          </div>
+          {member.bio?.length && (
+            <a
+              href="/about"
+              class="inline-block mt-2 py-2 text-sm font-semibold text-accent hover:text-accent-strong"
+            >
+              About {member.name.split(" ")[0]} →
+            </a>
+          )}
+        </div>
+      </article>
+    ))}
+  </div>
+</section>

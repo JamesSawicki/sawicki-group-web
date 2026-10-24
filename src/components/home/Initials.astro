@@ -1,0 +1,27 @@
+---
+/**
+ * A person's initials in a navy circle: the stand-in for a headshot until one is set in
+ * site.config.ts. Decorative (the name is always printed beside it).
+ */
+// ─── Props ───────────────────────────────────────────────────────────────────
+interface Props {
+  /** Full name; the first letters of the first and last words are shown. */
+  name: string;
+  /** "sm": 48px (market cards); "lg": 96px (team cards). */
+  size?: "sm" | "lg";
+}
+
+const { name, size = "sm" } = Astro.props;
+
+// ─── Derived values ──────────────────────────────────────────────────────────
+const words = name.trim().split(/\s+/);
+const initials = (words[0][0] + (words.length > 1 ? words[words.length - 1][0] : "")).toUpperCase();
+const sizeClass = size === "lg" ? "w-24 h-24 text-3xl" : "w-12 h-12 text-base";
+---
+
+<span
+  aria-hidden="true"
+  class={`${sizeClass} shrink-0 inline-flex items-center justify-center rounded-full bg-brand-navy text-brand-gold font-serif`}
+>
+  {initials}
+</span>

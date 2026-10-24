@@ -1,0 +1,40 @@
+---
+/**
+ * Client reviews (site.config.ts `reviews`): real reviews only, quoted exactly, with the
+ * client's permission and where it was posted. Renders nothing while the list is empty.
+ */
+// ─── Imports ─────────────────────────────────────────────────────────────────
+import { reviews } from "../../lib/site.config";
+---
+
+{reviews.length > 0 && (
+  <section class="bg-stone-100 border-y border-stone-200">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-16 md:py-24">
+      <p class="text-sm font-semibold uppercase tracking-[0.2em] text-accent mb-3">
+        From our clients
+      </p>
+      <h2 class="font-serif text-3xl md:text-4xl text-stone-900 mb-10">In their words</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {reviews.map((r) => (
+          <figure class="flex flex-col rounded-2xl bg-white border border-stone-200 p-6">
+            <blockquote class="text-stone-700 leading-relaxed mb-6">“{r.quote}”</blockquote>
+            <figcaption class="mt-auto text-sm">
+              <div class="font-semibold text-stone-900">{r.name}</div>
+              <div class="text-stone-500">
+                {r.context}
+                {r.source && " · "}
+                {r.url ? (
+                  <a href={r.url} rel="noopener" target="_blank" class="underline">
+                    {r.source}
+                  </a>
+                ) : (
+                  r.source
+                )}
+              </div>
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+    </div>
+  </section>
+)}

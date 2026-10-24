@@ -1,183 +1,66 @@
 ---
 /**
- * Home page: hero, neighborhoods, value props, the latest market updates and a call to
- * action. The site name and blog name come from site.config.ts.
+ * Home page: a lead generator for the brand (professional, competent, trustworthy). Two
+ * equal paths in the hero (search to buy; request a home value to sell), the three
+ * markets with their specialists and live for-sale counts, how we work, the team,
+ * reviews and track record (each hidden until real content exists), market updates, and
+ * a closing form. Content lives in site.config.ts; sections are in components/home/.
+ *
+ * The live counts come from the API through a 10-minute cache (lib/markets.ts); if the
+ * API is down the page still renders, just without the numbers.
  */
 // ─── Imports ─────────────────────────────────────────────────────────────────
 import Layout from "../layouts/Layout.astro";
+import HomeHero from "../components/home/HomeHero.astro";
+import ProofBar from "../components/home/ProofBar.astro";
+import MarketAreas from "../components/home/MarketAreas.astro";
+import HowWeWork from "../components/home/HowWeWork.astro";
+import TeamSection from "../components/home/TeamSection.astro";
+import Reviews from "../components/home/Reviews.astro";
+import MarketUpdates from "../components/home/MarketUpdates.astro";
+import TalkToUs from "../components/home/TalkToUs.astro";
 import { getCollection } from "astro:content";
-import { site } from "../lib/site.config";
+import { marketCounts } from "../lib/markets";
+import { markets, site } from "../lib/site.config";
 import { ORGANIZATION_ID, webPage } from "../lib/structured-data";
 
 // ─── Data fetching ───────────────────────────────────────────────────────────
-const recentPosts = (await getCollection("blog"))
+const apiBaseUrl = process.env.PUBLIC_API_BASE_URL || import.meta.env.PUBLIC_API_BASE_URL;
+const [counts, posts] = await Promise.all([marketCounts(), getCollection("blog")]);
+const recentPosts = posts
   .filter((post) => !post.data.draft)
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
   .slice(0, 3);
 
 // ─── Derived values ──────────────────────────────────────────────────────────
-const description = `Find your next home in Minneapolis, Saint Paul, and the Twin Cities with ${site.name}.`;
+const description = `Buy or sell in the Twin Cities with ${site.name}: specialists for ${markets.map((m) => m.name).join(", ")}. Search homes or request a home value analysis.`;
 const jsonLd = [
   webPage("WebPage", "/", site.name, description, { about: { "@id": ORGANIZATION_ID } }),
 ];
 ---
 
-<Layout title="Home" description={description} jsonLd={jsonLd}>
+<Layout title="Twin Cities Real Estate" description={description} jsonLd={jsonLd}>
   {/* ── Hero ── */}
-  <section class="bg-stone-50 border-b border-stone-200">
-    <div class="max-w-6xl mx-auto px-6 py-24">
-      <div class="max-w-2xl">
-        <p class="text-sm font-semibold text-accent uppercase tracking-widest mb-4">
-          Twin Cities Real Estate
-        </p>
-        <h1 class="text-4xl md:text-5xl font-semibold text-stone-900 leading-tight mb-6">
-          Find your place in Minneapolis & Saint Paul
-        </h1>
-        <p class="text-lg text-stone-500 mb-10 leading-relaxed">
-          Local expertise, honest guidance, and a process built around you. {site.name} has helped
-          Twin Cities buyers and sellers navigate one of the Midwest's most competitive markets.
-        </p>
-        <div class="flex gap-4">
-          <a
-            href="/listings"
-            class="bg-stone-900 text-white px-6 py-3 rounded-lg hover:bg-stone-700 transition-colors font-medium"
-          >
-            Search Homes
-          </a>
-          <a
-            href="/contact"
-            class="border border-stone-300 text-stone-700 px-6 py-3 rounded-lg hover:border-stone-500 transition-colors font-medium"
-          >
-            Get in Touch
-          </a>
-        </div>
-      </div>
-    </div>
-  </section>
+  <HomeHero apiBaseUrl={apiBaseUrl} />
 
-  {/* ── Neighborhoods ── */}
-  <section class="max-w-6xl mx-auto px-6 py-20">
-    <h2 class="text-2xl font-semibold text-stone-900 mb-2">Explore Neighborhoods</h2>
-    <p class="text-stone-500 mb-10">Deep local knowledge across the metro.</p>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      {[
-        {
-          name: "Crocus Hill",
-          city: "Saint Paul",
-          desc: "Victorian charm, Grand Ave walkability, top-rated schools.",
-        },
-        {
-          name: "Mac-Groveland",
-          city: "Saint Paul",
-          desc: "Tree-lined streets, Randolph Ave dining, classic architecture.",
-        },
-        {
-          name: "Linden Hills",
-          city: "Minneapolis",
-          desc: "Lake access, village feel, strong community character.",
-        },
-        {
-          name: "Northeast Minneapolis",
-          city: "Minneapolis",
-          desc: "Arts district, breweries, rapidly appreciating market.",
-        },
-        {
-          name: "Edina",
-          city: "Suburb",
-          desc: "50th & France retail, top schools, consistent demand.",
-        },
-        {
-          name: "Highland Park",
-          city: "Saint Paul",
-          desc: "Ford site redevelopment, river views, walkable core.",
-        },
-      ].map((n) => (
-        <div class="border border-stone-200 rounded-xl p-6 hover:border-stone-400 transition-colors cursor-pointer">
-          <div class="text-xs font-semibold text-accent uppercase tracking-widest mb-2">
-            {n.city}
-          </div>
-          <div class="font-semibold text-stone-900 mb-2">{n.name}</div>
-          <div class="text-sm text-stone-500 leading-relaxed">{n.desc}</div>
-        </div>
-      ))}
-    </div>
-  </section>
+  {/* ── Track record ── */}
+  <ProofBar />
 
-  {/* ── Value props ── */}
-  <section class="bg-stone-50 border-y border-stone-200">
-    <div class="max-w-6xl mx-auto px-6 py-16 md:py-20 grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-12">
-      {[
-        {
-          heading: "Local First",
-          body: "Born and raised in the Twin Cities. Every neighborhood recommendation comes from real experience, not a map.",
-        },
-        {
-          heading: "Full Transparency",
-          body: "No pressure, no games. You get honest market data and straight talk at every step of the process.",
-        },
-        {
-          heading: "Tech-Forward",
-          body: "AI-powered listing assistants, instant market alerts, and tools that keep you ahead in a fast-moving market.",
-        },
-      ].map((v) => (
-        <div>
-          <div class="font-semibold text-stone-900 mb-3">{v.heading}</div>
-          <div class="text-sm text-stone-500 leading-relaxed">{v.body}</div>
-        </div>
-      ))}
-    </div>
-  </section>
+  {/* ── Markets ── */}
+  <MarketAreas counts={counts} />
+
+  {/* ── How we work ── */}
+  <HowWeWork />
+
+  {/* ── Team ── */}
+  <TeamSection />
+
+  {/* ── Reviews ── */}
+  <Reviews />
 
   {/* ── Market updates ── */}
-  <section class="max-w-6xl mx-auto px-6 py-20">
-    <div class="flex items-end justify-between mb-10">
-      <div>
-        <h2 class="text-2xl font-semibold text-stone-900 mb-2">{site.blogName}</h2>
-        <p class="text-stone-500">What's happening in the Twin Cities market right now.</p>
-      </div>
-      <a
-        href="/blog"
-        class="text-sm text-accent font-medium hover:text-accent-strong transition-colors"
-      >
-        View all posts →
-      </a>
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      {recentPosts.map((post) => (
-        <a
-          href={`/blog/${post.id}`}
-          class="border border-stone-200 rounded-xl p-6 hover:border-stone-400 transition-colors block"
-        >
-          <div class="text-xs font-semibold text-accent uppercase tracking-widest mb-3">
-            {post.data.tag}
-          </div>
-          <div class="font-semibold text-stone-900 leading-snug mb-4">{post.data.title}</div>
-          <div class="text-xs text-stone-400">
-            {post.data.date.toLocaleDateString("en-US", {
-              month: "long",
-              day: "numeric",
-              year: "numeric",
-            })}
-          </div>
-        </a>
-      ))}
-    </div>
-  </section>
+  <MarketUpdates posts={recentPosts} />
 
-  {/* ── Call to action ── */}
-  <section class="max-w-6xl mx-auto px-6 pb-24">
-    <div class="bg-stone-900 rounded-2xl p-12 text-center">
-      <h2 class="text-3xl font-semibold text-white mb-4">Ready to make a move?</h2>
-      <p class="text-stone-400 mb-8 max-w-lg mx-auto">
-        Whether you're buying your first home or selling after twenty years, let's start with a
-        conversation.
-      </p>
-      <a
-        href="/contact"
-        class="bg-white text-stone-900 px-8 py-3 rounded-lg font-medium hover:bg-stone-100 transition-colors"
-      >
-        Schedule a Call
-      </a>
-    </div>
-  </section>
+  {/* ── Talk to us ── */}
+  <TalkToUs />
 </Layout>

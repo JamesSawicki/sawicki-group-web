@@ -5,11 +5,15 @@
  * middleware.ts checks the Origin and declared size and rate-limits per visitor; here the
  * body read is capped, a hidden honeypot field catches form-filling bots, fields are
  * length-capped, and a daily cap on sends bounds the total however many visitors there are.
+ *
+ * Home-page leads also send `area` (a market id from site.config.ts) and go to that area's
+ * specialist; a home-value request sends `propertyAddress` + `timeline` instead of a message.
  */
 import type { APIRoute } from "astro";
 import { auditLog } from "../../lib/audit";
 import { Resend } from "resend";
-import { agent, site } from "../../lib/site.config";
+import { marketById, specialistFor } from "../../lib/markets";
+import { primaryContact, site } from "../../lib/site.config";
 import { clientIpFrom, logAbuse } from "../../middleware";
 
 const resend = new Resend(import.meta.env.RESEND_API_KEY);
@@ -36,7 +40,17 @@ let sendDay = "";
 let sentToday = 0;
 
 /** Field length caps (characters). */
-const MAX = { name: 120, email: 200, phone: 40, intent: 100, message: 5000 };
+const MAX = {
+  name: 120,
+  email: 200,
+  phone: 40,
+  intent: 100,
+  message: 5000,
+  propertyAddress: 200,
+  timeline: 60,
+};
+/** Field names as visitors know them, for the "too long" error (default: the key). */
+const LABELS: Partial<Record<keyof typeof MAX, string>> = { propertyAddress: "home address" };
 
 const json = (status: number, body: object): Response =>
   new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
@@ -94,6 +108,11 @@ export const POST: APIRoute = async ({ request }) => {
   const phone = field("phone");
   const intent = field("intent");
   const message = field("message");
+  const propertyAddress = field("propertyAddress");
+  const timeline = field("timeline");
+  // Only a known market id routes a lead; anything else goes to the primary contact.
+  const area = marketById(data.get("area")?.toString());
+  const to = (area && specialistFor(area).email) || primaryContact.email;
   // Sent by the listing chat's contact card: which listing the request is about. Only a
   // site listing path is accepted, so the email can't carry an arbitrary link.
   const listingAddress = data.get("listingAddress")?.toString().trim().slice(0, 200);
@@ -102,8 +121,8 @@ export const POST: APIRoute = async ({ request }) => {
     ? new URL(rawPath, site.siteUrl).toString()
     : "";
 
-  // Basic validation — return 400 if required fields are missing
-  if (!name || !email || !message) {
+  // Required: name, email, and something to act on (a message, or the home to value).
+  if (!name || !email || !(message || propertyAddress)) {
     return json(400, { success: false, error: "Name, email, and message are required." });
   }
   const tooLong = (Object.keys(MAX) as (keyof typeof MAX)[]).find(
@@ -114,7 +133,7 @@ export const POST: APIRoute = async ({ request }) => {
     return json(400, {
       success: false,
       error: tooLong
-        ? `Please shorten the ${tooLong} field (up to ${MAX[tooLong]} characters).`
+        ? `Please shorten the ${LABELS[tooLong] ?? tooLong} field (up to ${MAX[tooLong]} characters).`
         : "Please enter a valid email address.",
     });
   }
@@ -129,7 +148,7 @@ export const POST: APIRoute = async ({ request }) => {
     logAbuse({ abuseType: "spend_cap", rule: "resend", status: 503, ip });
     return json(503, {
       success: false,
-      error: `We couldn't send your message right now. Please call or email us at ${agent.email}.`,
+      error: `We couldn't send your message right now. Please call or email us at ${primaryContact.email}.`,
     });
   }
   sentToday++;
@@ -138,9 +157,11 @@ export const POST: APIRoute = async ({ request }) => {
     // Resend reports most failures in `error` rather than throwing.
     const { error } = await resend.emails.send({
       from: `${site.name} <onboarding@resend.dev>`, // Resend's test sender — works without a verified domain
-      to: agent.email,
+      to,
       replyTo: email,
-      subject: `New inquiry from ${name}${listingAddress ? ` about ${listingAddress}` : ""} — ${site.name}`,
+      subject: propertyAddress
+        ? `Home value request from ${name}: ${propertyAddress} — ${site.name}`
+        : `New inquiry from ${name}${listingAddress ? ` about ${listingAddress}` : ""} — ${site.name}`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #1a1612;">New Contact Form Submission</h2>
@@ -180,10 +201,42 @@ export const POST: APIRoute = async ({ request }) => {
             </tr>`
                 : ""
             }
+            ${
+              propertyAddress
+                ? `
+            <tr>
+              <td style="padding: 8px 0; color: #7a7060;">Home to value</td>
+              <td style="padding: 8px 0; font-weight: 600;">${esc(propertyAddress)}</td>
+            </tr>`
+                : ""
+            }
+            ${
+              timeline
+                ? `
+            <tr>
+              <td style="padding: 8px 0; color: #7a7060;">Timeline</td>
+              <td style="padding: 8px 0;">${esc(timeline)}</td>
+            </tr>`
+                : ""
+            }
+            ${
+              area
+                ? `
+            <tr>
+              <td style="padding: 8px 0; color: #7a7060;">Area</td>
+              <td style="padding: 8px 0;">${esc(area.name)}</td>
+            </tr>`
+                : ""
+            }
+            ${
+              message
+                ? `
             <tr>
               <td style="padding: 8px 0; color: #7a7060; vertical-align: top;">Message</td>
               <td style="padding: 8px 0;">${esc(message)}</td>
-            </tr>
+            </tr>`
+                : ""
+            }
           </table>
         </div>
       `,

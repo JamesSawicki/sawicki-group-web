@@ -6,25 +6,28 @@ build. Values still unknown are empty with a `TODO-JIM:` comment (grep for it); 
 leaves empty values out rather than showing a blank. Never guess a license number or
 contact detail.
 
-| To change...                         | Edit                                                                                                                                          |
-| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| The team name or tagline             | `site.name` (the `SITE_NAME` const), `site.tagline`                                                                                           |
-| The logo                             | Put the file in `public/`, then set `logos.full` (or `mark`, `fullOnDark`) with its `src`, `width`, `height` and `alt`                        |
-| What the header shows                | `site.headerLogo`: `"wordmark"` (the name in type, today), `"full"`, `"mark"` or `"fullOnDark"`                                               |
-| The favicon                          | Put the file in `public/` and set `site.faviconPath`                                                                                          |
-| The link-preview image               | Replace `public/og-default.jpg` (1200×630) or set `site.ogImagePath`                                                                          |
-| A bio, headshot or highlights        | That person's entry in `team` (Jim's is the `jim` const above it). A member with a `bio` gets an About-page profile automatically             |
-| A phone number                       | The person's `phone: { tel: "digits only", display: "(952) 212-1586" }`; office/brokerage phones in `office.phone` / `brokerage.phone`        |
-| An email                             | The person's `email` (Jim's is also where the contact form sends)                                                                             |
-| A license number                     | The person's `licenseNumber` (shown in the footer and JSON-LD) or `brokerage.licenseNumber`                                                   |
-| The brokerage name, logo, phone, URL | `brokerage` (shown in the footer on every page and on the Contact page: NorthstarMLS §5.8(a)(ii) and Minnesota ad rules)                      |
-| The office address                   | `office` (JSON-LD shows the address once `streetAddress` is set)                                                                              |
-| Social links                         | `social` (URL) and `socialLabels` (link text); TypeScript requires both                                                                       |
-| The chat bubble's "AI" placeholder   | `chatBubble.label`, or set `logos.mark` (the bubble uses it as its image once the island reads `chatBubble`)                                  |
-| The blog's name / AI byline          | `site.blogName`, `site.aiAuthorName`                                                                                                          |
-| The accent color (eyebrows, links)   | `--color-accent` / `--color-accent-strong` in `src/styles/global.css` (classes `text-accent`, `hover:text-accent-strong`)                     |
-| The logo colors                      | `--color-brand-navy` / `--color-brand-gold` in `src/styles/global.css`, and `brandColors` in `site.config.ts` for code that can't use classes |
-| MLS disclaimers                      | `mls` — VERIFY-IDX wording; follow NorthstarMLS rules, don't reword casually                                                                  |
+| To change...                         | Edit                                                                                                                                                                       |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The team name or tagline             | `site.name` (the `SITE_NAME` const), `site.tagline`                                                                                                                        |
+| The logo                             | Put the file in `public/`, then set `logos.full` (or `mark`, `fullOnDark`) with its `src`, `width`, `height` and `alt`                                                     |
+| What the header shows                | `site.headerLogo`: `"wordmark"` (the name in type, today), `"full"`, `"mark"` or `"fullOnDark"`                                                                            |
+| The favicon                          | Put the file in `public/` and set `site.faviconPath`                                                                                                                       |
+| The link-preview image               | Replace `public/og-default.jpg` (1200×630) or set `site.ogImagePath`                                                                                                       |
+| A bio, headshot or highlights        | That person's entry in `team` (Jim's is the `jim` const above it). A member with a `bio` gets an About-page profile automatically                                          |
+| A phone number                       | The person's `phone: { tel: "digits only", display: "(952) 212-1586" }`; office/brokerage phones in `office.phone` / `brokerage.phone`                                     |
+| An email                             | The person's `email` (Jim's is also where the contact form sends; a home-page lead goes to its area's specialist's email, Jim's if unset)                                  |
+| A home-page market                   | `markets`: name, places, map box (`bounds`), specialist (`specialistId`), optional photo (`image`)                                                                         |
+| Track-record figures / designations  | `proofPoints` (value, label, source); the home page's proof bar appears once there's one                                                                                   |
+| Client reviews                       | `reviews`: exact words, with permission, plus where they were posted; the home page section appears once there's one                                                       |
+| A license number                     | The person's `licenseNumber` (shown in the footer and JSON-LD) or `brokerage.licenseNumber`                                                                                |
+| The brokerage name, logo, phone, URL | `brokerage` (shown in the footer on every page and on the Contact page: NorthstarMLS §5.8(a)(ii) and Minnesota ad rules); `logoOnDark` is the white logo for navy sections |
+| The office address                   | `office` (JSON-LD shows the address once `streetAddress` is set)                                                                                                           |
+| Social links                         | `social` (URL) and `socialLabels` (link text); TypeScript requires both                                                                                                    |
+| The chat bubble's "AI" placeholder   | `chatBubble.label`, or set `logos.mark` (the bubble uses it as its image once the island reads `chatBubble`)                                                               |
+| The blog's name / AI byline          | `site.blogName`, `site.aiAuthorName`                                                                                                                                       |
+| The accent color (eyebrows, links)   | `--color-accent` / `--color-accent-strong` in `src/styles/global.css` (classes `text-accent`, `hover:text-accent-strong`)                                                  |
+| The logo colors                      | `--color-brand-navy` / `--color-brand-gold` in `src/styles/global.css`, and `brandColors` in `site.config.ts` for code that can't use classes                              |
+| MLS disclaimers                      | `mls` — VERIFY-IDX wording; follow NorthstarMLS rules, don't reword casually                                                                                               |
 
 ## Logo files
 
@@ -32,16 +35,16 @@ Brokerage logos (supplied by Jim, 2026-10-23) live in `public/brand/coldwell-ban
 served at `/brand/coldwell-banker/<file>`. Use them only as Coldwell Banker's brand rules allow
 (TODO-JIM: confirm the approved lockup and minimum size with the broker).
 
-| File | Layout | Color / background | Size (px) |
-| --- | --- | --- | --- |
-| `cbr-horizontal-black.png` | Boxed mark beside two-line wordmark | Black, transparent | 1709×400 |
-| `cbr-horizontal-black.jpg` | Same | Black on white | 1709×400 |
-| `cbr-vertical-black.png` | Boxed mark above wordmark | Black, transparent | 2000×1144 |
-| `cbr-vertical-black.jpg` | Same | Black on white | 2000×1144 |
-| `cbr-horizontal-white.png` | Mark beside two-line wordmark | White, transparent (dark backgrounds) | 1642×440 |
-| `cbr-oneline-white.png` | Mark + "COLDWELL BANKER \| REALTY" on one line | White, transparent | 2150×220 |
-| `cbr-vertical-white.png` | Mark above one-line wordmark | White, transparent | 2000×1210 |
-| `cbr-stacked-white.png` | Mark above two-line wordmark | White, transparent | 1100×1386 |
+| File                       | Layout                                         | Color / background                    | Size (px) |
+| -------------------------- | ---------------------------------------------- | ------------------------------------- | --------- |
+| `cbr-horizontal-black.png` | Boxed mark beside two-line wordmark            | Black, transparent                    | 1709×400  |
+| `cbr-horizontal-black.jpg` | Same                                           | Black on white                        | 1709×400  |
+| `cbr-vertical-black.png`   | Boxed mark above wordmark                      | Black, transparent                    | 2000×1144 |
+| `cbr-vertical-black.jpg`   | Same                                           | Black on white                        | 2000×1144 |
+| `cbr-horizontal-white.png` | Mark beside two-line wordmark                  | White, transparent (dark backgrounds) | 1642×440  |
+| `cbr-oneline-white.png`    | Mark + "COLDWELL BANKER \| REALTY" on one line | White, transparent                    | 2150×220  |
+| `cbr-vertical-white.png`   | Mark above one-line wordmark                   | White, transparent                    | 2000×1210 |
+| `cbr-stacked-white.png`    | Mark above two-line wordmark                   | White, transparent                    | 1100×1386 |
 
 On our white pages the horizontal black PNG is the natural choice (header/footer credit);
 the white versions are for dark backgrounds (e.g. a dark footer or photo overlays).
@@ -76,7 +79,6 @@ own export, so only that piece ships to the browser.
 - `src/pages/rss.xml.ts` — author "Jim Sawicki" (use `primaryContact.name`), AI byline
   (`site.aiAuthorName`), "Market Updates" (`site.blogName`).
 - `src/lib/api.ts` — "The Sawicki Group" in the 503 page title (use `site.name`).
-- `src/pages/api/contact.ts` — uses the deprecated `agent` (use `primaryContact`).
 - `src/components/listing/SummarySidebar.astro` — uses the deprecated `agent`.
 - `src/pages/privacy.astro` — uses the deprecated `agent`; `text-amber-*`.
 - `src/pages/404.astro`, `src/components/ListingCard.astro`, `src/lib/listing-utils.ts` —

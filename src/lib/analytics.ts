@@ -52,6 +52,10 @@ const PHOTO_MARKS = [5, 10, 20];
 export type PreviewSource = "pin" | "list" | "search";
 
 /**
+/** Which form a lead came from (home_value: the home page's "What's it worth?"). */
+export type LeadForm = "contact_page" | "listing_chat" | "home_value" | "home_contact";
+
+/**
  * Every custom event and its parameters. `listing_id` is filled in automatically on
  * listing pages. Values must never contain anything a visitor typed.
  */
@@ -101,7 +105,7 @@ export interface AnalyticsEvents {
   /** The AI prepared a contact request card for the visitor to review. */
   chat_contact_prepared: Record<string, never>;
   /** A contact request reached us (GA4 recommended lead event). Never the fields. */
-  generate_lead: { form: "contact_page" | "listing_chat" };
+  generate_lead: { form: LeadForm };
   /** A tel: link was tapped. */
   click_to_call: { link_location: string };
   /** A mailto: link was clicked. */
@@ -341,10 +345,11 @@ function listenForLinkClicks(): void {
 }
 
 /**
- * Leads: a successful POST to /api/contact, from the contact page or the chat's contact
- * card. Observed at fetch() so neither form needs analytics code; the request and its
- * response pass through untouched and nothing from the form is read except whether it
- * carries a listing (the chat card attaches one).
+ * Leads: a successful POST to /api/contact, from the contact page, the chat's contact
+ * card or a home-page form. Observed at fetch() so no form needs analytics code; the
+ * request and its response pass through untouched and nothing from the form is read
+ * except which form it was (the chat card attaches a listing; home-page forms send a
+ * hidden `leadForm`).
  */
 function listenForContactSubmissions(): void {
   const originalFetch = window.fetch;
@@ -357,8 +362,14 @@ function listenForContactSubmissions(): void {
         init?.method ?? (input instanceof Request ? input.method : "GET")
       ).toUpperCase();
       if (response.ok && method === "POST" && url.pathname === "/api/contact") {
-        const fromChat = init?.body instanceof FormData && init.body.has("listingPath");
-        track("generate_lead", { form: fromChat ? "listing_chat" : "contact_page" });
+        const body = init?.body instanceof FormData ? init.body : undefined;
+        const homeForm = body?.get("leadForm");
+        const form: LeadForm = body?.has("listingPath")
+          ? "listing_chat"
+          : homeForm === "home_value" || homeForm === "home_contact"
+            ? homeForm
+            : "contact_page";
+        track("generate_lead", { form });
       }
     } catch {
       // Analytics must never break a request.

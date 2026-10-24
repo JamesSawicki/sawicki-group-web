@@ -74,6 +74,15 @@ npm run build    # local production build; does not deploy
   `src/styles/global.css` (`text-accent`, `brand-navy`, `brand-gold`). See `docs/brand.md`.
 - **Blog posts** in `src/content/blog/` arrive as `draft: true`; publishing means flipping
   that to `false`.
+- **Home page = lead generator** (brand: professional, competent, trustworthy). Sections
+  in `src/components/home/`; content in `site.config.ts` (`markets` with specialist + map
+  box, `proofPoints`, `reviews`; empty lists hide their section). Hero: Buying (the map's
+  `SearchBox` via `HomeSearch.tsx`) / Selling (home value request) switch, CSS-only. Leads
+  post to `/api/contact` with `area` (routes to that area's specialist), `leadForm`
+  (analytics) and, for value requests, `propertyAddress` + `timeline`. Live for-sale counts
+  per area come from `lib/markets.ts` (10-min cache; hidden if the API is down) and carry
+  the §5.5(a) notice. Every claim on the page must be checkable: no unsourced numbers or
+  superlatives, no invented reviews (FTC rule), never "free".
 
 ## Analytics and abuse protection
 

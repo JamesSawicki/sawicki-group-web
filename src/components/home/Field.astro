@@ -1,0 +1,70 @@
+---
+/**
+ * One labeled form control for the home-page lead forms: a text-type input, a textarea
+ * (`type="textarea"`), or a select when `options` is given. Inputs are 48px tall (tap targets) and 16px text, so iOS
+ * doesn't zoom the page when one is focused.
+ */
+// ─── Props ───────────────────────────────────────────────────────────────────
+interface Props {
+  /** Visible label. */
+  label: string;
+  /** Form field name (what /api/contact reads). */
+  name: string;
+  /** Input type; ignored for a select. */
+  type?: "text" | "email" | "tel" | "textarea";
+  /** Browser autofill hint, e.g. "street-address". */
+  autocomplete?: string;
+  placeholder?: string;
+  required?: boolean;
+  /** Makes this a select; the first option should be the empty "choose" one. */
+  options?: { value: string; label: string }[];
+  /** Extra classes on the wrapper (e.g. a grid span). */
+  class?: string;
+}
+
+const {
+  label,
+  name,
+  type = "text",
+  autocomplete,
+  placeholder,
+  required = false,
+  options,
+  class: className = "",
+} = Astro.props;
+
+// ─── Derived values ──────────────────────────────────────────────────────────
+const control =
+  "w-full h-12 rounded-lg border border-stone-300 bg-white px-3 text-base text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-brand-navy focus:ring-2 focus:ring-brand-navy/20";
+---
+
+<label class={`flex flex-col gap-1.5 ${className}`}>
+  <span class="text-sm font-medium text-stone-700">
+    {label}
+    {!required && <span class="font-normal text-stone-500"> (optional)</span>}
+  </span>
+  {options ? (
+    <select name={name} required={required} class={control}>
+      {options.map((o) => (
+        <option value={o.value}>{o.label}</option>
+      ))}
+    </select>
+  ) : type === "textarea" ? (
+    <textarea
+      name={name}
+      required={required}
+      placeholder={placeholder}
+      rows="4"
+      class={`${control} h-auto py-3 resize-y`}
+    />
+  ) : (
+    <input
+      type={type}
+      name={name}
+      required={required}
+      autocomplete={autocomplete}
+      placeholder={placeholder}
+      class={control}
+    />
+  )}
+</label>

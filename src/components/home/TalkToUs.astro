@@ -1,0 +1,92 @@
+---
+/**
+ * The closing lead form (#talk): buying, selling or both, the area (routes the lead to
+ * that area's specialist in /api/contact), contact details and a message, beside our
+ * direct phone and email. Market cards' "Talk to …" links preselect the area.
+ */
+// ─── Imports ─────────────────────────────────────────────────────────────────
+import BrokerageCredit from "../brand/BrokerageCredit.astro";
+import ContactLine from "../brand/ContactLine.astro";
+import Field from "./Field.astro";
+import LeadForm from "./LeadForm.astro";
+import { markets, primaryContact } from "../../lib/site.config";
+
+// ─── Derived values ──────────────────────────────────────────────────────────
+const intentOptions = [
+  { value: "", label: "Choose one" },
+  { value: "Buy a home", label: "Buy a home" },
+  { value: "Sell a home", label: "Sell a home" },
+  { value: "Buy and sell", label: "Buy and sell" },
+  { value: "Just exploring", label: "Just exploring" },
+];
+const areaOptions = [
+  { value: "", label: "Choose an area" },
+  ...markets.map((area) => ({ value: area.id, label: area.name })),
+  { value: "other", label: "Somewhere else in the Twin Cities" },
+];
+---
+
+<section id="talk" class="bg-brand-navy text-white scroll-mt-4">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-16 md:py-24 grid grid-cols-1 lg:grid-cols-[1fr_32rem] gap-10 lg:gap-16">
+    {/* ── Invitation ── */}
+    <div>
+      <p class="text-sm font-semibold uppercase tracking-[0.2em] text-brand-gold mb-3">
+        Talk to us
+      </p>
+      <h2 class="font-serif text-3xl md:text-4xl mb-5">Start with a conversation</h2>
+      <p class="text-lg text-white/80 leading-relaxed mb-10 max-w-lg">
+        Tell us where you are and what you're planning. The specialist for your area will get back
+        to you personally, with no pressure and no obligation.
+      </p>
+      <dl class="space-y-6 text-white/90">
+        <div>
+          <dt class="text-sm text-white/60">Call or text {primaryContact.name.split(" ")[0]}</dt>
+          <dd class="text-xl font-semibold">
+            <ContactLine phone={primaryContact.phone} class="inline-block py-2 hover:underline" />
+          </dd>
+        </div>
+        <div>
+          <dt class="text-sm text-white/60">Email</dt>
+          <dd class="text-lg">
+            <ContactLine
+              email={primaryContact.email}
+              class="inline-block py-2 hover:underline break-all"
+            />
+          </dd>
+        </div>
+        <div class="text-sm text-white/70">
+          <dt class="sr-only">Brokerage</dt>
+          <dd>
+            <BrokerageCredit onDark />
+          </dd>
+        </div>
+      </dl>
+    </div>
+
+    {/* ── Form ── */}
+    <div class="bg-stone-50 text-stone-800 rounded-2xl p-5 sm:p-7">
+      <LeadForm
+        formName="home_contact"
+        submitLabel="Send"
+        successText="The specialist for your area will reply by email or phone, usually within one business day."
+      >
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Field label="I'm looking to" name="intent" options={intentOptions} />
+          <Field label="Area" name="area" options={areaOptions} />
+        </div>
+        <Field label="Your name" name="name" autocomplete="name" required />
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Field label="Email" name="email" type="email" autocomplete="email" required />
+          <Field label="Phone" name="phone" type="tel" autocomplete="tel" />
+        </div>
+        <Field
+          label="How can we help?"
+          name="message"
+          type="textarea"
+          placeholder="A little about your plans and timing"
+          required
+        />
+      </LeadForm>
+    </div>
+  </div>
+</section>

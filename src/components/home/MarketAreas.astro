@@ -1,0 +1,136 @@
+---
+/**
+ * The three markets (site.config.ts `markets`), each with its specialist, the live count
+ * of homes for sale, the places it covers and two actions: search the area on the map,
+ * or talk to its specialist (preselects the area in the #talk form).
+ *
+ * Fair housing: cards name places and count listings; they never describe residents or
+ * say who an area suits. VERIFY-IDX: the counts carry the §5.5(a) notice below the grid.
+ */
+// ─── Imports ─────────────────────────────────────────────────────────────────
+import Initials from "./Initials.astro";
+import { compositeReportNotice, specialistFor, type MarketCounts } from "../../lib/markets";
+import { mapSearchPath } from "../../lib/search-filters";
+import { markets } from "../../lib/site.config";
+
+// ─── Props ───────────────────────────────────────────────────────────────────
+interface Props {
+  /** Live for-sale counts; null leaves the numbers (and their notice) out. */
+  counts: MarketCounts | null;
+}
+
+const { counts } = Astro.props;
+
+// ─── Derived values ──────────────────────────────────────────────────────────
+const cards = markets.map((area) => {
+  const specialist = specialistFor(area);
+  return {
+    area,
+    specialist,
+    firstName: specialist.name.split(" ")[0],
+    count: counts?.counts[area.id],
+  };
+});
+---
+
+<section id="markets" class="max-w-6xl mx-auto px-4 sm:px-6 py-16 md:py-24">
+  {/* ── Heading ── */}
+  <div class="max-w-2xl mb-10">
+    <p class="text-sm font-semibold uppercase tracking-[0.2em] text-accent mb-3">Our markets</p>
+    <h2 class="font-serif text-3xl md:text-4xl text-stone-900 mb-4">
+      Three markets, each with its own specialist
+    </h2>
+    <p class="text-stone-600 text-lg leading-relaxed">
+      You work with the agent who does business in your area every week, not whoever answers the
+      phone.
+    </p>
+  </div>
+
+  {/* ── Cards ── */}
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    {cards.map(({ area, specialist, firstName, count }) => (
+      <article class="flex flex-col rounded-2xl border border-stone-200 bg-white overflow-hidden">
+        {area.image ? (
+          <img
+            src={area.image.src}
+            width={area.image.width}
+            height={area.image.height}
+            alt={area.image.alt}
+            loading="lazy"
+            decoding="async"
+            class="w-full aspect-[3/2] object-cover"
+          />
+        ) : (
+          <div class="h-2 bg-brand-navy" aria-hidden="true">
+            <div class="h-full w-16 bg-brand-gold" />
+          </div>
+        )}
+        <div class="flex flex-col flex-1 p-6">
+          <h3 class="font-serif text-2xl text-stone-900 mb-1">{area.name}</h3>
+          {count !== undefined && (
+            <p class="text-sm font-semibold text-accent mb-4">
+              {count.toLocaleString("en-US")} {count === 1 ? "home" : "homes"} for sale now
+            </p>
+          )}
+          <p class="text-sm text-stone-600 leading-relaxed mb-6">
+            {area.places.join(" · ")} and nearby
+          </p>
+
+          {/* Specialist */}
+          <div class="flex items-center gap-3 mt-auto mb-6">
+            {specialist.headshot ? (
+              <img
+                src={specialist.headshot.src}
+                width={specialist.headshot.width}
+                height={specialist.headshot.height}
+                alt={specialist.headshot.alt}
+                loading="lazy"
+                class="w-12 h-12 rounded-full object-cover"
+              />
+            ) : (
+              <Initials name={specialist.name} size="sm" />
+            )}
+            <div class="text-sm">
+              <div class="text-stone-500">Your specialist</div>
+              <div class="font-semibold text-stone-900">{specialist.name}</div>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div class="grid grid-cols-2 gap-3">
+            <a
+              href={mapSearchPath(area.bounds)}
+              class="h-11 inline-flex items-center justify-center rounded-lg bg-brand-navy text-white text-sm font-semibold hover:bg-brand-navy/90 transition-colors"
+            >
+              Search homes
+            </a>
+            <a
+              href="#talk"
+              data-talk-area={area.id}
+              class="h-11 inline-flex items-center justify-center rounded-lg border border-stone-300 text-stone-800 text-sm font-semibold hover:border-brand-navy transition-colors"
+            >
+              Talk to {firstName}
+            </a>
+          </div>
+        </div>
+      </article>
+    ))}
+  </div>
+
+  {/* ── Source (VERIFY-IDX §5.5(a)) ── */}
+  {counts && (
+    <p class="mt-6 text-xs text-stone-500 leading-relaxed max-w-3xl">
+      {compositeReportNotice(counts.asOf)}
+    </p>
+  )}
+</section>
+
+<script>
+  // "Talk to …" preselects that area in the #talk form; the link still jumps there.
+  for (const link of document.querySelectorAll<HTMLAnchorElement>("a[data-talk-area]")) {
+    link.addEventListener("click", () => {
+      const select = document.querySelector<HTMLSelectElement>("#talk select[name=area]");
+      if (select) select.value = link.dataset.talkArea ?? "";
+    });
+  }
+</script>

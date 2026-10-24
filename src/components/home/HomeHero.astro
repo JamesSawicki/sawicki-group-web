@@ -1,0 +1,185 @@
+---
+/**
+ * Home page hero: the promise on the left, and a lead card on the right with two equal
+ * paths, "I'm buying" (search) and "I'm selling" (request a home value analysis). The
+ * Buying/Selling switch is CSS-only (radio inputs + `:has`), so it works before any JS.
+ * Our brokerage's logo sits in the hero (Minn. Stat. 82.69: broker named in advertising).
+ */
+// ─── Imports ─────────────────────────────────────────────────────────────────
+import ContactLine from "../brand/ContactLine.astro";
+import Field from "./Field.astro";
+import HomeSearch from "./HomeSearch";
+import LeadForm from "./LeadForm.astro";
+import { brokerage, markets, primaryContact, site } from "../../lib/site.config";
+
+// ─── Props ───────────────────────────────────────────────────────────────────
+interface Props {
+  /** Base URL of listing-agent-api (for the search box's suggestions). */
+  apiBaseUrl: string;
+}
+
+const { apiBaseUrl } = Astro.props;
+
+// ─── Derived values ──────────────────────────────────────────────────────────
+const areaOptions = [
+  { value: "", label: "Choose an area" },
+  ...markets.map((area) => ({ value: area.id, label: area.name })),
+  { value: "other", label: "Somewhere else in the Twin Cities" },
+];
+const timelineOptions = [
+  { value: "", label: "Choose one" },
+  { value: "Within 3 months", label: "Within 3 months" },
+  { value: "3 to 6 months", label: "3 to 6 months" },
+  { value: "6 to 12 months", label: "6 to 12 months" },
+  { value: "Just curious", label: "Just curious for now" },
+];
+const tab =
+  "flex-1 h-11 inline-flex items-center justify-center rounded-md text-sm font-semibold cursor-pointer text-stone-600 transition-colors";
+---
+
+<section class="bg-brand-navy text-white">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 pt-10 pb-12 md:pt-16 md:pb-20 grid grid-cols-1 lg:grid-cols-[1fr_28rem] lg:grid-rows-[auto_1fr] gap-x-14 gap-y-8 items-start">
+    {/* ── Promise ── */}
+    {/* On phones the order is promise, lead card, proof, so the card shows on the first
+        screen; from lg the card is a right-hand column spanning both rows. */}
+    <div class="lg:pt-6">
+      <p class="text-xs sm:text-sm font-semibold uppercase tracking-[0.2em] text-brand-gold mb-4">
+        {site.name} · Twin Cities
+      </p>
+      <h1 class="font-serif text-4xl sm:text-5xl leading-[1.1] mb-5">
+        Twin Cities real estate, handled with precision.
+      </h1>
+      <p class="text-base sm:text-lg text-white/80 leading-relaxed max-w-xl">
+        Buying or selling, you work directly with your agent from the first conversation to the
+        closing table, with pricing grounded in recent sales and advice you can check for yourself.
+      </p>
+    </div>
+
+    {/* ── Proof ── */}
+    <div class="order-last lg:order-none lg:col-start-1 lg:row-start-2">
+      <ul class="space-y-3 text-white/90 mb-10">
+        <li class="flex items-baseline gap-3">
+          <span class="text-brand-gold" aria-hidden="true">
+            ✓
+          </span>
+          Pricing from recent comparable sales, shown to you in writing
+        </li>
+        <li class="flex items-baseline gap-3">
+          <span class="text-brand-gold" aria-hidden="true">
+            ✓
+          </span>
+          A specialist for Lake Minnetonka, Minneapolis and Saint Paul
+        </li>
+        <li class="flex items-baseline gap-3">
+          <span class="text-brand-gold" aria-hidden="true">
+            ✓
+          </span>
+          <span>
+            A direct line to your agent:{" "}
+            <ContactLine
+              phone={primaryContact.phone}
+              class="inline-block py-2 font-semibold underline decoration-white/40 hover:decoration-white"
+            />
+          </span>
+        </li>
+      </ul>
+      {brokerage.logoOnDark && (
+        <img
+          src={brokerage.logoOnDark.src}
+          width={brokerage.logoOnDark.width}
+          height={brokerage.logoOnDark.height}
+          alt={brokerage.logoOnDark.alt}
+          class="h-9 w-auto opacity-90"
+        />
+      )}
+    </div>
+
+    {/* ── Lead card ── */}
+    <div class="lead-card bg-stone-50 text-stone-800 rounded-2xl shadow-2xl p-5 sm:p-7 lg:col-start-2 lg:row-start-1 lg:row-span-2">
+      <div
+        role="radiogroup"
+        aria-label="What would you like to do?"
+        class="flex gap-1 p-1 mb-6 rounded-lg bg-stone-200/70"
+      >
+        <label class={`${tab} mode-buy`}>
+          <input type="radio" name="hero-mode" value="buy" class="sr-only" checked />
+          I'm buying
+        </label>
+        <label class={`${tab} mode-sell`}>
+          <input type="radio" name="hero-mode" value="sell" class="sr-only" />
+          I'm selling
+        </label>
+      </div>
+
+      {/* ── Buying ── */}
+      <div class="panel-buy">
+        <h2 class="font-serif text-2xl text-stone-900 mb-2">Find your next home</h2>
+        <p class="text-sm text-stone-600 mb-5">
+          Search every home for sale in the Twin Cities by city, ZIP or address.
+        </p>
+        <HomeSearch client:idle apiBaseUrl={apiBaseUrl} />
+        <a
+          href="/listings"
+          class="mt-4 h-12 w-full inline-flex items-center justify-center rounded-lg bg-brand-navy text-white font-semibold hover:bg-brand-navy/90 transition-colors"
+        >
+          Browse the map
+        </a>
+        <p class="mt-5 text-sm text-stone-600">
+          Want a plan before you start touring?{" "}
+          <a href="#talk" class="inline-block py-2 font-semibold text-brand-navy underline">
+            Talk to us about buying
+          </a>
+        </p>
+      </div>
+
+      {/* ── Selling ── */}
+      <div class="panel-sell">
+        <h2 class="font-serif text-2xl text-stone-900 mb-2">What's your home worth?</h2>
+        <p class="text-sm text-stone-600 mb-5">
+          Your agent prepares a written market analysis from recent comparable sales. No obligation.
+        </p>
+        <LeadForm
+          formName="home_value"
+          submitLabel="Request my home value"
+          successText="Your agent will look at recent sales near your home and get back to you with the analysis, usually within one business day."
+          hidden={{ intent: "Sell a home" }}
+        >
+          <Field
+            label="Home address"
+            name="propertyAddress"
+            autocomplete="street-address"
+            placeholder="123 Main St, Wayzata"
+            required
+          />
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field label="Area" name="area" options={areaOptions} />
+            <Field label="Timeline" name="timeline" options={timelineOptions} />
+          </div>
+          <Field label="Your name" name="name" autocomplete="name" required />
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field label="Email" name="email" type="email" autocomplete="email" required />
+            <Field label="Phone" name="phone" type="tel" autocomplete="tel" />
+          </div>
+        </LeadForm>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Buying/Selling switch without JS: the checked radio picks the panel and the tab style. */
+  .lead-card:has(.mode-sell input:checked) .panel-buy,
+  .lead-card:not(:has(.mode-sell input:checked)) .panel-sell {
+    display: none;
+  }
+  .lead-card:not(:has(.mode-sell input:checked)) .mode-buy,
+  .lead-card:has(.mode-sell input:checked) .mode-sell {
+    background: white;
+    color: var(--color-brand-navy);
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
+  }
+  .lead-card label:has(input:focus-visible) {
+    outline: 2px solid var(--color-brand-navy);
+    outline-offset: 2px;
+  }
+</style>

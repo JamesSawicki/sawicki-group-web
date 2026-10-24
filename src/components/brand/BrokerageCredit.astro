@@ -10,16 +10,27 @@
 // ─── Imports ─────────────────────────────────────────────────────────────────
 import { brokerage } from "../../lib/site.config";
 import ContactLine from "./ContactLine.astro";
+
+// ─── Props ───────────────────────────────────────────────────────────────────
+interface Props {
+  /** On a dark background: use the white logo (`brokerage.logoOnDark`). */
+  onDark?: boolean;
+}
+
+const { onDark = false } = Astro.props;
+
+// ─── Derived values ──────────────────────────────────────────────────────────
+const logo = onDark ? (brokerage.logoOnDark ?? brokerage.logo) : brokerage.logo;
 ---
 
 <div>
   {/* ── Logo ── */}
-  {brokerage.logo && (
+  {logo && (
     <img
-      src={brokerage.logo.src}
-      width={brokerage.logo.width}
-      height={brokerage.logo.height}
-      alt={brokerage.logo.alt}
+      src={logo.src}
+      width={logo.width}
+      height={logo.height}
+      alt={logo.alt}
       loading="lazy"
       decoding="async"
       class="h-8 w-auto mb-2"

@@ -1,0 +1,63 @@
+---
+/**
+ * The latest published blog posts (site.config.ts `blogName`), newest first. Hidden when
+ * there are none, so the page never shows an empty section.
+ */
+// ─── Imports ─────────────────────────────────────────────────────────────────
+import type { CollectionEntry } from "astro:content";
+import { site } from "../../lib/site.config";
+
+// ─── Props ───────────────────────────────────────────────────────────────────
+interface Props {
+  /** Published posts to show, already sorted and trimmed. */
+  posts: CollectionEntry<"blog">[];
+}
+
+const { posts } = Astro.props;
+---
+
+{posts.length > 0 && (
+  <section class="border-t border-stone-200">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-16 md:py-24">
+      {/* ── Heading ── */}
+      <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-10">
+        <div>
+          <p class="text-sm font-semibold uppercase tracking-[0.2em] text-accent mb-3">
+            {site.blogName}
+          </p>
+          <h2 class="font-serif text-3xl md:text-4xl text-stone-900">
+            What's moving in the market
+          </h2>
+        </div>
+        <a
+          href="/blog"
+          class="inline-block py-2 text-sm font-semibold text-accent hover:text-accent-strong"
+        >
+          All {site.blogName.toLowerCase()} →
+        </a>
+      </div>
+
+      {/* ── Posts ── */}
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {posts.map((post) => (
+          <a
+            href={`/blog/${post.id}`}
+            class="flex flex-col rounded-2xl bg-white border border-stone-200 p-6 hover:border-brand-navy transition-colors"
+          >
+            <div class="text-xs font-semibold uppercase tracking-widest text-accent mb-3">
+              {post.data.tag}
+            </div>
+            <div class="font-semibold text-stone-900 leading-snug mb-4">{post.data.title}</div>
+            <div class="mt-auto text-xs text-stone-500">
+              {post.data.date.toLocaleDateString("en-US", {
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+              })}
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+)}

@@ -1,0 +1,30 @@
+---
+/**
+ * The track-record strip under the hero (site.config.ts `proofPoints`): homes sold,
+ * volume, designations. Renders nothing until there are figures we can back with records.
+ */
+// ─── Imports ─────────────────────────────────────────────────────────────────
+import { proofPoints } from "../../lib/site.config";
+
+// ─── Derived values ──────────────────────────────────────────────────────────
+const sources = [...new Set(proofPoints.map((p) => p.source).filter(Boolean))];
+---
+
+{proofPoints.length > 0 && (
+  <section class="border-b border-stone-200 bg-white">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+      <dl class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+        {proofPoints.map((p) => (
+          <div>
+            <dt class="sr-only">{p.label}</dt>
+            <dd class="font-serif text-3xl text-brand-navy">{p.value}</dd>
+            <dd class="text-sm text-stone-600">{p.label}</dd>
+          </div>
+        ))}
+      </dl>
+      {sources.length > 0 && (
+        <p class="mt-4 text-xs text-stone-500 text-center">Source: {sources.join("; ")}</p>
+      )}
+    </div>
+  </section>
+)}

@@ -1,0 +1,83 @@
+---
+/**
+ * "How we work": the selling and buying processes side by side, three steps each. The
+ * competence story lives here, so every step is something we actually do (TODO-JIM:
+ * confirm each line matches how the team works).
+ */
+// ─── Derived values ──────────────────────────────────────────────────────────
+const processes = [
+  {
+    heading: "Selling with us",
+    steps: [
+      {
+        title: "Price from the evidence",
+        body: "We study recent comparable sales and the homes you'd compete with, and walk you through the numbers in writing before you choose a price.",
+      },
+      {
+        title: "Prepare and market",
+        body: "A preparation plan for your home, professional marketing, and a launch on NorthstarMLS timed for the most attention.",
+      },
+      {
+        title: "Negotiate and close",
+        body: "We review every offer with you term by term, negotiate on your behalf, and manage inspection, appraisal and closing details to the end.",
+      },
+    ],
+  },
+  {
+    heading: "Buying with us",
+    steps: [
+      {
+        title: "Start with a plan",
+        body: "A first conversation about budget, must-haves and timing, with introductions to lenders if you need one.",
+      },
+      {
+        title: "Search and tour",
+        body: "Search the map yourself any time. We schedule tours and give you a straight read on each home, including its drawbacks.",
+      },
+      {
+        title: "Offer with data",
+        body: "Before you write an offer, we look at what similar homes actually sold for, so your price and terms are grounded.",
+      },
+    ],
+  },
+];
+---
+
+<section class="bg-stone-100 border-y border-stone-200">
+  <div class="max-w-6xl mx-auto px-4 sm:px-6 py-16 md:py-24">
+    {/* ── Heading ── */}
+    <div class="max-w-2xl mb-12">
+      <p class="text-sm font-semibold uppercase tracking-[0.2em] text-accent mb-3">How we work</p>
+      <h2 class="font-serif text-3xl md:text-4xl text-stone-900">
+        A clear process, and the reasoning behind every recommendation
+      </h2>
+    </div>
+
+    {/* ── Processes ── */}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-14">
+      {processes.map((process) => (
+        <div>
+          <h3 class="text-lg font-semibold text-brand-navy mb-6 pb-3 border-b-2 border-brand-gold inline-block">
+            {process.heading}
+          </h3>
+          <ol class="space-y-7">
+            {process.steps.map((step, i) => (
+              <li class="flex gap-4">
+                <span
+                  class="shrink-0 w-9 h-9 rounded-full bg-white border border-stone-300 text-brand-navy font-serif text-lg inline-flex items-center justify-center"
+                  aria-hidden="true"
+                >
+                  {i + 1}
+                </span>
+                <div>
+                  <div class="font-semibold text-stone-900 mb-1">{step.title}</div>
+                  <p class="text-stone-600 leading-relaxed">{step.body}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
