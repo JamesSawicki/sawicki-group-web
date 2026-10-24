@@ -26,19 +26,20 @@ const links = [
   <nav class="max-w-6xl mx-auto px-6 py-3 md:py-4 flex items-center justify-between gap-4">
     {/* Our brokerage sits right beside the team name on every page (under it on phones) (Minn. Stat. 82.69:
         a team name only with the brokerage conspicuous; NorthstarMLS §5.8(a)(ii): at least
-        as prominent as any listing brokerage). Jim: "a small logo is fine". */}
+        as prominent as any listing brokerage). CB Identity Standards p. 11: a team logo is no
+        larger than the CB logo and stays outside its clear space (half the logo's height), so
+        both are the same height, with no divider in that space. */}
     <a
       href="/"
-      class="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:gap-3 whitespace-nowrap py-2 min-w-0"
+      class="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-6 whitespace-nowrap py-2 min-w-0"
     >
       <span class="text-base min-[360px]:text-lg sm:text-xl font-semibold tracking-tight text-stone-900">
         <Logo
           variant={site.headerLogo}
           loading="eager"
-          class={site.headerLogo === "wordmark" ? undefined : "h-8 sm:h-10 w-auto"}
+          class={site.headerLogo === "wordmark" ? undefined : "h-7 sm:h-10 w-auto"}
         />
       </span>
-      <span class="hidden sm:block h-7 w-px bg-stone-300 shrink-0" aria-hidden="true"></span>
       {brokerage.logo ? (
         <img
           src={brokerage.logo.src}
@@ -46,7 +47,7 @@ const links = [
           height={brokerage.logo.height}
           alt={brokerage.logo.alt}
           loading="eager"
-          class="h-5 sm:h-7 w-auto shrink-0"
+          class="h-7 sm:h-10 w-auto shrink-0"
         />
       ) : (
         <span class="text-xs sm:text-sm text-stone-600">{brokerage.name}</span>
@@ -60,20 +61,14 @@ const links = [
           {link.label}
         </a>
       ))}
-      <a
-        href="/contact"
-        class="bg-brand-navy text-white px-4 py-2 rounded-lg hover:bg-brand-navy/90 transition-colors"
-      >
+      <a href="/contact" class="btn-primary px-4 py-2 rounded-lg">
         Contact
       </a>
     </div>
 
     {/* ── Mobile: Contact + menu button (below md) ── */}
     <div class="flex md:hidden items-center gap-2">
-      <a
-        href="/contact"
-        class="bg-brand-navy text-white text-sm px-4 py-2.5 rounded-lg hover:bg-brand-navy/90 transition-colors"
-      >
+      <a href="/contact" class="btn-primary text-sm px-4 py-2.5 rounded-lg">
         Contact
       </a>
       <button

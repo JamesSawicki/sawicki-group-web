@@ -2,15 +2,86 @@
 @plugin "@tailwindcss/typography";
 
 /*
- * Brand color tokens (Tailwind 4 keeps its theme here, not in a config file).
- *   accent / accent-strong: the site's accent (eyebrow labels, text links); change the
- *     accent here, not class by class. Today they equal Tailwind's amber-700 / amber-900,
- *     so `text-accent` looks exactly like `text-amber-700` did.
- *   brand-navy / brand-gold: the logo's colors (mirrored in brandColors, site.config.ts).
+ * Brand colors (Tailwind 4 keeps its theme here, not in a config file). Every choice and
+ * where it's used is in docs/brand-colors.md; change a color here and there together.
+ * Mirrored in brandColors (site.config.ts) for code that can't use classes.
  */
 @theme {
-  --color-accent: oklch(55.5% 0.163 48.998);
-  --color-accent-strong: oklch(41.4% 0.112 45.904);
-  --color-brand-navy: #212c64;
-  --color-brand-gold: #d19b39;
+  /* ── The Sawicki Group logo ── */
+  --color-brand-navy: #212c64; /* the logo's navy: hero, primary buttons */
+  --color-brand-gold: #cb9833; /* the logo's gold, sampled from the logo file: bars, icons, gold on navy */
+  /* Gold for text on light backgrounds: the logo gold darkened until it passes WCAG AA
+     (4.96:1 on white). The exact logo gold is only 2.6:1 there, too faint for small text. */
+  --color-accent: #8e6a24;
+  --color-accent-strong: #70541c; /* hover for gold text links */
+
+  /* ── Coldwell Banker palette (CB Identity Standards 12.20, p. 16) ── */
+  --color-cb-blue: #012169; /* Coldwell Banker Blue, PMS 280 C (primary) */
+  --color-cb-celestial: #418fde; /* secondary */
+  --color-cb-piano: #2d2926; /* Piano Black, secondary */
+  --color-cb-cool-gray: #63666a; /* secondary */
+  --color-cb-gray: #a7a9ac; /* tertiary */
+  --color-cb-pewter: #b7b9ba; /* tertiary */
+  --color-cb-cement: #e6ddd1; /* tertiary */
+  --color-cb-slate: #5c86a0; /* tertiary */
+  --color-cb-ocean: #00b4bd; /* tertiary */
+  --color-cb-carolina: #89d4e3; /* tertiary */
+  /* CB's digital palette (p. 18): product blue for calls to action, default text black. */
+  --color-cb-ui-blue: #1f69ff;
+  --color-cb-text: #2b2e30;
+}
+
+/*
+ * Buttons. Every filled button uses one of these, so the look and the hover stay
+ * consistent: navy turns gold on hover (and gold turns white), a clear "offset" that
+ * keeps at least 4.8:1 contrast between the text and the button in both states.
+ */
+@utility btn-primary {
+  background-color: var(--color-brand-navy);
+  color: #fff;
+  transition:
+    background-color 150ms,
+    color 150ms;
+  &:hover:not(:disabled) {
+    background-color: var(--color-brand-gold);
+    color: var(--color-brand-navy);
+  }
+  &:focus-visible {
+    outline: 3px solid var(--color-brand-gold);
+    outline-offset: 2px;
+  }
+}
+
+/* Gold button for navy sections (the home page hero). */
+@utility btn-gold {
+  background-color: var(--color-brand-gold);
+  color: var(--color-brand-navy);
+  transition:
+    background-color 150ms,
+    color 150ms;
+  &:hover:not(:disabled) {
+    background-color: #fff;
+  }
+  &:focus-visible {
+    outline: 3px solid #fff;
+    outline-offset: 2px;
+  }
+}
+
+/* Secondary: navy outline that fills navy on hover. */
+@utility btn-outline {
+  border: 1px solid var(--color-brand-navy);
+  color: var(--color-brand-navy);
+  background-color: transparent;
+  transition:
+    background-color 150ms,
+    color 150ms;
+  &:hover:not(:disabled) {
+    background-color: var(--color-brand-navy);
+    color: #fff;
+  }
+  &:focus-visible {
+    outline: 3px solid var(--color-brand-gold);
+    outline-offset: 2px;
+  }
 }

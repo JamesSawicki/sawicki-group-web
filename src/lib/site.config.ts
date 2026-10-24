@@ -161,7 +161,12 @@ export const logos: Record<Exclude<LogoVariant, "wordmark">, BrandImage | null> 
  */
 export const brandColors = {
   navy: "#212c64",
-  gold: "#d19b39",
+  /** The logo's gold, sampled from the logo file (docs/brand-colors.md). */
+  gold: "#cb9833",
+  /** Gold for text on light backgrounds (passes WCAG AA); `text-accent` in CSS. */
+  goldText: "#8e6a24",
+  /** Coldwell Banker Blue (PMS 280 C). */
+  cbBlue: "#012169",
 } as const;
 
 // ─── Brokerage ───────────────────────────────────────────────────────────────
@@ -184,6 +189,12 @@ export const brokerage: {
   /** White version of `logo`, for dark backgrounds (the home page hero). */
   logoOnDark: BrandImage | null;
   licenseNumber: string;
+  /**
+   * Coldwell Banker's required trademark disclaimer, shown in the footer whenever it's set
+   * (CB Identity Standards p. 60). TODO-JIM: get the current wording from the broker; the
+   * 2020 manual's version names Realogy Brokerage Group, which has since been renamed.
+   */
+  trademarkNotice: string;
   phone: Phone | null;
   url: string;
 } = {
@@ -199,16 +210,17 @@ export const brokerage: {
   state: "MN",
   stateName: "Minnesota",
   /**
-   * Horizontal black lockup, a 342×80 web copy of public/brand/coldwell-banker/
-   * cbr-horizontal-black.png (other variants: docs/brand.md). Shown about 32px tall.
+   * Horizontal framed logo in Coldwell Banker Blue, a 342×81 web copy of public/brand/
+   * coldwell-banker/cbr-horizontal-blue.png (built by `npm run brand:assets`). CB allows the
+   * framed logo only in CB Blue, on light backgrounds (Identity Standards p. 11–12).
    */
   logo: {
-    src: "/brand/coldwell-banker/cbr-horizontal-black-web.png",
+    src: "/brand/coldwell-banker/cbr-horizontal-blue-web.png",
     width: 342,
-    height: 80,
+    height: 81,
     alt: "Coldwell Banker Realty",
   },
-  /** 342×92 web copy of public/brand/coldwell-banker/cbr-horizontal-white.png. */
+  /** White monogram logo for navy sections: 342×92 web copy of cbr-horizontal-white.png. */
   logoOnDark: {
     src: "/brand/coldwell-banker/cbr-horizontal-white-web.png",
     width: 342,
@@ -217,6 +229,8 @@ export const brokerage: {
   },
   /** License numbers aren't required on the site (the brokerage confirmed, 2026-10-23). */
   licenseNumber: "",
+  /** TODO-JIM: CB's required trademark disclaimer (see the interface note). */
+  trademarkNotice: "",
   /** TODO-JIM: brokerage/office main phone (or leave null to show only ours). */
   phone: null,
   /** TODO-JIM: brokerage website, if it should be linked. */

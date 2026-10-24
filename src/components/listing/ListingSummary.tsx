@@ -416,7 +416,7 @@ export default function ListingSummary({
             <p className="text-sm text-stone-500 mb-4">{ctaBody}</p>
             <a
               href={contactHref}
-              className="flex items-center justify-center w-full h-11 bg-stone-900 text-white text-sm font-medium rounded-lg hover:bg-stone-700 transition-colors"
+              className="flex items-center justify-center w-full h-11 btn-primary text-sm font-medium rounded-lg"
             >
               {ctaButton}
             </a>

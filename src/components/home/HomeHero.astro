@@ -46,18 +46,20 @@ const tab =
         screen; from lg the card is a right-hand column spanning both rows. */}
     <div class="lg:pt-6">
       {/* ── Team + brokerage logos ── */}
-      <div class="flex items-center gap-4 sm:gap-5 mb-8">
-        <Logo variant="compactOnDark" loading="eager" class="h-10 sm:h-12 w-auto" />
+      {/* Same height, with CB's clear space (half the logo's height) between them and no
+          divider in it (CB Identity Standards p. 11). On navy, CB's white monogram logo: the
+          framed blue logo may not be reversed onto a dark background (p. 12). */}
+      <div class="flex items-center gap-6 sm:gap-8 mb-8">
+        <Logo variant="compactOnDark" loading="eager" class="h-9 sm:h-11 w-auto" />
         {brokerage.logoOnDark && (
           <>
-            <span class="h-10 sm:h-12 w-px bg-white/30 shrink-0" aria-hidden="true" />
             <img
               src={brokerage.logoOnDark.src}
               width={brokerage.logoOnDark.width}
               height={brokerage.logoOnDark.height}
               alt={brokerage.logoOnDark.alt}
               loading="eager"
-              class="h-7 sm:h-9 w-auto shrink-0"
+              class="h-9 sm:h-11 w-auto shrink-0"
             />
           </>
         )}
@@ -127,7 +129,7 @@ const tab =
         <HomeSearch client:idle apiBaseUrl={apiBaseUrl} />
         <a
           href="/listings"
-          class="mt-4 h-12 w-full inline-flex items-center justify-center rounded-lg bg-brand-navy text-white font-semibold hover:bg-brand-navy/90 transition-colors"
+          class="mt-4 h-12 w-full inline-flex items-center justify-center rounded-lg btn-primary font-semibold"
         >
           Browse the map
         </a>

@@ -54,23 +54,62 @@ compact version. `public/logo.png` and `public/og-default.jpg` (link previews) a
 logo on white. The banner and presentation JPGs Jim sent (handshake/skyline photo, 3:2
 slides) aren't on the site: the photo's stock license is unknown (TODO-JIM if wanted).
 
-Brokerage logos (supplied by Jim, 2026-10-23) live in `public/brand/coldwell-banker/` and are
-served at `/brand/coldwell-banker/<file>`. Use them only as Coldwell Banker's brand rules allow
-(TODO-JIM: confirm the approved lockup and minimum size with the broker).
+Brokerage logos (supplied by Jim, 2026-10-23; blue versions 2026-10-24) live in
+`public/brand/coldwell-banker/` and are served at `/brand/coldwell-banker/<file>`. Use them
+only as the rules below allow.
 
-| File                       | Layout                                         | Color / background                    | Size (px) |
-| -------------------------- | ---------------------------------------------- | ------------------------------------- | --------- |
-| `cbr-horizontal-black.png` | Boxed mark beside two-line wordmark            | Black, transparent                    | 1709×400  |
-| `cbr-horizontal-black.jpg` | Same                                           | Black on white                        | 1709×400  |
-| `cbr-vertical-black.png`   | Boxed mark above wordmark                      | Black, transparent                    | 2000×1144 |
-| `cbr-vertical-black.jpg`   | Same                                           | Black on white                        | 2000×1144 |
-| `cbr-horizontal-white.png` | Mark beside two-line wordmark                  | White, transparent (dark backgrounds) | 1642×440  |
-| `cbr-oneline-white.png`    | Mark + "COLDWELL BANKER \| REALTY" on one line | White, transparent                    | 2150×220  |
-| `cbr-vertical-white.png`   | Mark above one-line wordmark                   | White, transparent                    | 2000×1210 |
-| `cbr-stacked-white.png`    | Mark above two-line wordmark                   | White, transparent                    | 1100×1386 |
+| File                             | Layout                                         | Color / background                                                                                              | Size (px) |
+| -------------------------------- | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | --------- |
+| `cbr-horizontal-blue.png`        | Framed (boxed) mark beside two-line wordmark   | CB Blue, transparent: **the site's logo on light backgrounds** (web copy `cbr-horizontal-blue-web.png`, 342×81) | 1709×400  |
+| `cbr-horizontal-blue.jpg`        | Same                                           | CB Blue on white                                                                                                | 1709×400  |
+| `cbr-vertical-blue.png` / `.jpg` | Framed mark above wordmark                     | CB Blue                                                                                                         | 2000×1144 |
+| `cbr-stacked-blue.png` / `.jpg`  | Framed mark above two-line wordmark            | CB Blue                                                                                                         | 1100×1320 |
+| `cbr-horizontal-black.png`       | Boxed mark beside two-line wordmark            | Black, transparent (not for the site: see rules)                                                                | 1709×400  |
+| `cbr-horizontal-black.jpg`       | Same                                           | Black on white                                                                                                  | 1709×400  |
+| `cbr-vertical-black.png`         | Boxed mark above wordmark                      | Black, transparent                                                                                              | 2000×1144 |
+| `cbr-vertical-black.jpg`         | Same                                           | Black on white                                                                                                  | 2000×1144 |
+| `cbr-horizontal-white.png`       | Mark beside two-line wordmark                  | White, transparent (dark backgrounds)                                                                           | 1642×440  |
+| `cbr-oneline-white.png`          | Mark + "COLDWELL BANKER \| REALTY" on one line | White, transparent                                                                                              | 2150×220  |
+| `cbr-vertical-white.png`         | Mark above one-line wordmark                   | White, transparent                                                                                              | 2000×1210 |
+| `cbr-stacked-white.png`          | Mark above two-line wordmark                   | White, transparent                                                                                              | 1100×1386 |
 
-On our white pages the horizontal black PNG is the natural choice (header/footer credit);
-the white versions are for dark backgrounds (e.g. a dark footer or photo overlays).
+On white pages the site uses the horizontal **blue** logo (header, footer, disclosures);
+on navy it uses the white monogram logo `cbr-horizontal-white.png` (home page hero).
+
+## Coldwell Banker Identity Standards
+
+From the Coldwell Banker Identity Standards (edition 12.20; full manual in Jim's Google
+Drive, `2 - Web and Graphic Assets/ColdwellBankerIdentityStandards.pdf`; colors in
+[brand-colors.md](brand-colors.md)). The rules that affect the website:
+
+- **Team logo next to theirs (p. 11):** "When shown with the Coldwell Banker logo, agent
+  logos must be outside the safety distance around the CB logo, and must be no larger than
+  the CB logo." The safety distance is half the height of the blue logo box, and nothing
+  else (copy, graphics, divider lines) may sit inside it. So our logo is never taller than
+  CB's beside it, with at least half its height of space between them (header, hero, footer).
+- **Framed logo color (p. 11–12):** the framed logo (blue box) only in CB Blue (PMS 280),
+  never reversed onto a dark background; the monogram logo only in white. So: blue framed
+  logo on white pages, white monogram logo on navy. The black versions Jim supplied aren't
+  used on the site.
+- **Don'ts (p. 11):** no effects, stretching, angles, nothing over or inside the mark,
+  never use the mark as a word in a sentence.
+- **Minimum size (p. 10):** the logo mark at least 1/8" wide (about 12px on screen); ours
+  is 28–44px tall.
+- **The name in text (p. 61):** "Coldwell Banker" is an adjective, never a noun ("the
+  Coldwell Banker® System", not "join Coldwell Banker"); no punctuation between Coldwell
+  Banker and the DBA; no all caps or bold for it in copy.
+- **Required disclaimer (p. 60):** "The Minimum Required Disclaimers must appear whenever
+  the Coldwell Banker Mark is used," including on websites. For company-owned offices the
+  manual gives: "Owned by a subsidiary of Realogy Brokerage Group LLC. Coldwell Banker is a
+  registered service mark owned by Coldwell Banker Real Estate LLC." The 2020 manual names
+  Realogy, which has since changed its name, so **TODO-JIM: get the current wording from the
+  broker** (`brokerage.trademarkNotice` in site.config.ts; the footer shows it once set).
+- **Digital (p. 18):** CB's own apps use white space, black text and blue for calls to
+  action. Our site uses our navy/gold for actions instead (team brand), which their
+  standards don't forbid for an agent site; the CB logo itself always keeps its blue.
+- **Fonts (p. 20–22):** CB's brand fonts are Geometos Neue, Helvetica Neue LT Std and
+  Adobe Garamond Pro (licensed; files in Drive under `CBBurnet Fonts`). The site keeps its
+  own web fonts; CB lists Arial as its web-safe font.
 
 HUD's official Equal Housing Opportunity logo (public domain, from
 [hud.gov/contactus/hudgraphics](https://www.hud.gov/contactus/hudgraphics)) is in

@@ -5,6 +5,10 @@
  *
  * The originals are 1370×433 transparent PNGs with three bands: the SG key (rows 0–173),
  * the name (250–341) and the tagline (393–432). The SG letters alone are columns ~360–615.
+ *
+ * Also the Coldwell Banker Realty web copy (342 px wide) from its original in
+ * public/brand/coldwell-banker/. CB's standards allow the framed logo only in CB Blue on
+ * light backgrounds; on dark ones we use the white monogram logo (docs/brand.md).
  */
 import { Buffer } from "node:buffer";
 import { writeFile } from "node:fs/promises";
@@ -14,8 +18,8 @@ const dir = "public/brand/sawicki";
 const NAVY = "#212c64"; // brandColors.navy in site.config.ts
 
 /** Crops rows [top, bottom) of an original, trims the transparent edge, resizes to `width`. */
-async function web(source, out, width, rows) {
-  let img = sharp(`${dir}/${source}`);
+async function web(source, out, width, rows, folder = dir) {
+  let img = sharp(`${folder}/${source}`);
   if (rows) {
     const { width: w } = await img.metadata();
     img = sharp(
@@ -26,7 +30,7 @@ async function web(source, out, width, rows) {
   const info = await sharp(trimmed)
     .resize({ width })
     .png({ compressionLevel: 9, palette: true, quality: 90 })
-    .toFile(`${dir}/${out}`);
+    .toFile(`${folder}/${out}`);
   console.log(`${out}: ${info.width}×${info.height}`);
 }
 
@@ -73,6 +77,8 @@ await web("sawicki-full-color.png", "logo-compact-web.png", 640, [0, 346]);
 await web("sawicki-full-reverse.png", "logo-compact-on-dark-web.png", 640, [0, 346]);
 await web("sawicki-full-color.png", "mark-web.png", 400, [0, 174]);
 await web("sawicki-full-reverse.png", "mark-on-dark-web.png", 400, [0, 174]);
+const cb = "public/brand/coldwell-banker";
+await web("cbr-horizontal-blue.png", "cbr-horizontal-blue-web.png", 342, null, cb);
 
 // ── Icons ──
 // Tab icons show only the SG letters: the long key turns into a hairline at 16–48px.

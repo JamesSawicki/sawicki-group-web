@@ -91,7 +91,7 @@ export default function ContactRequestCard({ draft, listingAddress, listingPath 
         type="button"
         onClick={send}
         disabled={status === "sending" || !fields.name.trim() || !fields.email.trim()}
-        className="w-full h-11 rounded-lg bg-stone-900 text-white text-sm font-medium hover:bg-stone-700 disabled:opacity-50"
+        className="w-full h-11 rounded-lg btn-primary text-sm font-medium disabled:opacity-50"
       >
         {status === "sending" ? "Sending…" : `Send to ${site.name}`}
       </button>

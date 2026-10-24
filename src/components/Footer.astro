@@ -9,7 +9,7 @@
 // ─── Imports ─────────────────────────────────────────────────────────────────
 import BrokerageCredit from "./brand/BrokerageCredit.astro";
 import Logo from "./brand/Logo.astro";
-import { agent, primaryContact, site, social, socialLabels } from "../lib/site.config";
+import { agent, brokerage, primaryContact, site, social, socialLabels } from "../lib/site.config";
 
 // ─── Derived values ──────────────────────────────────────────────────────────
 const navLinks = [
@@ -36,7 +36,8 @@ const linkClass = "py-1.5 hover:text-stone-900 transition-colors";
   <div class="max-w-6xl mx-auto px-6 py-12 grid grid-cols-1 sm:grid-cols-3 gap-8 text-sm text-stone-500">
     {/* ── Who we are ── */}
     <div>
-      <Logo variant="compact" class="h-10 w-auto mb-4" />
+      {/* Same height as the CB logo under it, a clear space apart (CB Identity Standards p. 11). */}
+      <Logo variant="compact" class="h-8 w-auto mb-4" />
       <BrokerageCredit />
       {socialLinks.map((link) => (
         <a
@@ -83,6 +84,8 @@ const linkClass = "py-1.5 hover:text-stone-900 transition-colors";
           © {new Date().getFullYear()} {site.name}
         </span>
         <span class="py-1.5">All rights reserved</span>
+        {/* CB Identity Standards p. 60: required wherever the Coldwell Banker logo appears. */}
+        {brokerage.trademarkNotice && <span class="py-1.5">{brokerage.trademarkNotice}</span>}
       </div>
     </div>
   </div>

@@ -247,7 +247,7 @@ export default function ChatConversation({
             <button
               type="button"
               onClick={() => send(SHOWING_REQUEST)}
-              className="h-9 px-3 rounded-full bg-stone-900 text-white text-xs font-medium hover:bg-stone-700"
+              className="h-9 px-3 rounded-full btn-primary text-xs font-medium"
             >
               Schedule a showing
             </button>
@@ -293,7 +293,7 @@ export default function ChatConversation({
         <button
           type="submit"
           disabled={isLoading || !input.trim()}
-          className="bg-stone-900 text-white text-sm px-4 py-2 rounded-lg hover:bg-stone-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          className="btn-primary text-sm px-4 py-2 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed"
         >
           Send
         </button>

@@ -80,7 +80,11 @@ npm run build    # local production build; does not deploy
   `TeamMemberProfile`); islands import the plain exports (`chatBubble`, `primaryContact`,
   `site`). Use `primaryContact`, not the deprecated `agent`. Unknown values stay empty with
   `TODO-JIM:` and are omitted, never guessed. Accent/brand colors are Tailwind tokens in
-  `src/styles/global.css` (`text-accent`, `brand-navy`, `brand-gold`). See `docs/brand.md`.
+  `src/styles/global.css` (`text-accent`, `brand-navy`, `brand-gold`, the `cb-*` Coldwell Banker
+  palette); every color choice is recorded in `docs/brand-colors.md`. Filled buttons use
+  `btn-primary` / `btn-gold` / `btn-outline` (navy↔gold hovers), never ad-hoc colors. Our
+  team logo is never larger than the CB logo beside it and stays outside its clear space
+  (CB Identity Standards; rules in `docs/brand.md`). See `docs/brand.md`.
 - **Blog posts** in `src/content/blog/` arrive as `draft: true`; publishing means flipping
   that to `false`. Every figure in a post must be verifiable and linked (Jim, 2026-10-23):
   posts end with a linked "Sources" line.

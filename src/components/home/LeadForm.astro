@@ -22,10 +22,7 @@ interface Props {
 const { formName, submitLabel, successText, hidden = {}, tone = "navy" } = Astro.props;
 
 // ─── Derived values ──────────────────────────────────────────────────────────
-const button =
-  tone === "gold"
-    ? "bg-brand-gold text-brand-navy hover:brightness-105"
-    : "bg-brand-navy text-white hover:bg-brand-navy/90";
+const button = tone === "gold" ? "btn-gold" : "btn-primary";
 ---
 
 <div>

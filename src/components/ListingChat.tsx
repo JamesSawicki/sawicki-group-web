@@ -153,11 +153,11 @@ export default function ListingChat({ listingId, apiBaseUrl, listingAddress, lis
           aria-controls={PANEL_ID}
           aria-label="Open AI chat about this property"
           className="fixed z-40 right-4 bottom-4 w-14 h-14 rounded-full flex items-center justify-center
-            bg-stone-900 text-white shadow-lg hover:bg-stone-700 transition-colors"
+            btn-primary shadow-lg"
         >
           {nudge && (
             <span
-              className="absolute inset-0 rounded-full bg-stone-900/50 animate-[ping_1.5s_cubic-bezier(0,0,0.2,1)_3] motion-reduce:hidden"
+              className="absolute inset-0 rounded-full bg-brand-navy/50 animate-[ping_1.5s_cubic-bezier(0,0,0.2,1)_3] motion-reduce:hidden"
               aria-hidden="true"
             />
           )}

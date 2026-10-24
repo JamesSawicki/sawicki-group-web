@@ -100,14 +100,14 @@ const cards = markets.map((area) => {
           <div class="grid grid-cols-2 gap-3">
             <a
               href={mapSearchPath(area.bounds)}
-              class="h-11 inline-flex items-center justify-center rounded-lg bg-brand-navy text-white text-sm font-semibold hover:bg-brand-navy/90 transition-colors"
+              class="h-11 inline-flex items-center justify-center rounded-lg btn-primary text-sm font-semibold"
             >
               Search homes
             </a>
             <a
               href="#talk"
               data-talk-area={area.id}
-              class="h-11 inline-flex items-center justify-center rounded-lg border border-stone-300 text-stone-800 text-sm font-semibold hover:border-brand-navy transition-colors"
+              class="h-11 inline-flex items-center justify-center rounded-lg btn-outline text-sm font-semibold"
             >
               Talk to {firstName}
             </a>

@@ -108,7 +108,7 @@ export async function renderBlogCard(card: BlogCard): Promise<Buffer> {
             fontWeight: 700,
             letterSpacing: 3,
             textTransform: "uppercase",
-            color: "#b45309",
+            color: brandColors.goldText,
             marginBottom: 24,
           },
           card.tag,
