@@ -15,10 +15,10 @@ Mortgage rates ticked up slightly this week, with the 30-year fixed rate reachin
 
 Let's put this in real numbers. On a $450,000 home purchase with 20% down (a $360,000 loan), here's what you're looking at:
 
-- At 6.58%: approximately $2,290 per month in principal and interest
-- At last week's 6.55%: approximately $2,283 per month
+- At 6.58%: approximately $2,294 per month in principal and interest
+- At last week's 6.55%: approximately $2,287 per month
 
-That 0.03% increase adds about $7 to your monthly payment - or roughly $2,520 over the life of a 30-year loan. Not insignificant, but also not a deal-breaker for most buyers.
+That 0.03% increase adds about $7 to your monthly payment - or roughly $2,560 over the life of a 30-year loan. Not insignificant, but also not a deal-breaker for most buyers.
 
 The bigger picture matters more. Compared to six months ago when rates briefly dipped into the low 6% range, today's rate environment means buyers are paying about $50-75 more per month on that same $360,000 loan. That's real money that affects affordability.
 
