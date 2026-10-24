@@ -3,7 +3,7 @@ import Layout from "../../layouts/Layout.astro";
 import { getCollection, render } from "astro:content";
 import { absoluteUrl, blogPostNodes, blogPostPath } from "../../lib/structured-data";
 import ShareButtons from "../../components/ShareButtons.astro";
-import { site } from "../../lib/site.config";
+import { brokerage, site } from "../../lib/site.config";
 
 export const prerender = true;
 
@@ -33,6 +33,8 @@ const shareProps = {
   description={post.data.excerpt}
   jsonLd={blogPostNodes(post)}
   ogType="article"
+  ogImage={absoluteUrl(`/og/blog/${post.id}.png`)}
+  ogImageAlt={`${post.data.title}: ${site.name}, ${brokerage.name}`}
   article={{
     publishedTime: post.data.date.toISOString(),
     author: post.data.author === "AI" ? site.aiAuthorName : post.data.author,

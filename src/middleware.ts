@@ -261,6 +261,9 @@ function rejection(rule: Rule, status: number, message: string, retryAfterS = 0)
 // Astro runs this before every request.
 // ─────────────────────────────────────────────
 export const onRequest: MiddlewareHandler = async (context, next) => {
+  // Pages built ahead of time (blog posts, their preview images) have no visitor, request
+  // id, cookies or rate limit; reading request headers there only produces build warnings.
+  if (context.isPrerendered) return next();
   // Every request gets an id (kept from X-Request-Id when valid). Rendering runs inside
   // requestContext, so API calls made for this page forward it (see lib/api.ts), and
   // the response carries it for debugging. The visitor's IP rides along too, for

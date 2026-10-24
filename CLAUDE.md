@@ -80,7 +80,10 @@ npm run build    # local production build; does not deploy
   device share sheet when the browser has one. Never embed a network's SDK or pixel (privacy,
   page weight). Shared URLs carry `utm_source=<network>&utm_medium=social_share`; clicks are
   GA4 `share` events. Link previews come from Layout's Open Graph tags (`ogImage`,
-  `ogImageAlt`, `article`).
+  `ogImageAlt`, `article`). Blog posts get a generated 1200×630 card at build time
+  (`/og/blog/<post>.png`, `lib/og-image.ts`: satori + sharp + Inter from `@fontsource`, all
+  devDependencies, never imported at runtime) with the tag, title, team, date and the
+  Coldwell Banker Realty logo (brokerage name in ads, Minn. Stat. 82.69).
 
 ## Analytics and abuse protection
 
