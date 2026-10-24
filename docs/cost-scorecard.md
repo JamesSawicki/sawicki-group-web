@@ -11,6 +11,11 @@ re-measure when a feature changes) and keep the action list current.
   page before relying on them. Free tiers are monthly.
 - Last full measurement: **2026-10-22** (after the lean pass; "before" kept for reference).
 
+> **Claude API spend limit: $10/month** (set by Jim in the Anthropic console, 2026-10-24).
+> A hard ceiling shared by the listing chat and the blog agent: at the limit the chat says
+> the assistant is unavailable and the blog run fails (alert emails Jim). **Watch usage after
+> launch and raise it before it binds** (listing-agent-api `docs/abuse-protection.md` §3.6).
+
 ## Top actions (ranked)
 
 | # | Issue | Impact | Fix | Status |
