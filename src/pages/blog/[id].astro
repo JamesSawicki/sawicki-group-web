@@ -1,7 +1,8 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import { getCollection, render } from "astro:content";
-import { blogPostNodes } from "../../lib/structured-data";
+import { absoluteUrl, blogPostNodes, blogPostPath } from "../../lib/structured-data";
+import ShareButtons from "../../components/ShareButtons.astro";
 import { site } from "../../lib/site.config";
 
 export const prerender = true;
@@ -19,6 +20,12 @@ export async function getStaticPaths() {
 const { post } = Astro.props;
 if (!post) return Astro.redirect("/blog");
 const { Content } = await render(post);
+const shareProps = {
+  url: absoluteUrl(blogPostPath(post)),
+  title: post.data.title,
+  contentType: "article" as const,
+  itemId: post.id,
+};
 ---
 
 <Layout
@@ -26,6 +33,10 @@ const { Content } = await render(post);
   description={post.data.excerpt}
   jsonLd={blogPostNodes(post)}
   ogType="article"
+  article={{
+    publishedTime: post.data.date.toISOString(),
+    author: post.data.author === "AI" ? site.aiAuthorName : post.data.author,
+  }}
 >
   <article class="max-w-3xl mx-auto px-6 py-20">
     <div class="mb-12">
@@ -52,6 +63,9 @@ const { Content } = await render(post);
         </span>
         <span>By {post.data.author === "AI" ? site.aiAuthorName : post.data.author}</span>
       </div>
+      <div class="mt-5">
+        <ShareButtons {...shareProps} />
+      </div>
     </div>
 
     <div
@@ -62,6 +76,12 @@ const { Content } = await render(post);
                 prose-strong:text-stone-900"
     >
       <Content />
+    </div>
+
+    {/* ── Share again after reading ── */}
+    <div class="mt-12">
+      <p class="text-sm text-stone-600 mb-3">Found this useful? Share it:</p>
+      <ShareButtons {...shareProps} label={false} />
     </div>
 
     <div class="mt-16 pt-8 border-t border-stone-200 flex items-center justify-between">

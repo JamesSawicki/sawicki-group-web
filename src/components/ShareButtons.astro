@@ -1,0 +1,233 @@
+---
+/**
+ * Share buttons for a listing or an article: the phone's own share sheet (when the browser
+ * has one), Facebook, X, LinkedIn, Pinterest (with a photo), email, text message, and copy
+ * link. Plain links: nothing from the networks loads until someone clicks, so there's no
+ * third-party tracking or cost. Each shared URL carries utm_source/utm_medium so GA shows
+ * which network brought visitors back, and each click is a GA4 `share` event.
+ *
+ * Listings: a shared link previews as a short card (photo, address, price) that links back
+ * to the full listing page, which NorthstarMLS §5.13 allows for minimal displays.
+ */
+// ─── Imports ─────────────────────────────────────────────────────────────────
+import { site } from "../lib/site.config";
+
+// ─── Props ───────────────────────────────────────────────────────────────────
+interface Props {
+  /** Absolute canonical URL of the page being shared. */
+  url: string;
+  /** Title for the share text and email subject. */
+  title: string;
+  /** One-line summary for the share text (e.g. "3 bd · 2 ba · $450,000"). */
+  text?: string;
+  /** Absolute image URL; enables Pinterest. */
+  image?: string;
+  /** What's shared, for analytics: "listing" or "article". */
+  contentType: "listing" | "article";
+  /** Analytics id: the MLS number or the post slug. */
+  itemId: string;
+  /** Visible "Share" heading next to the buttons. */
+  label?: boolean;
+}
+
+const { url, title, text, image, contentType, itemId, label = true } = Astro.props;
+
+// ─── Derived values ──────────────────────────────────────────────────────────
+/** The page URL tagged with where it was shared (the canonical tag keeps SEO on the plain URL). */
+const tagged = (source: string) => {
+  const u = new URL(url);
+  u.searchParams.set("utm_source", source);
+  u.searchParams.set("utm_medium", "social_share");
+  return u.toString();
+};
+const enc = encodeURIComponent;
+const shareText = text ? `${title} · ${text}` : title;
+
+const links = [
+  {
+    id: "facebook",
+    label: "Facebook",
+    href: `https://www.facebook.com/sharer/sharer.php?u=${enc(tagged("facebook"))}`,
+  },
+  {
+    id: "x",
+    label: "X",
+    href: `https://twitter.com/intent/tweet?url=${enc(tagged("x"))}&text=${enc(shareText)}`,
+  },
+  {
+    id: "linkedin",
+    label: "LinkedIn",
+    href: `https://www.linkedin.com/sharing/share-offsite/?url=${enc(tagged("linkedin"))}`,
+  },
+  ...(image
+    ? [
+        {
+          id: "pinterest",
+          label: "Pinterest",
+          href: `https://www.pinterest.com/pin/create/button/?url=${enc(tagged("pinterest"))}&media=${enc(image)}&description=${enc(shareText)}`,
+        },
+      ]
+    : []),
+  {
+    id: "email",
+    label: "Email",
+    href: `mailto:?subject=${enc(title)}&body=${enc(`${shareText}\n\n${tagged("email")}\n\nShared from ${site.name}`)}`,
+  },
+  {
+    id: "sms",
+    label: "Text message",
+    href: `sms:?&body=${enc(`${shareText} ${tagged("sms")}`)}`,
+  },
+];
+---
+
+<div
+  class="share-buttons flex flex-wrap items-center gap-2"
+  data-share-url={url}
+  data-share-native={tagged("native_share")}
+  data-share-copy={tagged("copy_link")}
+  data-share-title={title}
+  data-share-text={shareText}
+  data-content-type={contentType}
+  data-item-id={itemId}
+>
+  {label && (
+    <span data-share-label class="text-sm font-medium text-stone-700 mr-1">
+      Share
+    </span>
+  )}
+
+  {/* ── Phone share sheet (shown by the script when the browser supports it) ── */}
+  <button
+    type="button"
+    data-share="native"
+    hidden
+    class="inline-flex items-center gap-2 min-h-11 px-4 rounded-full bg-stone-900 text-white text-sm font-medium hover:bg-stone-700"
+  >
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M12 3v12" />
+      <path d="M7 8l5-5 5 5" />
+      <path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" />
+    </svg>
+    Share
+  </button>
+
+  {/* ── Networks ── */}
+  {links.map((link) => (
+    <a
+      href={link.href}
+      data-share={link.id}
+      target={link.id === "email" || link.id === "sms" ? undefined : "_blank"}
+      rel="noopener noreferrer"
+      aria-label={`Share on ${link.label}`}
+      title={link.label}
+      class={`inline-flex items-center justify-center w-11 h-11 rounded-full border border-stone-300 text-stone-700 hover:border-stone-900 hover:text-stone-900 ${link.id === "sms" ? "sm:hidden" : ""}`}
+    >
+      <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
+        {link.id === "facebook" && (
+          <path d="M13.5 21v-7.5h2.5l.4-3h-2.9V8.6c0-.9.3-1.5 1.6-1.5h1.5V4.4c-.3 0-1.2-.1-2.2-.1-2.2 0-3.7 1.3-3.7 3.8v2.4H8.2v3h2.5V21h2.8z" />
+        )}
+        {link.id === "x" && (
+          <path d="M17.8 3h3.1l-6.8 7.8L22 21h-6.2l-4.9-6.4L5.3 21H2.2l7.3-8.3L1.9 3h6.4l4.4 5.8L17.8 3zm-1.1 16.2h1.7L7.4 4.7H5.6l11.1 14.5z" />
+        )}
+        {link.id === "linkedin" && (
+          <path d="M6.9 8.7H3.8V20h3.1V8.7zM5.3 3.6a1.8 1.8 0 1 0 0 3.6 1.8 1.8 0 0 0 0-3.6zM20.2 13.5c0-3-1.6-5.1-4.3-5.1-1.4 0-2.4.8-2.8 1.5V8.7H10V20h3.1v-6c0-1.4.6-2.6 2.1-2.6s1.9 1.2 1.9 2.7V20h3.1v-6.5z" />
+        )}
+        {link.id === "pinterest" && (
+          <path d="M12 2a10 10 0 0 0-3.6 19.3c-.1-.8-.2-2 0-2.9l1.2-5.1s-.3-.6-.3-1.5c0-1.4.8-2.5 1.8-2.5.9 0 1.3.6 1.3 1.4 0 .9-.5 2.2-.8 3.4-.2 1 .5 1.8 1.5 1.8 1.8 0 3.2-1.9 3.2-4.7 0-2.5-1.8-4.2-4.3-4.2-2.9 0-4.6 2.2-4.6 4.4 0 .9.3 1.8.8 2.3.1.1.1.2.1.3l-.3 1.2c0 .2-.2.2-.4.1-1.3-.6-2.1-2.5-2.1-4 0-3.3 2.4-6.3 6.9-6.3 3.6 0 6.4 2.6 6.4 6 0 3.6-2.3 6.5-5.4 6.5-1.1 0-2.1-.6-2.4-1.2l-.7 2.5c-.2.9-.9 2.1-1.3 2.8A10 10 0 1 0 12 2z" />
+        )}
+        {link.id === "email" && (
+          <path d="M3 5h18a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zm9 7.2L4 7.3V17h16V7.3l-8 4.9zM19.3 7H4.7L12 11.5 19.3 7z" />
+        )}
+        {link.id === "sms" && (
+          <path d="M4 4h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-5 4v-4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zm3 6.5a1.5 1.5 0 1 0 0 .01zm5 0a1.5 1.5 0 1 0 0 .01zm5 0a1.5 1.5 0 1 0 0 .01z" />
+        )}
+      </svg>
+    </a>
+  ))}
+
+  {/* ── Copy link ── */}
+  <button
+    type="button"
+    data-share="copy"
+    aria-label="Copy link"
+    title="Copy link"
+    class="inline-flex items-center justify-center w-11 h-11 rounded-full border border-stone-300 text-stone-700 hover:border-stone-900 hover:text-stone-900"
+  >
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M10 14a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1" />
+      <path d="M14 10a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1" />
+    </svg>
+  </button>
+  <span data-share-status class="sr-only" aria-live="polite"></span>
+</div>
+
+<script>
+  import { track } from "../lib/analytics";
+
+  for (const box of document.querySelectorAll<HTMLElement>(".share-buttons")) {
+    const d = box.dataset;
+    const contentType = d.contentType === "listing" ? "listing" : "article";
+    const report = (method: string) =>
+      track("share", { method, content_type: contentType, item_id: d.itemId ?? "" });
+
+    // Phones (and some desktops) have a native share sheet: show its button.
+    const native = box.querySelector<HTMLButtonElement>('[data-share="native"]');
+    if (native && typeof navigator.share === "function") {
+      native.hidden = false;
+      // The button already says "Share"; drop the label so it isn't said twice.
+      box.querySelector<HTMLElement>("[data-share-label]")?.setAttribute("hidden", "");
+      native.addEventListener("click", async () => {
+        try {
+          await navigator.share({ title: d.shareTitle, text: d.shareText, url: d.shareNative });
+          report("native");
+        } catch {
+          // Cancelled by the visitor: nothing to do.
+        }
+      });
+    }
+
+    for (const a of box.querySelectorAll<HTMLAnchorElement>("a[data-share]")) {
+      a.addEventListener("click", () => report(a.dataset.share ?? "link"));
+    }
+
+    const copy = box.querySelector<HTMLButtonElement>('[data-share="copy"]');
+    const status = box.querySelector<HTMLElement>("[data-share-status]");
+    copy?.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(d.shareCopy ?? d.shareUrl ?? location.href);
+        copy.title = "Link copied";
+        copy.classList.add("border-stone-900", "text-stone-900");
+        if (status) status.textContent = "Link copied";
+        setTimeout(() => {
+          copy.title = "Copy link";
+          copy.classList.remove("border-stone-900", "text-stone-900");
+          if (status) status.textContent = "";
+        }, 2000);
+        report("copy_link");
+      } catch {
+        if (status) status.textContent = "Couldn't copy the link";
+      }
+    });
+  }
+</script>

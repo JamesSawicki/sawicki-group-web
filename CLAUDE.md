@@ -73,7 +73,14 @@ npm run build    # local production build; does not deploy
   `TODO-JIM:` and are omitted, never guessed. Accent/brand colors are Tailwind tokens in
   `src/styles/global.css` (`text-accent`, `brand-navy`, `brand-gold`). See `docs/brand.md`.
 - **Blog posts** in `src/content/blog/` arrive as `draft: true`; publishing means flipping
-  that to `false`.
+  that to `false`. Every figure in a post must be verifiable and linked (Jim, 2026-10-23):
+  posts end with a linked "Sources" line.
+- **Sharing** (`ShareButtons.astro`, in the listing hero and on blog posts): plain share links
+  (Facebook, X, LinkedIn, Pinterest with a photo, email, text on phones, copy link) plus the
+  device share sheet when the browser has one. Never embed a network's SDK or pixel (privacy,
+  page weight). Shared URLs carry `utm_source=<network>&utm_medium=social_share`; clicks are
+  GA4 `share` events. Link previews come from Layout's Open Graph tags (`ogImage`,
+  `ogImageAlt`, `article`).
 
 ## Analytics and abuse protection
 
