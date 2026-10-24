@@ -36,6 +36,8 @@ re-measure when a feature changes) and keep the action list current.
 | 60 s browser caching of search + suggest | every pan re-fetched | repeat views/Back reuse responses |
 | Summary card / mini header load photos only when shown | desktop 11, phone 10 Cloudflare deliveries per listing view | desktop 6, phone 4 |
 | Chat: Haiku 4.5, 400-token reply cap, last 10 messages, usage logged, plain-text replies | Sonnet 4.5, 600 cap, unbounded history | measured 648 in + 67 out tokens ≈ $0.001 / message |
+| Chat on Haiku 5.5, thinking off (2026-10-24) | Haiku 4.5 ($1 / $5 per M) | $0.10 / $0.50 per M; ~$0.0033 → ~$0.0004 / message even with ~30% more tokens counted (test: 476 in + 114 out tokens) |
+| Blog agent payments computed in code; Opus 5.5 (2026-10-24) | Sonnet 5, model did the math | measured 997 in + 1,587 out ≈ 3.6¢ / weekly post (~16¢ / month); `BLOG_MODEL=claude-sonnet-5-5` about halves it |
 | Amenity refresh every 90 days (was ~monthly) | ~3 isochrone calls / listing / month | ~1 / listing / month |
 
 ### Done (2026-10-22 second pass)
@@ -73,7 +75,7 @@ Transfer sizes are what Chrome received (HTML compressed; `/_astro` JS not yet �
 | Listing photos + lightbox | `PhotoGallery.tsx` | 5 mosaic / carousel images up front; lightbox loads on demand; strip uses 120 px thumbs | Cloudflare Images deliveries | Avoid full-size thumbnails (the old plugin loaded 2048 px). |
 | Summary card + mini header | `ListingSummary.tsx` | loads only the current photo ± 1 | Cloudflare Images deliveries | Scroll handler is rAF-throttled. |
 | Neighborhood map | `map-utils.ts`, `NeighborhoodMap.tsx` | 1 static image per listing view; interactive map only when opened | Mapbox Static Images; Mapbox map load on open | Never put an interactive map on page load (~1.7 MB JS + a map load per view). |
-| Listing AI chat | `ListingChat.tsx`, API `/api/chat` | 1 Anthropic call per message (~2,150 in + ~100 out tokens, measured: full features + Close to Home + contact tool; was ~650 in) | Anthropic tokens | Haiku 4.5 (`app.chat.model`); last 10 messages; 400-token cap; 10 messages / IP / hour. Usage logged per message. |
+| Listing AI chat | `ListingChat.tsx`, API `/api/chat` | 1 Anthropic call per message (~2,150 in + ~100 out tokens, measured: full features + Close to Home + contact tool; was ~650 in) | Anthropic tokens | Haiku 5.5 (`app.chat.model`, thinking off); last 10 messages; 400-token cap; 10 messages / IP / hour. Usage logged per message. |
 | Close to Home (amenity scores) | API `amenity/` | per listing every 90 days: 3 Mapbox isochrone calls + Overpass (shared tiles in batches) + Matrix lookups for the nearest lists (measured 45 suburban, ~65 city; ≤70 elements) + 1 Directions request (street point) | Mapbox Isochrone, Matrix and Directions APIs | Resumable batches; ~1,000 listings ≈ 1,000 isochrone calls/month. Matrix: each batch stops at `amenity.scoring.batch-matrix-budget` (90,000) and the next run resumes, so even 5,000+ production listings (~300k elements) roll out over ~3–4 months inside the free tier instead of a ~$400 first rescore. Self-hosted Valhalla (~$15–25/mo) if that's too slow. |
 | Close to Home time strip (desktop, 2026-10-23) | `CloseToHomeTimeStrip.astro` | renders from the listing's stored `nearest` data: measured +34 KB HTML (2.75 KB gzipped) for 15 icons, no JS, no requests | none | Same stored scores as the list; no extra Mapbox or Overpass calls. |
 | Overture places import (Close to Home blend) | API `OverturePlacesImporter` | monthly: one DuckDB read of Overture's public Parquet files for MN + border (~28k places, ~25 s, measured 2026-10-23); scoring reads them from Postgres | none (public data, no key) | ~28k rows in `places`. Credit "Overture Maps Foundation". Adds no Overpass or Mapbox calls. |
@@ -99,7 +101,8 @@ Transfer sizes are what Chrome received (HTML compressed; `/_astro` JS not yet �
 | Mapbox Matrix | Close to Home nearest lists (travel distance/time) | 100,000 elements (origins × destinations) | $2.00 per 1,000 to 500k, then $1.60, then $1.20 (checked 2026-10-23) |
 | Mapbox Directions | street point per scored listing (1 request); Phase 2 routes (tabled) | 100,000 requests | $2.00 per 1,000 to 500k (checked 2026-10-23) |
 | Cloudflare Images | listing photos | — | ~$5 per 100k stored, ~$1 per 100k delivered |
-| Anthropic Claude Haiku 4.5 | listing chat | — | ~$1 / M input tokens, ~$5 / M output tokens (Sonnet 4.5: ~$3 / ~$15) |
+| Anthropic Claude Haiku 5.5 | listing chat | — | $0.10 / M input, $0.50 / M output (prompts ≤ 100K tokens; was Haiku 4.5 at $1 / $5) |
+| Anthropic Claude Opus 5.5 | weekly blog draft | — | $4 / M input, $20 / M output (Sonnet 5.5: $2 / $10) |
 | Overpass API (public) | amenity POIs | free (fair use) | — |
 | Overture Maps (places) | stores/restaurants OSM lacks | free (public S3, open licenses) | — |
 | Resend | contact email | 3,000 emails | paid plans |
@@ -116,7 +119,7 @@ neighborhood map, 2% of listing views start a chat averaging 4 messages:
 | Mapbox static images | 20,000 | $0 (free tier) |
 | Mapbox isochrones | ~1,000 | $0 (free tier) |
 | Mapbox Matrix (nearest lists, 90-day refresh) | ~1,000 listings × ~55 / 3 ≈ 18k elements | $0 (free tier) |
-| Chat messages (Haiku 4.5, measured tokens; +~600 tokens for the nearest lists) | 1,600 × ~$0.0033 | **~$5.30** |
+| Chat messages (Haiku 5.5; ~2,800 in + ~130 out tokens) | 1,600 × ~$0.0004 | **~$0.60** (was ~$5.30 on Haiku 4.5) |
 | Bandwidth: map search pans (say 10 per visit) | 50,000 × 10 KB | ~0.5 GB (was ~245 GB at 4.9 MB each) |
 
 Everything stays inside free tiers at this traffic; the remaining lever is CDN
