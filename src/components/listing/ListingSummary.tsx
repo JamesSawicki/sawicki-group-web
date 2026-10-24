@@ -10,10 +10,12 @@
  *     opens the interactive map) while the main photos are on screen, then a photo
  *     carousel slides down over it once they've scrolled away. Choosing a tab stops the
  *     automatic switch. One frame rather than map + photos stacked, so the sticky card
- *     stays shorter than a laptop screen.
+ *     stays shorter than a laptop screen. A "Back to map" link tops the card, so the map
+ *     search is one click away however far down the page the visitor is.
  *   - Mini header (phones/tablets only): a slim bar that slides down from the top once
- *     the photos and price have scrolled away — a swipeable photo, price, address and a
- *     Contact button — and slides back up when the visitor returns to the top.
+ *     the photos and price have scrolled away — a "Map" button, a swipeable photo, price,
+ *     address and a Contact button — and slides back up when the visitor returns to the top.
+ *   Both "back" controls behave like the page's top link (lib/search-return.ts).
  *
  * "Scrolled away" = the #listing-hero-end marker (after the hero) is above the viewport.
  * Tapping a photo opens the page's lightbox at that photo (PhotoGallery owns it).
@@ -24,6 +26,7 @@ import { openListingPhoto, photoUrl } from "../../lib/photo-utils";
 import { openNeighborhoodMap } from "../../lib/map-utils";
 import ChatConversation from "./ChatConversation";
 import { notePhotoViewed, openListingChat, SHOWING_REQUEST } from "../../lib/chat-events";
+import { backToMapTarget, followBackToMap, type BackToMapTarget } from "../../lib/search-return";
 
 /** id of the marker placed right after the gallery + hero on the listing page. */
 export const HERO_END_ID = "listing-hero-end";
@@ -161,6 +164,23 @@ function PhotoCarousel({ photoIds, accountHash, size, address, active }: Carouse
   );
 }
 
+/** The "back" chevron used by both "Back to map" controls. */
+function ChevronLeft() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      aria-hidden="true"
+    >
+      <path d="M15 18l-6-6 6-6" />
+    </svg>
+  );
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function ListingSummary({
@@ -208,6 +228,16 @@ export default function ListingSummary({
 
   const hasPhotos = Boolean(accountHash) && photoIds.length > 0;
 
+  // "Back to map": the plain search page until the browser says otherwise (saved search,
+  // or browser Back when the visitor came straight from the map).
+  const [back, setBack] = useState<BackToMapTarget>({
+    href: "/listings",
+    hasSearch: false,
+    useHistory: false,
+  });
+  useEffect(() => setBack(backToMapTarget()), []);
+  const backLabel = back.hasSearch ? "Back to map" : "Search on the map";
+
   // The card's media frame only exists on desktop (lg+).
   const [isDesktop, setIsDesktop] = useState<boolean>(false);
   useEffect(() => {
@@ -233,6 +263,15 @@ export default function ListingSummary({
         inert={!scrolledPast}
       >
         <div className="flex items-center gap-3 px-3 py-2">
+          <a
+            href={back.href}
+            onClick={(e) => followBackToMap(e, back)}
+            aria-label={backLabel}
+            className="shrink-0 inline-flex flex-col items-center justify-center h-11 w-11 -ml-1 rounded-lg text-stone-700 hover:bg-stone-100"
+          >
+            <ChevronLeft />
+            <span className="text-xs leading-none">Map</span>
+          </a>
           {hasPhotos && (
             <PhotoCarousel
               photoIds={photoIds}
@@ -264,10 +303,19 @@ export default function ListingSummary({
       {/* ── Card ── (desktop: a column that fits the window, so the sticky card never runs
           off screen; the chat takes the remaining height and scrolls inside itself) */}
       <div className="border border-stone-200 rounded-xl bg-white lg:flex lg:flex-col lg:max-h-[calc(100vh-2rem)]">
+        {/* ── Back to map (desktop; phones have it in the mini header) ── */}
+        <a
+          href={back.href}
+          onClick={(e) => followBackToMap(e, back)}
+          className="hidden lg:flex shrink-0 items-center gap-1 h-10 px-3 rounded-t-xl border-b border-stone-100 text-sm font-medium text-stone-700 hover:bg-stone-50"
+        >
+          <ChevronLeft />
+          {backLabel}
+        </a>
         {/* ── Media frame (desktop): map, with photos sliding down over it. Capped at about a
             third of the window's height, so short laptop screens still fit the whole card. ── */}
         {(hasPhotos || mapImage) && (
-          <div className="hidden lg:block shrink-0 relative aspect-[16/10] max-h-[32vh] rounded-t-xl overflow-hidden bg-stone-200">
+          <div className="hidden lg:block shrink-0 relative aspect-[16/10] max-h-[32vh] overflow-hidden bg-stone-200">
             {mapImage && (
               <button
                 type="button"

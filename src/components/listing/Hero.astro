@@ -1,10 +1,12 @@
 ---
 /**
  * Listing hero: status/price-reduced badges, address and city line, price (with the
- * struck-through original when reduced), MLS number, and the key stats bar.
+ * struck-through original when reduced), MLS number, the key stats bar, and share buttons.
  */
 // ─── Imports ─────────────────────────────────────────────────────────────────
 import type { Listing } from "../../types/listing";
+import ShareButtons from "../ShareButtons.astro";
+import { absoluteUrl } from "../../lib/structured-data";
 import {
   displayAddress,
   bathTotal,
@@ -16,6 +18,8 @@ import {
   formatSqft,
   hasPriceReduction,
   isPositive,
+  listingPath,
+  mlsNumber,
   pluralize,
   statusBadgeClasses,
   statusLabel,
@@ -25,9 +29,11 @@ import {
 interface Props {
   /** The listing being displayed. */
   listing: Listing;
+  /** Absolute URL of the first photo, for Pinterest shares. */
+  shareImage?: string;
 }
 
-const { listing } = Astro.props;
+const { listing, shareImage } = Astro.props;
 
 // ─── Derived values ──────────────────────────────────────────────────────────
 const priceDisplay = formatPrice(listing.listPrice);
@@ -37,6 +43,14 @@ const lotDisplay = formatLot(listing.lotSqft);
 const levelsDisplay = formatLevels(listing.style);
 const priceReduced = hasPriceReduction(listing);
 const mlsID = formatMlsId(listing.mlsId);
+// Share text: "3 bd · 2 ba · $450,000" (no street address when the seller hid it).
+const shareSummary = [
+  isPositive(listing.beds) ? `${listing.beds} bd` : "",
+  bathTotal(listing) > 0 ? `${bathDisplay} ba` : "",
+  priceDisplay,
+]
+  .filter(Boolean)
+  .join(" · ");
 
 // "Edina, MN 55436"; empty when the city is unknown.
 const cityLine = listing.city
@@ -123,5 +137,17 @@ const cityLine = listing.city
         {pluralize(listing.daysOnMarket, "Day")} on Market
       </div>
     )}
+  </div>
+
+  {/* ── Share ── */}
+  <div class="mt-5">
+    <ShareButtons
+      url={absoluteUrl(listingPath(listing))}
+      title={`${displayAddress(listing)}${listing.city ? `, ${listing.city}` : ""}`}
+      text={shareSummary}
+      image={shareImage}
+      contentType="listing"
+      itemId={mlsNumber(listing) ?? String(listing.id)}
+    />
   </div>
 </div>

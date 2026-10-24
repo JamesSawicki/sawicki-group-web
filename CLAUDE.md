@@ -73,7 +73,17 @@ npm run build    # local production build; does not deploy
   `TODO-JIM:` and are omitted, never guessed. Accent/brand colors are Tailwind tokens in
   `src/styles/global.css` (`text-accent`, `brand-navy`, `brand-gold`). See `docs/brand.md`.
 - **Blog posts** in `src/content/blog/` arrive as `draft: true`; publishing means flipping
-  that to `false`.
+  that to `false`. Every figure in a post must be verifiable and linked (Jim, 2026-10-23):
+  posts end with a linked "Sources" line.
+- **Sharing** (`ShareButtons.astro`, in the listing hero and on blog posts): plain share links
+  (Facebook, X, LinkedIn, Pinterest with a photo, email, text on phones, copy link) plus the
+  device share sheet when the browser has one. Never embed a network's SDK or pixel (privacy,
+  page weight). Shared URLs carry `utm_source=<network>&utm_medium=social_share`; clicks are
+  GA4 `share` events. Link previews come from Layout's Open Graph tags (`ogImage`,
+  `ogImageAlt`, `article`). Blog posts get a generated 1200×630 card at build time
+  (`/og/blog/<post>.png`, `lib/og-image.ts`: satori + sharp + Inter from `@fontsource`, all
+  devDependencies, never imported at runtime) with the tag, title, team, date and the
+  Coldwell Banker Realty logo (brokerage name in ads, Minn. Stat. 82.69).
 - **Home page = lead generator** (brand: professional, competent, trustworthy). Sections
   in `src/components/home/`; content in `site.config.ts` (`markets` with specialist + map
   box, `proofPoints`, `reviews`; empty lists hide their section). Hero: Buying (the map's

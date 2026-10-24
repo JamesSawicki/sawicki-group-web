@@ -31,3 +31,43 @@ export function readLastSearchUrl(): string | null {
     return null;
   }
 }
+
+/** Where a listing page's "Back to map" goes (see backToMapTarget). */
+export interface BackToMapTarget {
+  /** The last map search in this tab, or the plain map search page. */
+  href: string;
+  /** True when there's a saved search ("Back to map"); false: "Search on the map". */
+  hasSearch: boolean;
+  /** True when browser Back returns to that exact search, scroll position included. */
+  useHistory: boolean;
+}
+
+/**
+ * Where "Back to map" should go from the current listing page. Browser only (reads
+ * sessionStorage, the referrer and history); every "Back to map" control uses this, so the
+ * top link, the phones' mini header and the desktop summary card all behave the same.
+ */
+export function backToMapTarget(): BackToMapTarget {
+  const saved = readLastSearchUrl();
+  // Came straight from the map in this tab? Going back in history restores the page as it
+  // was, including the results list's scroll position.
+  let cameFromSearch = false;
+  try {
+    const ref = new URL(document.referrer);
+    cameFromSearch = ref.origin === location.origin && ref.pathname === "/listings";
+  } catch {
+    // No or unparseable referrer: use the saved link.
+  }
+  return {
+    href: saved ?? "/listings",
+    hasSearch: saved !== null,
+    useHistory: saved !== null && cameFromSearch && history.length > 1,
+  };
+}
+
+/** Click handler for a "Back to map" link: browser Back when that restores the search. */
+export function followBackToMap(event: { preventDefault(): void }, target: BackToMapTarget): void {
+  if (!target.useHistory) return; // the link's href does the rest
+  event.preventDefault();
+  history.back();
+}

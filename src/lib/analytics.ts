@@ -51,7 +51,6 @@ const PHOTO_MARKS = [5, 10, 20];
 /** Where a listing preview (photo card on the search map) was opened from. */
 export type PreviewSource = "pin" | "list" | "search";
 
-/**
 /** Which form a lead came from (home_value: the home page's "What's it worth?"). */
 export type LeadForm = "contact_page" | "listing_chat" | "home_value" | "home_contact";
 
@@ -60,6 +59,8 @@ export type LeadForm = "contact_page" | "listing_chat" | "home_value" | "home_co
  * listing pages. Values must never contain anything a visitor typed.
  */
 export interface AnalyticsEvents {
+  /** A listing or article was shared (GA4 recommended event). */
+  share: { method: string; content_type: "listing" | "article"; item_id: string };
   /** The visitor accepted the NorthstarMLS EULA (once per session). */
   eula_accept: Record<string, never>;
   /** A listing page was viewed (GA4 ecommerce event, so Google Ads can use it later). */

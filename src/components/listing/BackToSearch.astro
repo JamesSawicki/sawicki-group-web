@@ -34,29 +34,14 @@
 </div>
 
 <script>
-  import { readLastSearchUrl } from "../../lib/search-return";
+  import { backToMapTarget, followBackToMap } from "../../lib/search-return";
 
   const link = document.getElementById("back-to-search") as HTMLAnchorElement | null;
-  const saved = readLastSearchUrl();
-  if (link && saved) {
-    link.href = saved;
+  const target = backToMapTarget();
+  if (link && target.hasSearch) {
+    link.href = target.href;
     const label = link.querySelector("[data-label]");
     if (label) label.textContent = "Back to map";
-
-    // Came straight from the map in this tab? Going back in history restores the page
-    // as it was, including the results list's scroll position.
-    let cameFromSearch = false;
-    try {
-      const ref = new URL(document.referrer);
-      cameFromSearch = ref.origin === location.origin && ref.pathname === "/listings";
-    } catch {
-      // No or unparseable referrer — use the saved link.
-    }
-    if (cameFromSearch && history.length > 1) {
-      link.addEventListener("click", (e) => {
-        e.preventDefault();
-        history.back();
-      });
-    }
+    link.addEventListener("click", (e) => followBackToMap(e, target));
   }
 </script>

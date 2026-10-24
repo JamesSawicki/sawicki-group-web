@@ -39,6 +39,7 @@ import {
   formatSqft,
   listingPath,
   parseList,
+  displayAddress,
   parseMlsNumber,
 } from "../../lib/listing-utils";
 import { parsePhotoIds, parseVirtualTourUrls, photoUrl } from "../../lib/photo-utils";
@@ -153,6 +154,7 @@ const amenitiesList = parseList(listing.amenities);
   description={`${listing.beds ?? ""} bed, ${bathDisplay} bath ${formatLevels(listing.style) || "home"} in ${listing.neighborhood ?? listing.city}. ${sqftDisplay} sqft. Listed at ${priceDisplay}${listing.listOfficeName ? ` by ${listing.listOfficeName.replace(/\.$/, "")}` : ""}.`}
   jsonLd={jsonLd}
   ogImage={schemaImages[0]}
+  ogImageAlt={`Photo of ${displayAddress(listing)}${listing.city ? `, ${listing.city}` : ""}`}
   requiresEula
 >
   {/* Desktop: back link + breadcrumb share one row; phones/tablets: Neighborhood button here,
@@ -179,7 +181,7 @@ const amenitiesList = parseList(listing.amenities);
     />
   </div>
 
-  <Hero listing={listing} />
+  <Hero listing={listing} shareImage={schemaImages[0]} />
   {/* Marker: once it scrolls above the viewport, the summary card / mini header show photos. */}
   <div id="listing-hero-end" aria-hidden="true"></div>
 
