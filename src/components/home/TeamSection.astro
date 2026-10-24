@@ -46,6 +46,11 @@ const members = team.map((member) => ({
           <p class="text-sm text-stone-500 mb-4">
             {[member.jobTitle, brokerage.name].filter(Boolean).join(" · ")}
           </p>
+          {member.brokerageSince && (
+            <p class="text-sm text-stone-700 mb-2">
+              <span class="font-semibold">With {brokerage.name} since</span> {member.brokerageSince}
+            </p>
+          )}
           {covers.length > 0 && (
             <p class="text-sm text-stone-700 mb-4">
               <span class="font-semibold">Covers:</span> {covers.join("; ")}

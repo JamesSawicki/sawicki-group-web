@@ -54,6 +54,8 @@ export interface TeamMember {
   phone?: Phone;
   /** Minnesota real estate license number. Never guessed. */
   licenseNumber?: string;
+  /** Year they joined our brokerage (a year, not "N years", so it never goes stale). */
+  brokerageSince?: number;
   /** Square-ish portrait in /public; shown on the About page when set. */
   headshot?: BrandImage;
   /** Bio paragraphs (plain text). A member with a bio gets a profile on the About page. */
@@ -224,8 +226,10 @@ const jim = {
     "My focus is Saint Paul and Minneapolis proper. Crocus Hill, Mac-Groveland, Highland Park, Linden Hills, Northeast, and the surrounding neighborhoods I know block by block. I don't try to cover the entire metro. I cover my market well.",
     "If you're thinking about buying or selling in the Twin Cities, I'd rather have a real conversation than send you a brochure. Reach out and let's talk.",
   ],
+  /** Licensed with Coldwell Banker Realty since 2008 (Jim, 2026-10-23). */
+  brokerageSince: 2008,
   highlights: [
-    { label: "Experience", value: "15+ years" },
+    { label: "Experience", value: "Licensed since 2008" },
     { label: "Focus Area", value: "Minneapolis & Saint Paul" },
   ],
 } satisfies TeamMember;
@@ -237,7 +241,8 @@ const jim = {
 export const team: TeamMember[] = [
   jim,
   // TODO-JIM: Kathy's title, email, phone, license number, headshot and bio. With a bio she
-  // gets her own profile on the About page automatically.
+  // gets her own profile on the About page automatically. brokerageSince: Jim recalls
+  // "maybe 1996"; confirm the year before setting it.
   { id: "kathy-sawicki", name: "Kathy Sawicki" },
 ];
 
